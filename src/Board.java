@@ -1,13 +1,15 @@
+package projectchess;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import Pieces.Bishop;
-import Pieces.King;
-import Pieces.Knight;
-import Pieces.Pawn;
-import Pieces.Piece;
-import Pieces.Queen;
-import Pieces.Rook;
+import projectchess.pieces.Bishop;
+import projectchess.pieces.King;
+import projectchess.pieces.Knight;
+import projectchess.pieces.Pawn;
+import projectchess.pieces.Piece;
+import projectchess.pieces.Queen;
+import projectchess.pieces.Rook;
 
 public class Board {
 	Map<Pos, Cell> cellMap = new HashMap<Pos, Cell>();
@@ -22,39 +24,39 @@ public class Board {
 			color = color.swap();
 		}
 		
-		addPiece(0, 0, new Rook());
-		addPiece(1, 0, new Knight());
-		addPiece(2, 0, new Bishop());
-		addPiece(3, 0, new Queen());
-		addPiece(4, 0, new King());
-		addPiece(5, 0, new Bishop());
-		addPiece(6, 0, new Knight());
-		addPiece(7, 0, new Rook());
-		addPiece(0, 1, new Pawn());
-		addPiece(1, 1, new Pawn());
-		addPiece(2, 1, new Pawn());
-		addPiece(3, 1, new Pawn());
-		addPiece(4, 1, new Pawn());
-		addPiece(5, 1, new Pawn());
-		addPiece(6, 1, new Pawn());
-		addPiece(7, 1, new Pawn());
+		addPiece(0, 0, new Rook(Color.BLACK));
+		addPiece(1, 0, new Knight(Color.BLACK));
+		addPiece(2, 0, new Bishop(Color.BLACK));
+		addPiece(3, 0, new Queen(Color.BLACK));
+		addPiece(4, 0, new King(Color.BLACK));
+		addPiece(5, 0, new Bishop(Color.BLACK));
+		addPiece(6, 0, new Knight(Color.BLACK));
+		addPiece(7, 0, new Rook(Color.BLACK));
+		addPiece(0, 1, new Pawn(Color.BLACK));
+		addPiece(1, 1, new Pawn(Color.BLACK));
+		addPiece(2, 1, new Pawn(Color.BLACK));
+		addPiece(3, 1, new Pawn(Color.BLACK));
+		addPiece(4, 1, new Pawn(Color.BLACK));
+		addPiece(5, 1, new Pawn(Color.BLACK));
+		addPiece(6, 1, new Pawn(Color.BLACK));
+		addPiece(7, 1, new Pawn(Color.BLACK));
 		
-		addPiece(0, 6, new Pawn());
-		addPiece(1, 6, new Pawn());
-		addPiece(2, 6, new Pawn());
-		addPiece(3, 6, new Pawn());
-		addPiece(4, 6, new Pawn());
-		addPiece(5, 6, new Pawn());
-		addPiece(6, 6, new Pawn());
-		addPiece(7, 6, new Pawn());
-		addPiece(0, 7, new Rook());
-		addPiece(1, 7, new Knight());
-		addPiece(2, 7, new Bishop());
-		addPiece(3, 7, new King());
-		addPiece(4, 7, new Queen());
-		addPiece(5, 7, new Bishop());
-		addPiece(6, 7, new Knight());
-		addPiece(7, 7, new Rook());
+		addPiece(0, 6, new Pawn(Color.WHITE));
+		addPiece(1, 6, new Pawn(Color.WHITE));
+		addPiece(2, 6, new Pawn(Color.WHITE));
+		addPiece(3, 6, new Pawn(Color.WHITE));
+		addPiece(4, 6, new Pawn(Color.WHITE));
+		addPiece(5, 6, new Pawn(Color.WHITE));
+		addPiece(6, 6, new Pawn(Color.WHITE));
+		addPiece(7, 6, new Pawn(Color.WHITE));
+		addPiece(0, 7, new Rook(Color.WHITE));
+		addPiece(1, 7, new Knight(Color.WHITE));
+		addPiece(2, 7, new Bishop(Color.WHITE));
+		addPiece(3, 7, new King(Color.WHITE));
+		addPiece(4, 7, new Queen(Color.WHITE));
+		addPiece(5, 7, new Bishop(Color.WHITE));
+		addPiece(6, 7, new Knight(Color.WHITE));
+		addPiece(7, 7, new Rook(Color.WHITE));
 	}
 
 	public Cell getCellAtPos(int x, int y) {

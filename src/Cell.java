@@ -1,5 +1,6 @@
-import Pieces.Piece;
+package projectchess;
 
+import projectchess.pieces.Piece;
 
 public class Cell {
 	private Color color;

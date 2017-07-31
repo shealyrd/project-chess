@@ -1,3 +1,4 @@
+package projectchess;
 
 public class Pos {
 	private int X;
