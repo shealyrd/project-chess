@@ -26,7 +26,7 @@ public class Board {
 			color = color.swap();
 		}
 		
-		/*addPiece(0, 0, new Rook(Color.BLACK));
+		addPiece(0, 0, new Rook(Color.BLACK));
 		addPiece(1, 0, new Knight(Color.BLACK));
 		addPiece(2, 0, new Bishop(Color.BLACK));
 		addPiece(3, 0, new Queen(Color.BLACK));
@@ -57,8 +57,8 @@ public class Board {
 		addPiece(3, 7, new King(Color.WHITE));
 		addPiece(4, 7, new Queen(Color.WHITE));
 		addPiece(5, 7, new Bishop(Color.WHITE));
-		addPiece(6, 7, new Knight(Color.WHITE));*/
-		addPiece(6, 4, new Queen(Color.WHITE));
+		addPiece(6, 7, new Knight(Color.WHITE));
+		//addPiece(6, 4, new Queen(Color.WHITE));
 	}
 
 	public Cell getCellAtPos(int x, int y) {
@@ -101,6 +101,15 @@ public class Board {
 			}
 		}
 		return result;
+	}
+	
+	public void movePiece(int x, int y, Piece piece){
+		Pos oldPos = piece.getPos();
+		Cell oldCell = cellMap.get(oldPos);
+		Cell cell = cellMap.get(new Pos(x, y));
+		cell.setCurrentPiece(piece);
+		oldCell.setOccupied(false);
+		piece.setPos(new Pos(x,y));
 	}
 
 }

@@ -1,10 +1,10 @@
 package projectchess;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 import projectchess.pieces.Piece;
+import projectchess.pieces.Queen;
 
 public class Driver {
 
@@ -13,19 +13,28 @@ public class Driver {
 		board.initialize();
 		System.out.println(board.toString());
 		MoveInterpreter interpreter = new MoveInterpreter(board);
-		Set<Cell> availableMoves = interpreter.getValidMoves(board.getCellAtPos(6, 4).getCurrentPiece());
+		Piece myPiece = new Queen(Color.WHITE);
+		board.addPiece(1, 1, myPiece);
+		while(true){
+		//Set<Cell> availableMoves = interpreter.getValidMoves(myPiece);
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				if(availableMoves.contains(board.getCellAtPos(x, y))){
+				/*if(availableMoves.contains(board.getCellAtPos(x, y))){
 					System.out.print("[X]");
 				}
-				else{
-					System.out.print("[ ]");
-				}
+				else{*/
+					System.out.print(board.getCellAtPos(x, y).toString());
+				//}
 			}
 			System.out.print("\n");
 		}
-		
+		Scanner reader = new Scanner(System.in);  // Reading from System.in
+		System.out.println("Enter a piece & pos: ");
+		String n = reader.nextLine();
+		String[] tokens = n.split(",");
+		Piece targ = board.getCellAtPos(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1])).getCurrentPiece();
+		board.movePiece(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), targ);
+	}
 		//availableMoves(board.getCellAtPos(5, 5).getCurrentPiece(), board);
 	}
 	/*
@@ -73,4 +82,6 @@ public class Driver {
 		System.out.println(builder.toString());
 	}
 	*/
+	
+	
 }
