@@ -1,14 +1,15 @@
 package projectchess.pieces;
 
-import java.util.List;
-
 import projectchess.Color;
+import projectchess.Movement;
 import projectchess.Pos;
 
 
 public abstract class Piece {
 	protected Color color;
 	protected Pos pos;
+	
+	public abstract Movement getMovement();
 	
 	public Piece(Color color){
 		this.color = color;
@@ -21,8 +22,15 @@ public abstract class Piece {
 	public Color getColor() {
 		return color;
 	}
+	
+	
+	public void setPos(Pos pos) {
+		this.pos = pos;
+	}
 
 	public Pos getPos() {
 		return this.pos;
 	}
+	
+	
 }

@@ -24,7 +24,7 @@ public class Board {
 			color = color.swap();
 		}
 		
-		addPiece(0, 0, new Rook(Color.BLACK));
+		/*addPiece(0, 0, new Rook(Color.BLACK));
 		addPiece(1, 0, new Knight(Color.BLACK));
 		addPiece(2, 0, new Bishop(Color.BLACK));
 		addPiece(3, 0, new Queen(Color.BLACK));
@@ -55,8 +55,8 @@ public class Board {
 		addPiece(3, 7, new King(Color.WHITE));
 		addPiece(4, 7, new Queen(Color.WHITE));
 		addPiece(5, 7, new Bishop(Color.WHITE));
-		addPiece(6, 7, new Knight(Color.WHITE));
-		addPiece(7, 7, new Rook(Color.WHITE));
+		addPiece(6, 7, new Knight(Color.WHITE));*/
+		addPiece(5, 5, new Rook(Color.WHITE));
 	}
 
 	public Cell getCellAtPos(int x, int y) {
@@ -79,6 +79,7 @@ public class Board {
 	public void addPiece(int x, int y, Piece piece){
 		Cell cell = cellMap.get(new Pos(x, y));
 		cell.setCurrentPiece(piece);
+		piece.setPos(new Pos(x,y));
 	}
 
 	public boolean hasPiece(Pos target, Color swap) {

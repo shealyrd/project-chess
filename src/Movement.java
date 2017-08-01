@@ -14,8 +14,21 @@ public class Movement {
 	private boolean JUMPING;
 	
 	List<Pos> validRelativePositions = new ArrayList<Pos>();
+	List<Pos> validNonCapturingRelativePositions = new ArrayList<Pos>();
 	List<Object[]> conditionalPositions = new ArrayList<Object[]>();
+	List<Object[]> conditionalNonCapturingPositions = new ArrayList<Object[]>();
 	
+	
+	
+	public boolean isFullDiagonal() {
+		return FULL_DIAGONAL;
+	}
+	public boolean isFullHorizontal() {
+		return FULL_HORIZONTAL;
+	}
+	public boolean isFullVertical() {
+		return FULL_VERTICAL;
+	}
 	public Movement addValidPosition(Pos pos){
 		validRelativePositions.add(pos);
 		return this;
@@ -27,8 +40,25 @@ public class Movement {
 		return this;
 	}
 	
+	public Movement addValidNonCapturingPosition(Pos pos){
+		validNonCapturingRelativePositions.add(pos);
+		return this;
+	}
+	
+	public Movement addValidNonCapturingPosition(Pos... pos){
+		for(Pos p: pos){
+			validNonCapturingRelativePositions.add(p);
+		}
+		return this;
+	}
+	
 	public Movement addPositionIf(Pos pos, BiPredicate<Board, Piece> func){
 		conditionalPositions.add(new Object[]{pos, func});
+		return this;
+	}
+	
+	public Movement addNonCapturingPositionIf(Pos pos, BiPredicate<Board, Piece> func){
+		conditionalNonCapturingPositions.add(new Object[]{pos, func});
 		return this;
 	}
 	
@@ -83,8 +113,8 @@ public class Movement {
 								  			new Pos(1,-2));
 	
 	public static Movement PAWN = 
-			new Movement().addValidPosition(new Pos(0,1))
-						  .addPositionIf(new Pos(0,2), 
+			new Movement().addValidNonCapturingPosition(new Pos(0,1))
+						  .addNonCapturingPositionIf(new Pos(0,2), 
 								         (board, piece) -> 
 						  				 	{return ((Pawn) piece).isFirstMove();})
 						  .addPositionIf(new Pos(1,1), 

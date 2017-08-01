@@ -50,5 +50,9 @@ public class Pos {
 		return true;
 	}
 	
+	public String toString(){
+		return "[" + getX() + "," + getY() + "]";
+	}
+	
 	
 }
