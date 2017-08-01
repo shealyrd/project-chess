@@ -18,7 +18,9 @@ public class Board {
 		Color color = Color.WHITE;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				cellMap.put(new Pos(x, y), new Cell(color));
+				Cell cell = new Cell(color);
+				cell.setPos(new Pos(x,y));
+				cellMap.put(new Pos(x, y), cell);
 				color = color.swap();
 			}
 			color = color.swap();
@@ -56,11 +58,20 @@ public class Board {
 		addPiece(4, 7, new Queen(Color.WHITE));
 		addPiece(5, 7, new Bishop(Color.WHITE));
 		addPiece(6, 7, new Knight(Color.WHITE));*/
-		addPiece(5, 5, new Rook(Color.WHITE));
+		addPiece(6, 4, new Queen(Color.WHITE));
 	}
 
 	public Cell getCellAtPos(int x, int y) {
 		return cellMap.get(new Pos(x, y));
+	}
+	
+
+	public Map<Pos, Cell> getCellMap() {
+		return cellMap;
+	}
+
+	public void setCellMap(Map<Pos, Cell> cellMap) {
+		this.cellMap = cellMap;
 	}
 
 	public String toString() {

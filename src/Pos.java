@@ -24,6 +24,10 @@ public class Pos {
 	public Pos add(int x, int y){
 		return new Pos(getX() + x, getY() + y);
 	}
+	
+	public Pos subtract(int x, int y){
+		return new Pos(getX() - x, getY() - y);
+	}
 
 	@Override
 	public int hashCode() {

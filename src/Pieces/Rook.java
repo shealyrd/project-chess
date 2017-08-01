@@ -11,7 +11,7 @@ public class Rook extends Piece{
 
 	@Override
 	public Movement getMovement() {
-		return Movement.ROOK;
+		return Movement.BISHOP;
 	}
 
 }

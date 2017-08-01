@@ -6,8 +6,23 @@ public class Cell {
 
 	private Color color;
 	private Piece currentPiece;
-	boolean isOccupied;
+	private boolean isOccupied;
+	private Pos pos;
 	
+	
+	
+	public Pos getPos() {
+		return pos;
+	}
+
+	public void setPos(Pos pos) {
+		this.pos = pos;
+	}
+
+	public void setOccupied(boolean isOccupied) {
+		this.isOccupied = isOccupied;
+	}
+
 	public Cell(Color color){
 		this.color = color;
 	}

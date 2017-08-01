@@ -2,16 +2,15 @@ package projectchess;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiPredicate;
 
 import projectchess.pieces.Pawn;
 import projectchess.pieces.Piece;
 
 public class Movement {
-	private boolean FULL_DIAGONAL;
-	private boolean FULL_HORIZONTAL;
-	private boolean FULL_VERTICAL;
-	private boolean JUMPING;
+	private boolean FULL_DIAGONAL = false;
+	private boolean FULL_HORIZONTAL = false;
+	private boolean FULL_VERTICAL = false;
+	private boolean JUMPING = false;
 	
 	List<Pos> validRelativePositions = new ArrayList<Pos>();
 	List<Pos> validNonCapturingRelativePositions = new ArrayList<Pos>();
@@ -51,7 +50,7 @@ public class Movement {
 		}
 		return this;
 	}
-	
+	/*
 	public Movement addPositionIf(Pos pos, BiPredicate<Board, Piece> func){
 		conditionalPositions.add(new Object[]{pos, func});
 		return this;
@@ -61,7 +60,7 @@ public class Movement {
 		conditionalNonCapturingPositions.add(new Object[]{pos, func});
 		return this;
 	}
-	
+	*/
 	public Movement setFullDiagonal(){
 		FULL_DIAGONAL = true;
 		return this;
@@ -112,7 +111,7 @@ public class Movement {
 								  			new Pos(-2,-1),
 								  			new Pos(1,-2));
 	
-	public static Movement PAWN = 
+/*	public static Movement PAWN = 
 			new Movement().addValidNonCapturingPosition(new Pos(0,1))
 						  .addNonCapturingPositionIf(new Pos(0,2), 
 								         (board, piece) -> 
@@ -121,5 +120,5 @@ public class Movement {
 							         	 (board, piece) -> 
 						  					{Pos target = piece.getPos().add(1, 1);
 							         		return board.hasPiece(target, piece.getColor().swap());
-							         		});
+							         		});*/
 }
