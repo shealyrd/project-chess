@@ -1,14 +1,32 @@
+package projectchess;
 
 public enum Color {
-	WHITE,
-	BLACK;
-	
-	public static Color change(Color color){
-		if(color.equals(Color.WHITE)){
+
+	WHITE{
+		@Override
+		public Color swap() {
 			return Color.BLACK;
 		}
-		else{
+
+		@Override
+		public String toString() {
+			return "W";
+		}
+	},
+	BLACK{
+
+		@Override
+		public Color swap() {
 			return Color.WHITE;
 		}
-	}
+
+		@Override
+		public String toString() {
+			return "B";
+		}
+		
+	};
+	
+	public abstract Color swap();
+	public abstract String toString();
 }

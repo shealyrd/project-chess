@@ -1,38 +1,25 @@
+package projectchess;
+
+import projectchess.pieces.Piece;
 
 public class Cell {
-	private Pos pos;
-	private Piece currentPiece;
-	private boolean isOccupied;
+
 	private Color color;
+	private Piece currentPiece;
+	boolean isOccupied;
 	
-	public Cell(int x, int y, Color color){
-		pos = new Pos(x, y);
-		isOccupied = false;
+	public Cell(Color color){
 		this.color = color;
 	}
 
-	public Pos getPos() {
-		return pos;
-	}
-
-	public void setPos(Pos pos) {
-		this.pos = pos;
-	}
-
-	public Piece getCurrentPiece() {
-		return currentPiece;
-	}
-
-	public void setCurrentPiece(Piece currentPiece) {
-		this.currentPiece = currentPiece;
-	}
-
-	public boolean isOccupied() {
-		return isOccupied;
-	}
-
-	public void setOccupied(boolean isOccupied) {
-		this.isOccupied = isOccupied;
+	public String toString(){
+		//return "[" + color.toString() + "]";
+		if(!isOccupied){
+			return "[ ]";
+		}
+		else{
+			return "[" + currentPiece.toString() + "]";
+		}
 	}
 
 	public Color getColor() {
@@ -43,5 +30,22 @@ public class Cell {
 		this.color = color;
 	}
 
+	public Piece getCurrentPiece() {
+		return currentPiece;
+	}
+
+	public void setCurrentPiece(Piece currentPiece) {
+		this.currentPiece = currentPiece;
+		isOccupied = true;
+	}
+
+	public boolean isOccupied() {
+		return isOccupied;
+	}
+	
+	public void removeCurrentPiece() {
+		this.currentPiece = null;
+		isOccupied = false;
+	}
 	
 }
