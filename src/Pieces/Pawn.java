@@ -4,7 +4,7 @@ import projectchess.Color;
 import projectchess.Movement;
 
 public class Pawn extends Piece{
-	private boolean isFirstMove;
+	private boolean isFirstMove = true;
 	
 	public Pawn(Color color) {
 		super(color);

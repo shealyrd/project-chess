@@ -44,14 +44,14 @@ public class Board {
 		addPiece(7, 1, new Pawn(Color.BLACK));
 		
 		addPiece(0, 6, new Pawn(Color.WHITE));
-		addPiece(1, 6, new Pawn(Color.WHITE));
+		addPiece(1, 6, new Pawn(Color.BLACK));
 		addPiece(2, 6, new Pawn(Color.WHITE));
 		addPiece(3, 6, new Pawn(Color.WHITE));
 		addPiece(4, 6, new Pawn(Color.WHITE));
 		addPiece(5, 6, new Pawn(Color.WHITE));
 		addPiece(6, 6, new Pawn(Color.WHITE));
 		addPiece(7, 6, new Pawn(Color.WHITE));
-		addPiece(0, 7, new Rook(Color.WHITE));
+		addPiece(0, 7, new Pawn(Color.WHITE));
 		addPiece(1, 7, new Knight(Color.WHITE));
 		addPiece(2, 7, new Bishop(Color.WHITE));
 		addPiece(3, 7, new King(Color.WHITE));
@@ -108,7 +108,7 @@ public class Board {
 		Cell oldCell = cellMap.get(oldPos);
 		Cell cell = cellMap.get(new Pos(x, y));
 		cell.setCurrentPiece(piece);
-		oldCell.setOccupied(false);
+		oldCell.removeCurrentPiece();
 		piece.setPos(new Pos(x,y));
 	}
 

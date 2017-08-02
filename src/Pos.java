@@ -57,6 +57,10 @@ public class Pos {
 	public String toString(){
 		return "[" + getX() + "," + getY() + "]";
 	}
+
+	public Pos subtract(Pos pos) {
+		return subtract(pos.getX(), pos.getY());
+	}
 	
 	
 }

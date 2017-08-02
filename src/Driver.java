@@ -33,7 +33,36 @@ public class Driver {
 		String n = reader.nextLine();
 		String[] tokens = n.split(",");
 		Piece targ = board.getCellAtPos(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1])).getCurrentPiece();
-		board.movePiece(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), targ);
+		if(interpreter.getValidMoves(targ).contains(board.getCellAtPos(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3])))){
+			board.movePiece(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), targ);
+			//board.getCellAtPos(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3])).setOccupied(false);
+		}
+		else{
+			System.out.println("Invalid move! " + targ.getClass().getSimpleName() + " can only move to:");
+			/*for(Cell cell: interpreter.getValidMoves(targ)){
+				System.out.println(cell.getPos());	
+			}*/
+			StringBuilder builder = new StringBuilder();
+
+			for (int y = 0; y < 8; y++) {
+				for (int x = 0; x < 8; x++) {
+					if(board.getCellAtPos(x, y).getCurrentPiece() != null && board.getCellAtPos(x, y).getCurrentPiece().equals(targ)){
+						builder.append("[O]");
+					}
+					else if(interpreter.getValidMoves(targ).contains(board.getCellAtPos(x, y))){
+						builder.append("[X]");
+					}
+					else{
+						builder.append("[ ]");
+					}
+
+				}
+				builder.append("\n");
+			}
+
+			System.out.println(builder.toString());
+		}
+		
 	}
 		//availableMoves(board.getCellAtPos(5, 5).getCurrentPiece(), board);
 	}
