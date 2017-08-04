@@ -11,6 +11,13 @@ public class MoveCollection implements Iterable<Move>{
 		moves.add(move);
 	}
 	
+	public MoveCollection addAll(MoveCollection coll){
+		for(Move move: coll){
+			add(move);
+		}
+		return this;
+	}
+	
 	@Override
 	public Iterator<Move> iterator() {
 		return moves.iterator();
