@@ -1,5 +1,6 @@
 package projectchess2;
 
-public class Side {
-
+public enum Side {
+	WHITE,
+	BLACK
 }

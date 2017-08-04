@@ -10,13 +10,11 @@ public class Bishop extends Piece {
 
 	public Bishop(Board board, Pos pos, Side side) {
 		super(board, pos, side);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public PieceType getType() {
-		// TODO Auto-generated method stub
-		return null;
+		return PieceType.BISHOP;
 	}
 
 }

@@ -15,8 +15,7 @@ public abstract class Board {
 	
 	//public abstract Context getContext(Position pos);
 	
-
-	public Board(int argHeight, int argWidth) {
+	public Board(int argWidth, int argHeight) {
 		HEIGHT = argHeight;
 		WIDTH = argWidth;
 		
@@ -56,8 +55,12 @@ public abstract class Board {
 		return validPosition(pos) && (Piece.isEmpty(pieceMap.get(pos)));
 	}
 	
+	public boolean isCapturableSpace(Pos pos, Side side){
+		return isFreeSpace(pos) || (validPosition(pos) && !getPiece(pos).getSide().equals(side));
+	}
+	
 	public void addPiece(Pos pos, PieceType type, Side side){
-		Piece newPiece = PieceFactory.createPiece(pos, type, side);
+		Piece newPiece = pieceFactory.createPiece(pos, type, side);
 		placePiece(newPiece);
 	}
 	
@@ -67,7 +70,7 @@ public abstract class Board {
 	
 	public void movePiece(Piece piece, Pos dest){
 		removePiece(piece);
-		Piece transposedPiece = PieceFactory.createPieceByTransposition(dest, piece);
+		Piece transposedPiece = pieceFactory.createPieceByTransposition(dest, piece);
 		placePiece(transposedPiece);
 	}
 	
@@ -83,7 +86,17 @@ public abstract class Board {
 		pieceMap.put(origin, new EmptyPiece());
 	}
 	
-	//TODO
-	public abstract void executeMove(Move move);
+	public void executeMove(Move move){
+		if(!isFreeSpace(move.getOrigin())){
+			Piece piece = getPiece(move.getOrigin());
+			movePiece(piece, move.getDest());
+		}
+		else{
+			System.out.println("Invalid move");
+		}
+	}
+	
 	public abstract boolean isInCheckmate(Side side);
+	
+	
 }	

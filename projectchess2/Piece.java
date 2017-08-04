@@ -11,6 +11,8 @@ public abstract class Piece {
 		this.side = side;
 		this.board = board;
 	}
+	
+	public abstract MoveCollection getPossibleMoves();
 
 	public Pos getPos() {
 		return pos;

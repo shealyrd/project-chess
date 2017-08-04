@@ -1,6 +1,7 @@
 package projectchess2.pieces;
 
 import projectchess2.Board;
+import projectchess2.MoveCollection;
 import projectchess2.Piece;
 import projectchess2.PieceType;
 import projectchess2.Pos;
@@ -16,6 +17,12 @@ public class Pawn extends Piece {
 	@Override
 	public PieceType getType() {
 		return PieceType.PAWN;
+	}
+
+	@Override
+	public MoveCollection getPossibleMoves() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
