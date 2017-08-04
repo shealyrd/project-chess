@@ -11,4 +11,10 @@ public class EmptyPiece extends Piece{
 		return PieceType.EMPTY;
 	}
 
+	@Override
+	public MoveCollection getPossibleMoves() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

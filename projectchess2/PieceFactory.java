@@ -44,7 +44,11 @@ public class PieceFactory {
 	}
 
 	public Piece createPieceByTransposition(Pos dest, Piece piece) {
-		return createPiece(dest, piece.getType(), piece.getSide());
+		Piece newPiece = createPiece(dest, piece.getType(), piece.getSide());
+		if(newPiece instanceof Pawn){
+			((Pawn) newPiece).setMoved(true);
+		}
+		return newPiece;
 	}
 
 }

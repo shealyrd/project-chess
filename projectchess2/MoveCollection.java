@@ -18,9 +18,13 @@ public class MoveCollection implements Iterable<Move>{
 		return this;
 	}
 	
+	public boolean contains(Move move){
+		return moves.contains(move);
+	}
+	
 	@Override
 	public Iterator<Move> iterator() {
 		return moves.iterator();
 	}
-
+	
 }

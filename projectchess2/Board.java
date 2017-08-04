@@ -47,6 +47,15 @@ public abstract class Board {
 		return result;
 	}
 	
+	public int getDirection(Side side){
+		if(side.equals(Side.WHITE)){
+			return 1;
+		}
+		else{
+			return -1;
+		}
+	}
+	
 	public boolean validPosition(Pos pos){
 		return pieceMap.containsKey(pos);
 	}

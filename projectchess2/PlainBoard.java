@@ -48,20 +48,32 @@ public class PlainBoard extends Board{
 
 	public String toString(){
 		StringBuilder builder = new StringBuilder();
+		builder.append("----------------------------------------------------------------\n");
 		for(int y = 0; y < getHeight(); y++){
 			for(int x = 0; x < getWidth(); x++){
 				Pos pos = new Pos(x,y);
 				Piece piece = getPiece(pos);
 				if(Piece.isEmpty(piece)){
-					builder.append("[ ]");
+					builder.append("[      ]");
 				}
 				else{
-					builder.append("[" + piece.getType().name() + "]");
+					builder.append("[" + formatString(piece.getType().name(), 6) + "]");
 				}
 
 			}
 			builder.append("\n");
+			builder.append("----------------------------------------------------------------");
+			builder.append("\n");
 		}
 		return builder.toString();
+	}
+	
+	private String formatString(String str, int length){
+		int diff = length - str.length();
+		while(diff > 0){
+			str = str + " ";
+			diff--;
+		}
+		return str;
 	}
 }

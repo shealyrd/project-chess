@@ -1,18 +1,25 @@
 package projectchess2;
 
 public class TestBoard extends Board{
-
+	Piece target;
+	PieceType type = PieceType.PAWN;
+	
 	public TestBoard() {
 		super(8, 8);
 		
-		addPiece(new Pos(0, 0), PieceType.ROOK, Side.BLACK);
+		addPiece(new Pos(3, 2), type, Side.WHITE);
 		
-		addPiece(new Pos(3, 0), PieceType.PAWN, Side.WHITE);
+		addPiece(new Pos(4, 2), PieceType.BISHOP, Side.BLACK);
+		addPiece(new Pos(2, 2), PieceType.BISHOP, Side.WHITE);
 		
-		Piece target = getPiece(new Pos(0, 0));
+		target = getPiece(new Pos(3, 2));
+		
+		movePiece(target, new Pos(3,3));
+		
+		target = getPiece(new Pos(3, 3));
 		
 		for(Move move: target.getPossibleMoves()){
-			addPiece(move.getDest(), PieceType.ROOK, Side.BLACK);
+			addPiece(move.getDest(), type, Side.WHITE);
 		}
 	}
 
@@ -31,8 +38,17 @@ public class TestBoard extends Board{
 				if(Piece.isEmpty(piece)){
 					builder.append("[ ]");
 				}
+				else if(piece.equals(target)){
+					builder.append("[" + "O" + "]");
+				}
 				else{
-					builder.append("[" + piece.getType().name() + "]");
+					if(piece.getType().equals(type)){
+						builder.append("[" + "X" + "]");
+					}
+					else{
+						builder.append("[" + "A" + "]");
+					}
+
 				}
 
 			}
