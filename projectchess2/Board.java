@@ -37,10 +37,10 @@ public abstract class Board {
 		return WIDTH;
 	}
 	
-	public ArrayList<Piece> getPieces(){
+	public ArrayList<Piece> getPieces(Side side){
 		ArrayList<Piece> result = new ArrayList<Piece>();
 		for(Piece piece: pieceMap.values()){
-			if(!(Piece.isEmpty(piece))){
+			if(!(Piece.isEmpty(piece)) && piece.getSide().equals(side)){
 				result.add(piece);
 			}
 		}

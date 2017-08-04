@@ -1,6 +1,7 @@
 package projectchess2;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,6 +26,10 @@ public class MoveCollection implements Iterable<Move>{
 	@Override
 	public Iterator<Move> iterator() {
 		return moves.iterator();
+	}
+	
+	public void shuffle(){
+		Collections.shuffle(moves);
 	}
 	
 }

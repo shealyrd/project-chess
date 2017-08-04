@@ -1,5 +1,6 @@
 package projectchess2;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class CommandLinePlayer extends Player{
@@ -9,6 +10,20 @@ public class CommandLinePlayer extends Player{
 		System.out.println(getSide().name() + " making move...");
 	    Scanner scanner = new Scanner(System.in);
 	    String command = scanner.next();
+	    if(command.startsWith("random")){
+			List<Piece> pieces = board.getPieces(getSide());
+			MoveCollection moves = new MoveCollection();
+			
+			for(Piece piece: pieces){
+				moves.addAll(piece.getPossibleMoves());
+			}
+			
+			moves.shuffle();
+			
+			for(Move move: moves){
+				return move;
+			}
+	    }
 	    String[] tokens = command.split(",");
 	    if(tokens.length == 2){
 		    Pos origin = new Pos(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));

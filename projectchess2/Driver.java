@@ -6,7 +6,7 @@ public class Driver {
 		PlainBoard board = new PlainBoard();
 		///TestBoard board = new TestBoard();
 		
-		ChessLoop loop = new ChessLoop(board, new CommandLinePlayer(), new CommandLinePlayer());
+		ChessLoop loop = new ChessLoop(board, new CommandLinePlayer(), new RandomPlayer());
 		loop.runLoop();
 		
 		//System.out.println(board.toString());
