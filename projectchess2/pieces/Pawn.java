@@ -26,6 +26,11 @@ public class Pawn extends Piece {
 		this.hasMoved = hasMoved;
 	}
 	
+	public boolean hasMoved(){
+		return hasMoved;
+	}
+	
+	
 	@Override
 	public MoveCollection getPossibleMoves() {
 		MoveCollection result = MoveFactory.getMoveByRelativePositions(this,

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Board {
+public class Board {
 	
 	int HEIGHT = 0;
 	int WIDTH = 0;
@@ -14,6 +14,8 @@ public abstract class Board {
 	PieceFactory pieceFactory = new PieceFactory(this);
 	
 	//public abstract Context getContext(Position pos);
+	
+	private Board(){};
 	
 	public Board(int argWidth, int argHeight) {
 		HEIGHT = argHeight;
@@ -105,7 +107,21 @@ public abstract class Board {
 		}
 	}
 	
-	public abstract boolean isInCheckmate(Side side);
+	//public abstract boolean isInCheckmate(Side side);
+	
+	public Board copy(){
+		Board newBoard = null;
+		try{
+			newBoard = this.getClass().getDeclaredConstructor().newInstance();
+		}
+		catch(Exception e){}
+		PieceFactory factory = new PieceFactory(newBoard);
+		for(Pos pos: pieceMap.keySet()){
+			newBoard.placePiece(factory.copyPiece(getPiece(pos)));
+		}
+		
+		return newBoard;
+	}
 	
 	
 }	

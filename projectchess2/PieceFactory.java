@@ -19,6 +19,9 @@ public class PieceFactory {
 		Piece result = null;
 		
 		switch(type){
+			case EMPTY:
+				result = new EmptyPiece();
+				break;
 			case BISHOP:
 				result = new Bishop(board, pos, side);
 				break;
@@ -49,6 +52,16 @@ public class PieceFactory {
 			((Pawn) newPiece).setMoved(true);
 		}
 		return newPiece;
+	}
+	
+	public Piece copyPiece(Piece toCopy){
+		Piece newPiece = createPiece(toCopy.getPos(), toCopy.getType(), toCopy.getSide());
+		if(toCopy instanceof Pawn){
+			((Pawn) newPiece).setMoved(((Pawn) toCopy).hasMoved());
+		}
+		System.out.println(toCopy.getPos() + " " + toCopy.getType().name());
+		return newPiece;
+		
 	}
 
 }
