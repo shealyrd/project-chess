@@ -59,7 +59,6 @@ public class PieceFactory {
 		if(toCopy instanceof Pawn){
 			((Pawn) newPiece).setMoved(((Pawn) toCopy).hasMoved());
 		}
-		System.out.println(toCopy.getPos() + " " + toCopy.getType().name());
 		return newPiece;
 		
 	}

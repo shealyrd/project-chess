@@ -40,11 +40,11 @@ public class PlainBoard extends Board{
 		addPiece(new Pos(7, 6), PieceType.PAWN, Side.WHITE);
 	}
 
-	@Override
+	/*@Override
 	public boolean isInCheckmate(Side side) {
 		// TODO Auto-generated method stub
 		return false;
-	}
+	}*/
 
 	public String toString(){
 		StringBuilder builder = new StringBuilder();

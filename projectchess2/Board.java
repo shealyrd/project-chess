@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Board {
+public abstract class Board {
 	
 	int HEIGHT = 0;
 	int WIDTH = 0;
@@ -107,7 +107,15 @@ public class Board {
 		}
 	}
 	
-	//public abstract boolean isInCheckmate(Side side);
+	public boolean isInCheckmate(Side side){
+		boolean result = true;
+		for(Piece piece: getPieces(side)){
+			if(piece.getType().equals(PieceType.KING)){
+				result = false;
+			}
+		}
+		return result;
+	}
 	
 	public Board copy(){
 		Board newBoard = null;
@@ -121,6 +129,16 @@ public class Board {
 		}
 		
 		return newBoard;
+	}
+
+	public ArrayList<Piece> getOpposingPieces(Side side) {
+		ArrayList<Piece> result = new ArrayList<Piece>();
+		for(Piece piece: pieceMap.values()){
+			if(!(Piece.isEmpty(piece)) && !(piece.getSide().equals(side))){
+				result.add(piece);
+			}
+		}
+		return result;
 	}
 	
 	

@@ -20,11 +20,22 @@ public class ChessLoop {
 	
 	public void runLoop(){
 		System.out.println("Starting...");
+		int turnCount = 0;
 		while(true){
 			System.out.println(board);
 			swapTurn();
 			Move move = whoseTurn.chooseMove(board);
+			if(move == null){
+				System.out.println(whoseTurn.getSide().name() + " loses!");
+				break;
+			}
 			board.executeMove(move);
+			if(board.isInCheckmate(whoseTurn.getSide())){
+				System.out.println(whoseTurn.getSide().name() + " loses!");
+				break;
+			}
+			turnCount++;
+			System.out.println("Turn count: " + turnCount);
 		}
 
 		
