@@ -18,24 +18,28 @@ public class ChessLoop {
 		black.setSide(Side.BLACK);
 	}
 	
-	public void runLoop(){
+	public Side runLoop(){
 		System.out.println("Starting...");
 		int turnCount = 0;
+		
 		while(true){
-			System.out.println(board);
 			swapTurn();
+			System.out.println("Turn count: " + turnCount + " (" + whoseTurn.getSide().name() +")");
+			System.out.println(board);
+			if(board.isInCheckmate(whoseTurn.getSide())){
+				System.out.println(whoseTurn.getSide().name() + " loses!");
+				swapTurn();
+				return whoseTurn.getSide();
+			}
 			Move move = whoseTurn.chooseMove(board);
 			if(move == null){
 				System.out.println(whoseTurn.getSide().name() + " loses!");
-				break;
+				swapTurn();
+				return whoseTurn.getSide();
 			}
 			board.executeMove(move);
-			if(board.isInCheckmate(whoseTurn.getSide())){
-				System.out.println(whoseTurn.getSide().name() + " loses!");
-				break;
-			}
 			turnCount++;
-			System.out.println("Turn count: " + turnCount);
+
 		}
 
 		

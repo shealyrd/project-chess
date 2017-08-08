@@ -3,7 +3,7 @@ package projectchess2;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MiniMaxPlayer extends Player{
+public class MultiThreadedMiniMax extends Player{
 
 	private final int BISHOP_WEIGHT = 1;
 	private final int KING_WEIGHT = 100000;
@@ -12,23 +12,65 @@ public class MiniMaxPlayer extends Player{
 	private final int QUEEN_WEIGHT = 100;
 	private final int ROOK_WEIGHT = 50;
 	
+	private final Map<Move, Integer> resultMap = new HashMap<Move, Integer>();
 	
 	@Override
 	public Move chooseMove(Board board) {
+		resultMap.clear();
 		MoveCollection possibleMoves = getAllMoves(board);
 		possibleMoves.shuffle();
 		Move topMove = null;
 		Integer topValuation = Integer.MIN_VALUE;
+		//int moveCount = 0;
+		//System.out.println("Possible moves: " + possibleMoves.size());
 		for(Move move: possibleMoves){
-			int valuate = alphaBeta(move, board, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
-			if(valuate >= topValuation){
+			spinThread(move, board);
+			
+			//moveCount++;
+			//System.out.println("Thread " + moveCount + " spun");
+		}
+		System.out.println("Results: " + resultMap.size());
+		while(resultMap.size() < possibleMoves.size()){
+			System.out.println("Results: " + resultMap.size());
+			try {
+				synchronized(this){
+					wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		for(Move move: resultMap.keySet()){
+			int tempValuation = resultMap.get(move);
+			if(tempValuation > topValuation){
 				topMove = move;
-				topValuation = valuate;
 			}
 		}
 		return topMove;
 	}
+	
+	private void spinThread(final Move move, final Board board){
+		Thread thread = new Thread(){
+			
+			public void run(){
+				int valuate = alphaBeta(move, board, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+				putMove(move, valuate);
+			}
+		};
+		
+		thread.run();
+		
 
+	}
+	
+	private void putMove(Move move, int valuate){
+		synchronized(this){
+			resultMap.put(move, valuate);
+			notifyAll();
+		}
+		
+	}
 	
 	private int valuateMove(Move move, Board board) {
 		int value;

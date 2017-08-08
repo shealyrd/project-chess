@@ -173,6 +173,23 @@ public class MoveFactory {
 		return result;
 	}
 	
+	public static MoveCollection getNoncapturingMoveByRelativePositions(Piece piece, Pos... posArr){
+		MoveCollection result = new MoveCollection();
+		
+		int x, y;
+		
+		for(Pos pos: posArr){
+			x = piece.getPos().getX() + pos.getX();
+			y = piece.getPos().getY() + pos.getY();
+			
+			if(piece.getBoard().isFreeSpace(new Pos(x, y))){
+				result.add(new Move(piece.getPos(), new Pos(x, y)));
+			}
+		}
+
+		return result;
+	}
+	
 	public static MoveCollection getMoveByRelativePositionsOnlyIfCapturable(Piece piece, Pos... posArr){
 		MoveCollection result =  new MoveCollection();
 		

@@ -32,4 +32,8 @@ public class MoveCollection implements Iterable<Move>{
 		Collections.shuffle(moves);
 	}
 	
+	public int size(){
+		return moves.size();
+	}
+	
 }

@@ -33,10 +33,10 @@ public class Pawn extends Piece {
 	
 	@Override
 	public MoveCollection getPossibleMoves() {
-		MoveCollection result = MoveFactory.getMoveByRelativePositions(this,
+		MoveCollection result = MoveFactory.getNoncapturingMoveByRelativePositions(this,
 													  new Pos(0, -1 * getBoard().getDirection(getSide())));
 		if(!hasMoved){
-			result.addAll(MoveFactory.getMoveByRelativePositions(this,
+			result.addAll(MoveFactory.getNoncapturingMoveByRelativePositions(this,
 					  	new Pos(0, -2 * getBoard().getDirection(getSide()))));
 		}
 		
