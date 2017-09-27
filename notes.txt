@@ -1,6 +1,12 @@
 <div class="white square" style="width: 49px; height: 49px" id="a8-5f3d-27a9-f6f3-83c4-9368-451f-2b57-f731" data-square="a8">
-<img src="img/chesspieces/wikipedia/bR.png" alt="" class="piece-417db" data-piece="bR" style="width: 49px;height: 49px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
 </div>
+
+http://html.net/tutorials/css/lesson15_ex1.php
+{
+	"width":8,
+	"height":8
+}
 
 .square {
     float: left;
@@ -18,10 +24,222 @@
     color: #b58863;
 }
 
-
-{
-	"width":8,
-	"height":8
+.small-boarder {
+   border: 1px solid black;
 }
 
-http://html.net/tutorials/css/lesson15_ex1.php
+.block {
+	display: block;
+}
+
+.clearfix {
+	clear: both;
+}
+
+.over-board {
+	box-sizing: content-box;
+}
+
+.behind {
+	z-index: 1;
+}
+
+.front{
+	z-index: 2;
+}
+
+.anchored{
+	position: absolute;
+	left: 100px;
+	top: 100px;
+}
+
+<div class="board1 block behind anchored" style ="width: 420px">
+<div class="board block">
+<div class="overboard block" style="width: 420px;">
+<div class="row block" style="width: 420px;">
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px;">
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px;">
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px;">
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px;">
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px;">
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px;">
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px;">
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="square small-boarder block" style="width: 49px; height: 49px"></div>
+<div class="clearfix block"></div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="board1 block front anchored" style ="width: 420px">
+<div class="board block">
+<div class="overboard block" style="width: 420px;">
+<div class="row block" style="width: 420px; height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px; height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px; height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px; height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px; height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px; height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px; height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<div class="clearfix block"></div>
+</div>
+<div class="row block" style="width: 420px; height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<img src="http://chessboardjs.com/img/chesspieces/wikipedia/bR.png" alt="" class="square" data-piece="bR" style="width: 51px;height: 51px;">
+<div class="clearfix block"></div>
+</div>
+</div>
+</div>
+</div>
