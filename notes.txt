@@ -260,10 +260,18 @@ class Board{
 	var base: string;
 	var top: number;
 	var left: number;
+	var rowHeight: number;
+	var rowLength: number;
+	
 	
 	constructor(){
-		var row: Row;
-		row.setAbsolutePosition(top, left);
+		
+		for(var _i = 0; _i < numbers.length; _i++){
+			var row: Row;
+			row.setAbsolutePosition((top + (_i * rowHeight)), left);
+			rows.push(row);
+		}
+		
 		
 	}
 	
@@ -278,6 +286,5 @@ class Board{
 		return result;
 	}
 }
-
 
 
