@@ -54,6 +54,7 @@ http://html.net/tutorials/css/lesson15_ex1.php
 	top: 100px;
 }
 
+
 <div class="board1 block behind anchored" style ="width: 420px">
 <div class="board block">
 <div class="overboard block" style="width: 420px;">
@@ -243,3 +244,40 @@ http://html.net/tutorials/css/lesson15_ex1.php
 </div>
 </div>
 </div>
+
+
+
+
+Board
+Row
+Square
+
+ImgGrid
+Img
+
+class Board{
+	var rows: Row[];
+	var base: string;
+	var top: number;
+	var left: number;
+	
+	constructor(){
+		var row: Row;
+		row.setAbsolutePosition(top, left);
+		
+	}
+	
+	public toHTML(){
+		var result: string;
+		result = base;
+		
+		for(row in rows){
+			result = result + row.toHTML();
+		}
+		
+		return result;
+	}
+}
+
+
+
