@@ -1,0 +1,27 @@
+<div class="white square" style="width: 49px; height: 49px" id="a8-5f3d-27a9-f6f3-83c4-9368-451f-2b57-f731" data-square="a8">
+<img src="img/chesspieces/wikipedia/bR.png" alt="" class="piece-417db" data-piece="bR" style="width: 49px;height: 49px;">
+</div>
+
+.square {
+    float: left;
+    position: relative;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.white {
+    background-color: #f0d9b5;
+    color: #b58863;
+}
+
+
+{
+	"width":8,
+	"height":8
+}
+
+http://html.net/tutorials/css/lesson15_ex1.php
