@@ -11,9 +11,9 @@ class Row extends HTMLObject{
         this.setHeight(height);
 		this.setNumSquares(sqrCount);
 		
-		for(var i: number = 0; i < number; i++){
-			var newSquare: Square = new Square(this.getSquareLeftPos(i), this.getTopPos(), this.getSquareWidth(), this.getHeight());
-			squares.push(newSquare);
+		for(var i: number = 0; i < sqrCount; i++){
+			var newSquare: Square = new Square(this.getSquareLeftPos(i), 0, this.getSquareWidth(), this.getHeight());
+			this.squares.push(newSquare);
 		}
     }
 	
@@ -22,15 +22,15 @@ class Row extends HTMLObject{
 	}
 	
 	getNumSquares(): number{
-		return numSquares;
+		return this.numSquares;
 	}
 	
 	getSquareWidth(): number{
-		return Math.ceil(width / numSquares));
+		return Math.ceil(this.getWidth() / this.numSquares);
 	}
 	
 	getSquareLeftPos(index: number): number{
-		return this.getLeft() + (i * this.getSquareWidth());
+		return (index * this.getSquareWidth());
 	}
 
     toHTML():string {

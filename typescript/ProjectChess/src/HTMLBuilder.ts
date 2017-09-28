@@ -42,14 +42,14 @@ class HTMLBuilder{
         }
         classDef = classDef + "\"";
 		
-		if(innerDivs.length > 0){
+		if(this.innerDivs.length > 0){
 			for(var eachDiv in this.innerDivs){
 				innerDivDef += this.innerDivs[eachDiv];
 			}
 		}
 
         result = this.base.replace("{info-template}", (classDef + " " + style));
-		result = this.base.replace("{inner}", innerDivDef);
+		result = result.replace("{inner}", innerDivDef);
 
         return result;
     }

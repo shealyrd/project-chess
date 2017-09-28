@@ -1,8 +1,3 @@
-/**
- * Created by Evan on 9/27/2017.
- */
-
-
 class Square extends HTMLObject{
 
     constructor(left: number, top: number, width: number, height: number){
