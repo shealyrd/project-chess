@@ -38,7 +38,7 @@ class Board extends HTMLObject{
 			if(cornerColor == Color.WHITE){
 				cornerColor = Color.BLACK;
 			}
-			if(cornerColor == Color.BLACK){
+			else if(cornerColor == Color.BLACK){
 				cornerColor = Color.WHITE;
 			}
 		}

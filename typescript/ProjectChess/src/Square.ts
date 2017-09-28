@@ -32,13 +32,13 @@ class Square extends HTMLObject{
 			var hexColor: string;
 			
 			switch(this.col){
-				case WHITE: hexColor = "#f0d9b5"; break;
-				case BLACK: hexColor = "#b58863"; break;
+				case Color.WHITE: hexColor = "#f0d9b5"; break;
+				case Color.BLACK: hexColor = "#b58863"; break;
 			}
 			
-			builder.addStyle("color", hexColor);
+			builder.addStyle("background-color", hexColor);
 		}
         return builder.toString();
     }
 
-}
+} 

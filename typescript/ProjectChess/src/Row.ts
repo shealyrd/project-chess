@@ -40,7 +40,7 @@ class Row extends HTMLObject{
 			if(starting == Color.WHITE){
 				starting = Color.BLACK;
 			}
-			if(starting == Color.BLACK){
+			else if(starting == Color.BLACK){
 				starting = Color.WHITE;
 			}
 		}
