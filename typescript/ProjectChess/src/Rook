@@ -1,0 +1,8 @@
+class Rook extends Piece{
+	static img: string = "http://chessboardjs.com/img/chesspieces/wikipedia/bR.png";
+	
+   constructor(left: number, top: number, width: number, height: number, z:number){
+        super(left, top, width, height, z, Rook.img);
+    }
+
+}
