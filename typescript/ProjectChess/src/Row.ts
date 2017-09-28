@@ -32,6 +32,19 @@ class Row extends HTMLObject{
 	getSquareLeftPos(index: number): number{
 		return (index * this.getSquareWidth());
 	}
+	
+	setAlternating(starting: Color){
+		for(var each in this.squares){
+			this.squares[each].setColor(starting);
+			
+			if(starting == Color.WHITE){
+				starting = Color.BLACK;
+			}
+			if(starting == Color.BLACK){
+				starting = Color.WHITE;
+			}
+		}
+	}
 
     toHTML():string {
 		var builder: HTMLBuilder = new HTMLBuilder();

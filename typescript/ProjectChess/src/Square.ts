@@ -1,5 +1,6 @@
 class Square extends HTMLObject{
-
+	col: Color;
+	
     constructor(left: number, top: number, width: number, height: number){
         super();
         this.setTopPos(top);
@@ -7,6 +8,14 @@ class Square extends HTMLObject{
         this.setWidth(width);
         this.setHeight(height);
     }
+	
+	setColor(newCol: Color){
+		this.col = newCol;
+	}
+	
+	getColor(): Color{
+		return this.col;
+	}
 
     toHTML():string {
         var builder: HTMLBuilder = new HTMLBuilder();
@@ -18,8 +27,18 @@ class Square extends HTMLObject{
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px")
                 .addStyle("border", "1px solid black");
+				
+		if(this.col != null){
+			var hexColor: string;
+			
+			switch(this.col){
+				case WHITE: hexColor = "#f0d9b5"; break;
+				case BLACK: hexColor = "#b58863"; break;
+			}
+			
+			builder.addStyle("color", hexColor);
+		}
         return builder.toString();
     }
-
 
 }

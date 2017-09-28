@@ -1,33 +1,56 @@
 class Board extends HTMLObject{
     squares: Square[] = new Array();
     rows: Row[] = new Array();
+	numRows: number;
+	numColumns: number;
+	offsetTop: number;
+	offsetLeft: number;
+	
+	squareSize: number = 50;
+	rowHeight: number = 50;
 
-    constructor(){
+	
+
+    constructor(numCol: number, numRows: number, offsetTop?: number, offsetLeft?: number) {
         super();
-        var row1: Row = new Row(100, 100, 400, 50, 8);
-        var row2: Row = new Row(100, 150, 400, 50, 8);
-        this.rows.push(row1);
-        this.rows.push(row2);
-        /*var square1: Square = new Square(100, 100, 50, 50);
-        var square2: Square = new Square(100, 150, 50, 50);
-        var square3: Square = new Square(150, 100, 50, 50);
-        var square4: Square = new Square(150, 150, 50, 50);
-        this.squares.push(square1);
-        this.squares.push(square2);
-        this.squares.push(square3);
-        this.squares.push(square4);*/
-    }
-
+        if (offsetTop == null) {
+            offsetTop = 100;
+        }
+        if (offsetLeft == null) {
+            offsetLeft = 100;
+        }
+		this.initialize(numCol, numRows, offsetTop, offsetLeft);
+	}
+	
+	initialize(numCol: number, numRows: number, offsetTop: number, offsetLeft: number){
+		this.numRows = numRows;
+		this.numColumns = numCol;
+		this.offsetTop = offsetTop;
+		this.offsetLeft = offsetLeft;
+		
+		var cornerColor: Color = Color.WHITE;
+		
+		for(var i: number = 0; i < this.numRows; i++){
+			var row: Row = new Row(this.offsetLeft, this.offsetTop + (i * this.rowHeight), this.squareSize * this.numColumns, this.rowHeight, this.numColumns);
+			row.setAlternating(cornerColor);
+			this.rows.push(row);
+			
+			if(cornerColor == Color.WHITE){
+				cornerColor = Color.BLACK;
+			}
+			if(cornerColor == Color.BLACK){
+				cornerColor = Color.WHITE;
+			}
+		}
+	}
+	
+	
     toHTML():string {
         var result: string = "";
 
         for (var row in this.rows) {
             result += this.rows[row].toHTML();
         }
-      /*  for(var each in this.squares) {
-            //result += this.squares[each].toHTML();
-
-        } */
 
         return result;
     }
