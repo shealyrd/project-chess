@@ -23,6 +23,7 @@ abstract class Piece extends HTMLObject{
 	
 	abstract getWhiteImg(): string;
 	abstract getBlackImg(): string;
+	abstract getSizeRatio(): number;
 	
 	setColor(color: Color){
 		this.color = color;
