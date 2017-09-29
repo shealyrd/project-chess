@@ -1,15 +1,15 @@
 abstract class Piece extends HTMLObject{
     z: number;
-	contentURL: string;
+	color: Color;
 	
-    constructor(left: number, top: number, width: number, height: number, z:number, contentURL: string){
+    constructor(left: number, top: number, width: number, height: number, z:number, color: Color){
         super();
         this.setTopPos(top);
         this.setLeftPos(left);
         this.setWidth(width);
         this.setHeight(height);
         this.setZ(z);
-		this.setContentURL(contentURL);
+		this.setColor(color);
     }
 
     setZ(z: number) {
@@ -20,12 +20,16 @@ abstract class Piece extends HTMLObject{
         return this.z;
     }
 	
-	setContentURL(url: string){
-		this.contentURL = url;
+	
+	abstract getWhiteImg(): string;
+	abstract getBlackImg(): string;
+	
+	setColor(color: Color){
+		this.color = color;
 	}
 	
-	getContentURL(): string{
-		return this.contentURL;
+	getColor(): Color{
+		return this.color;
 	}
 	
 	toHTML():string {
@@ -37,11 +41,19 @@ abstract class Piece extends HTMLObject{
                 .addStyle("top", this.getTopPos() + "")
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px")
-				.addStyle("content", "url(" + this.getContentURL() + ")")
-                .addStyle("z-index", this.getZ() + "");
+				.addStyle("z-index", this.getZ() + "");
+				
+				var contentImg: string;
+				if(this.getColor() == Color.WHITE){
+					contentImg = this.getWhiteImg();
+				}
+				else if(this.getColor() == Color.BLACK){
+					contentImg = this.getBlackImg();
+				}
+				
+				builder.addStyle("content", "url(" + contentImg + ")");
 				
         return builder.toString();
     }
-	
 
 }
