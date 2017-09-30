@@ -1,0 +1,563 @@
+abstract class HTMLObject {
+    topPos: number;
+    leftPos: number;
+    height: number;
+    width: number;
+
+    setTopPos(input: number): void{
+        this.topPos = input;
+    }
+
+    setLeftPos(input: number): void{
+        this.leftPos = input;
+    }
+
+    setHeight(input: number): void{
+        this.height = input;
+    }
+
+    setWidth(input: number): void{
+        this.width = input;
+    }
+
+    getTopPos(): number{
+        return this.topPos;
+    }
+
+    getLeftPos(): number{
+        return this.leftPos;
+    }
+
+    getHeight(): number{
+        return this.height;
+    }
+
+    getWidth(): number{
+        return this.width;
+    }
+
+    abstract toHTML(): string;
+}class HTMLBuilder{
+
+    styles = {};
+    classes: string[] = new Array();
+	innerDivs: string[] = new Array();
+    base: string = "<div {info-template}>{inner}</div>";
+
+    newDiv(): HTMLBuilder{
+        return this;
+    }
+
+    addStyle(type: string, value: string): HTMLBuilder{
+        this.styles[type] = value;
+        return this;
+    }
+
+    addClass(classname: string): HTMLBuilder{
+        this.classes.push(classname);
+        return this;
+    }
+	
+	addInnerDiv(innerDiv: string): HTMLBuilder{
+        this.innerDivs.push(innerDiv);
+        return this;
+    }
+
+    toString(): string{
+        var result: string;
+        var style: string;
+        var classDef: string;
+		var innerDivDef: string = "";
+
+        style = "style=\"";
+        for(var each in this.styles){
+            style = style + each + ": " + this.styles[each] + "; ";
+        }
+        style = style + "\"";
+
+        classDef = "class=\"";
+        for (var eachClass in this.classes) {
+            classDef = classDef + this.classes[eachClass] + " ";
+        }
+        classDef = classDef + "\"";
+		
+		if(this.innerDivs.length > 0){
+			for(var eachDiv in this.innerDivs){
+				innerDivDef += this.innerDivs[eachDiv];
+			}
+		}
+
+        result = this.base.replace("{info-template}", (classDef + " " + style));
+		result = result.replace("{inner}", innerDivDef);
+
+        return result;
+    }
+}enum Color{
+	WHITE,
+	BLACK
+}enum PieceType{
+
+    PAWN = 1,
+    KNIGHT = 2,
+    BISHOP = 3,
+    ROOK = 4,
+    QUEEN = 5,
+    KING = 6
+
+}
+class PieceLocation{
+    x : number;
+    y: number;
+    type: PieceType;
+    color: Color;
+
+    constructor(x:number, y: number, type: PieceType, color: Color){
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.color = color;
+    }
+
+    getX(): number{
+        return this.x;
+    }
+    getY(): number{
+        return this.y;
+    }
+    getType(): PieceType{
+        return this.type;
+    }
+    getColor(): Color{
+        return this.color;
+    }
+}
+abstract class Piece extends HTMLObject{
+    z: number;
+	color: Color;
+	
+    constructor(left: number, top: number, width: number, height: number, z:number, color: Color){
+        super();
+        this.setTopPos(top);
+        this.setLeftPos(left);
+        this.setWidth(width);
+        this.setHeight(height);
+        this.setZ(z);
+		this.setColor(color);
+    }
+
+    setZ(z: number) {
+        this.z = z;
+    }
+	
+    getZ(): number {
+        return this.z;
+    }
+	
+	
+	abstract getWhiteImg(): string;
+	abstract getBlackImg(): string;
+
+	static getSizeRatio(): number{
+        return 1;
+    }
+	
+	setColor(color: Color){
+		this.color = color;
+	}
+	
+	getColor(): Color{
+		return this.color;
+	}
+	
+	toHTML():string {
+        var builder: HTMLBuilder = new HTMLBuilder();
+        builder.newDiv()
+                .addClass("piece")
+                .addStyle("position", "absolute")
+                .addStyle("left", this.getLeftPos() + "")
+                .addStyle("top", this.getTopPos() + "")
+                .addStyle("width", this.getWidth() + "px")
+                .addStyle("height", this.getHeight() + "px")
+				.addStyle("z-index", this.getZ() + "");
+				
+				var contentImg: string;
+				if(this.getColor() == Color.WHITE){
+					contentImg = this.getWhiteImg();
+				}
+				else if(this.getColor() == Color.BLACK){
+					contentImg = this.getBlackImg();
+				}
+				
+				builder.addStyle("content", "url(" + contentImg + ")");
+				
+        return builder.toString();
+    }
+
+}
+class Pawn extends Piece{
+    static blackImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/bP.png";
+    static whiteImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/wP.png";
+
+    static getSizeRatio(): number{
+        return 1.5;
+    }
+
+    getWhiteImg(): string{
+        return Pawn.whiteImg;
+    }
+
+    getBlackImg(): string{
+        return Pawn.blackImg;
+    }
+
+}class Bishop extends Piece{
+    static blackImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/bB.png";
+    static whiteImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/wB.png";
+
+    static getSizeRatio(): number{
+        return 1.5;
+    }
+
+    getWhiteImg(): string{
+        return Bishop.whiteImg;
+    }
+
+    getBlackImg(): string{
+        return Bishop.blackImg;
+    }
+
+}class King extends Piece{
+    static blackImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/bK.png";
+    static whiteImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/wK.png";
+
+    static getSizeRatio(): number{
+        return 1.5;
+    }
+
+    getWhiteImg(): string{
+        return King.whiteImg;
+    }
+
+    getBlackImg(): string{
+        return King.blackImg;
+    }
+
+}class Queen extends Piece{
+	static blackImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/bQ.png";
+	static whiteImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/wQ.png";
+
+	static getSizeRatio(): number{
+		return 1.5;
+	}
+
+	getWhiteImg(): string{
+		return Queen.whiteImg;
+	}
+
+	getBlackImg(): string{
+		return Queen.blackImg;
+	}
+
+}class Knight extends Piece{
+    static blackImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/bN.png";
+    static whiteImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/wN.png";
+
+    static getSizeRatio(): number{
+        return 1.5;
+    }
+
+    getWhiteImg(): string{
+        return Knight.whiteImg;
+    }
+
+    getBlackImg(): string{
+        return Knight.blackImg;
+    }
+
+}class Rook extends Piece{
+	static blackImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/bR.png";
+	static whiteImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/wR.png";
+
+	static getSizeRatio(): number{
+		return 1.5;
+	}
+
+	getWhiteImg(): string{
+		return Rook.whiteImg;
+	}
+
+	getBlackImg(): string{
+		return Rook.blackImg;
+	}
+
+}class Square extends HTMLObject{
+	col: Color;
+	
+    constructor(left: number, top: number, width: number, height: number){
+        super();
+        this.setTopPos(top);
+        this.setLeftPos(left);
+        this.setWidth(width);
+        this.setHeight(height);
+    }
+	
+	setColor(newCol: Color){
+		this.col = newCol;
+	}
+	
+	getColor(): Color{
+		return this.col;
+	}
+
+    toHTML():string {
+        var builder: HTMLBuilder = new HTMLBuilder();
+        builder.newDiv()
+                .addClass("square")
+                .addStyle("position", "absolute")
+                .addStyle("left", this.getLeftPos() + "")
+                .addStyle("top", this.getTopPos() + "")
+                .addStyle("width", this.getWidth() + "px")
+                .addStyle("height", this.getHeight() + "px")
+                .addStyle("border", "1px solid black");
+				
+		if(this.col != null){
+			var hexColor: string;
+			
+			switch(this.col){
+				case Color.WHITE: hexColor = "#f0d9b5"; break;
+				case Color.BLACK: hexColor = "#b58863"; break;
+			}
+			
+			builder.addStyle("background-color", hexColor);
+		}
+        return builder.toString();
+    }
+
+} class Row extends HTMLObject{
+    squares: Square[] = new Array();
+	numSquares: number;
+	
+	
+    constructor(left: number, top: number, width: number, height: number, sqrCount: number){
+        super();
+        this.setTopPos(top);
+        this.setLeftPos(left);
+        this.setWidth(width);
+        this.setHeight(height);
+		this.setNumSquares(sqrCount);
+		
+		for(var i: number = 0; i < sqrCount; i++){
+			var newSquare: Square = new Square(this.getSquareLeftPos(i), 0, this.getSquareWidth(), this.getHeight());
+			this.squares.push(newSquare);
+		}
+    }
+	
+	setNumSquares(sqrCount: number){
+		this.numSquares = sqrCount;
+	}
+	
+	getNumSquares(): number{
+		return this.numSquares;
+	}
+	
+	getSquareWidth(): number{
+		return Math.ceil(this.getWidth() / this.numSquares);
+	}
+	
+	getSquareLeftPos(index: number): number{
+		return (index * this.getSquareWidth());
+	}
+	
+	setAlternating(starting: Color){
+		for(var each in this.squares){
+			this.squares[each].setColor(starting);
+			
+			if(starting == Color.WHITE){
+				starting = Color.BLACK;
+			}
+			else if(starting == Color.BLACK){
+				starting = Color.WHITE;
+			}
+		}
+	}
+
+    toHTML():string {
+		var builder: HTMLBuilder = new HTMLBuilder();
+        builder.newDiv()
+                .addClass("row")
+                .addStyle("position", "absolute")
+                .addStyle("left", this.getLeftPos() + "")
+                .addStyle("top", this.getTopPos() + "")
+                .addStyle("width", this.getWidth() + "px")
+                .addStyle("height", this.getHeight() + "px")
+        for(var each in this.squares) {
+            builder.addInnerDiv(this.squares[each].toHTML());
+        }
+        return builder.toString();
+    }
+
+
+}class Board extends HTMLObject{
+    squares: Square[] = new Array();
+    rows: Row[] = new Array();
+    pieces: Piece[] = new Array();
+
+    locations: PieceLocation[] = new Array();
+
+    numRows: number;
+    numColumns: number;
+    offsetTop: number;
+    offsetLeft: number;
+
+    squareWidth: number = 50;
+    squareHeight: number = 50;
+
+
+
+    constructor(numCol: number, numRows: number, offsetTop?: number, offsetLeft?: number) {
+        super();
+        if (offsetTop == null) {
+            offsetTop = 100;
+        }
+        if (offsetLeft == null) {
+            offsetLeft = 100;
+        }
+        this.initialize(numCol, numRows, offsetTop, offsetLeft);
+    }
+
+    initialize(numCol: number, numRows: number, offsetTop: number, offsetLeft: number){
+        this.numRows = numRows;
+        this.numColumns = numCol;
+        this.offsetTop = offsetTop;
+        this.offsetLeft = offsetLeft;
+
+        var cornerColor: Color = Color.WHITE;
+
+        for(var i: number = 0; i < this.numRows; i++){
+            var row: Row = new Row(this.offsetLeft, this.offsetTop + (i * this.squareHeight), this.squareWidth * this.numColumns, this.squareHeight, this.numColumns);
+            row.setAlternating(cornerColor);
+            this.rows.push(row);
+
+            if(cornerColor == Color.WHITE){
+                cornerColor = Color.BLACK;
+            }
+            else if(cornerColor == Color.BLACK){
+                cornerColor = Color.WHITE;
+            }
+        }
+    }
+
+    addPiece(piece: PieceType, x: number, y: number, color: Color){
+        var newPiece: Piece;
+        switch(piece){
+            case PieceType.ROOK: newPiece = new Rook(this.calcPosFromLeft(x), this.calcPosFromTop(Rook.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Rook.getSizeRatio()), y, color); break;
+            case PieceType.QUEEN: newPiece = new Queen(this.calcPosFromLeft(x), this.calcPosFromTop(Queen.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Queen.getSizeRatio()), y, color); break;
+            case PieceType.BISHOP: newPiece = new Bishop(this.calcPosFromLeft(x), this.calcPosFromTop(Bishop.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Bishop.getSizeRatio()), y, color); break;
+            case PieceType.PAWN: newPiece = new Pawn(this.calcPosFromLeft(x), this.calcPosFromTop(Pawn.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Pawn.getSizeRatio()), y, color); break;
+            case PieceType.KNIGHT: newPiece = new Knight(this.calcPosFromLeft(x), this.calcPosFromTop(Knight.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Knight.getSizeRatio()), y, color); break;
+            case PieceType.KING: newPiece = new King(this.calcPosFromLeft(x), this.calcPosFromTop(King.getSizeRatio(), y), this.squareWidth, (this.squareHeight * King.getSizeRatio()), y, color); break;
+        }
+        this.pieces.push(newPiece);
+        this.addLocation(x, y, piece, color);
+    }
+
+
+    toHTML():string {
+        var result: string = "";
+
+        for (var row in this.rows) {
+            result += this.rows[row].toHTML();
+        }
+
+        for (var piece in this.pieces) {
+            result += this.pieces[piece].toHTML();
+        }
+
+        return result;
+    }
+
+    public setStandard(){
+        this.addPiece(PieceType.ROOK, 0, 0, Color.BLACK);
+        this.addPiece(PieceType.KNIGHT, 1, 0, Color.BLACK);
+        this.addPiece(PieceType.BISHOP, 2, 0, Color.BLACK);
+        this.addPiece(PieceType.QUEEN, 3, 0, Color.BLACK);
+        this.addPiece(PieceType.KING, 4, 0, Color.BLACK);
+        this.addPiece(PieceType.BISHOP, 5, 0, Color.BLACK);
+        this.addPiece(PieceType.KNIGHT, 6, 0, Color.BLACK);
+        this.addPiece(PieceType.ROOK, 7, 0, Color.BLACK);
+
+        this.addPiece(PieceType.PAWN, 0, 1, Color.BLACK);
+        this.addPiece(PieceType.PAWN, 1, 1, Color.BLACK);
+        this.addPiece(PieceType.PAWN, 2, 1, Color.BLACK);
+        this.addPiece(PieceType.PAWN, 3, 1, Color.BLACK);
+        this.addPiece(PieceType.PAWN, 4, 1, Color.BLACK);
+        this.addPiece(PieceType.PAWN, 5, 1, Color.BLACK);
+        this.addPiece(PieceType.PAWN, 6, 1, Color.BLACK);
+        this.addPiece(PieceType.PAWN, 7, 1, Color.BLACK);
+
+
+        this.addPiece(PieceType.ROOK, 0, 7, Color.WHITE);
+        this.addPiece(PieceType.KNIGHT, 1, 7, Color.WHITE);
+        this.addPiece(PieceType.BISHOP, 2, 7, Color.WHITE);
+        this.addPiece(PieceType.QUEEN, 3, 7, Color.WHITE);
+        this.addPiece(PieceType.KING, 4, 7, Color.WHITE);
+        this.addPiece(PieceType.BISHOP, 5, 7, Color.WHITE);
+        this.addPiece(PieceType.KNIGHT, 6, 7, Color.WHITE);
+        this.addPiece(PieceType.ROOK, 7, 7, Color.WHITE);
+
+        this.addPiece(PieceType.PAWN, 0, 6, Color.WHITE);
+        this.addPiece(PieceType.PAWN, 1, 6, Color.WHITE);
+        this.addPiece(PieceType.PAWN, 2, 6, Color.WHITE);
+        this.addPiece(PieceType.PAWN, 3, 6, Color.WHITE);
+        this.addPiece(PieceType.PAWN, 4, 6, Color.WHITE);
+        this.addPiece(PieceType.PAWN, 5, 6, Color.WHITE);
+        this.addPiece(PieceType.PAWN, 6, 6, Color.WHITE);
+        this.addPiece(PieceType.PAWN, 7, 6, Color.WHITE);
+    }
+
+    private addLocation(x: number, y: number, type: PieceType, color: Color){
+        var newLocation = new PieceLocation(x, y, type, color);
+        this.locations.push(newLocation);
+    }
+
+    private calcPosFromLeft(x:number): number{
+        return this.offsetLeft + (x * this.squareWidth);
+    }
+
+    private calcPosFromTop(ratio: number, y:number): number{
+        return (this.offsetTop + (y * this.squareHeight)) + (this.squareHeight * ( 1 - ratio));
+    }
+
+    public serialize(): string{
+        var serialization: string = "";
+        var pieceMap = [this.numRows];
+
+        for(var idx in pieceMap){
+            pieceMap[idx] = [this.numColumns];
+        }
+
+        for(var location in this.locations){
+            var currLoc = this.locations[location];
+            var strRep = "[" + currLoc.getType();
+
+            if(currLoc.getColor() == Color.WHITE){
+                strRep += "W"
+            }
+            else if(currLoc.getColor() == Color.BLACK){
+                strRep += "B"
+            }
+
+            strRep += "]";
+            pieceMap[currLoc.getX()][currLoc.getY()] = strRep;
+        }
+
+        for(var y: number = 0; y < this.numRows; y++ ){
+            for(var x: number = 0; x < this.numColumns; x++ ){
+                serialization += pieceMap[x][y];
+            }
+                serialization += "|";
+        }
+
+        return serialization;
+    }
+}

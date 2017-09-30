@@ -2,6 +2,9 @@ class Board extends HTMLObject{
     squares: Square[] = new Array();
     rows: Row[] = new Array();
     pieces: Piece[] = new Array();
+
+    locations: PieceLocation[] = new Array();
+
     numRows: number;
     numColumns: number;
     offsetTop: number;
@@ -56,6 +59,7 @@ class Board extends HTMLObject{
             case PieceType.KING: newPiece = new King(this.calcPosFromLeft(x), this.calcPosFromTop(King.getSizeRatio(), y), this.squareWidth, (this.squareHeight * King.getSizeRatio()), y, color); break;
         }
         this.pieces.push(newPiece);
+        this.addLocation(x, y, piece, color);
     }
 
 
@@ -112,6 +116,10 @@ class Board extends HTMLObject{
         this.addPiece(PieceType.PAWN, 7, 6, Color.WHITE);
     }
 
+    private addLocation(x: number, y: number, type: PieceType, color: Color){
+        var newLocation = new PieceLocation(x, y, type, color);
+        this.locations.push(newLocation);
+    }
 
     private calcPosFromLeft(x:number): number{
         return this.offsetLeft + (x * this.squareWidth);
@@ -119,5 +127,41 @@ class Board extends HTMLObject{
 
     private calcPosFromTop(ratio: number, y:number): number{
         return (this.offsetTop + (y * this.squareHeight)) + (this.squareHeight * ( 1 - ratio));
+    }
+
+    public serialize(): string{
+        var serialization: string = "";
+        var pieceMap: string[][] = [];
+
+        for(var r: number = 0; r < this.numRows; r++ ){
+            pieceMap[r] = [];
+        }
+
+        for (var location in this.locations) {
+            var currLoc = this.locations[location];
+            var strRep = "[" + currLoc.getType();
+            if(currLoc.getColor() == Color.WHITE){
+                strRep += "W"
+            }
+            else if(currLoc.getColor() == Color.BLACK){
+                strRep += "B"
+            }
+            strRep += "]";
+            pieceMap[currLoc.getX()][currLoc.getY()] = strRep;
+        }
+
+        for(var y: number = 0; y < this.numRows; y++ ){
+            for (var x: number = 0; x < this.numColumns; x++){
+                if (pieceMap[x][y] == undefined) {
+                    serialization += "[]";
+                }
+                else {
+                    serialization += pieceMap[x][y];
+                }
+            }
+            serialization += "/";
+        }
+        serialization = serialization.substring(0, serialization.length - 1);
+        return serialization;
     }
 }
