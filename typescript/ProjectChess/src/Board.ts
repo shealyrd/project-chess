@@ -129,6 +129,48 @@ class Board extends HTMLObject{
         return (this.offsetTop + (y * this.squareHeight)) + (this.squareHeight * ( 1 - ratio));
     }
 
+    public static fromSerial(serial: string): Board{
+        var result: Board;
+        var locations: PieceLocation[] = new Array();
+        var length: number;
+        var height: number;
+        var rows: string[] = serial.split("/");
+        height = rows.length;
+
+        for(var y = 0; y < rows.length; y++){
+            var row = rows[y];
+            var squares: string[] = row.split(",");
+            length = squares.length;
+
+            for(var x = 0; x < squares.length; x++){
+                var sqrData:string = squares[x].substring(1, squares[x] - 1);
+
+                if(sqrData.length != 0){
+                    var sqrDataSplit = sqrData.split("_");
+                    var thisColor: Color;
+
+                    if(sqrDataSplit[1] == "W"){
+                        thisColor = Color.WHITE;
+                    }
+                    else{
+                        thisColor = Color.BLACK;
+                    }
+                    var newLoc: PieceLocation = new PieceLocation(x, y, +sqrDataSplit[0], thisColor);
+                    locations.push(newLoc);
+                }
+            }
+        }
+
+        result = new Board(length, height);
+
+        for(var eachLoc in locations){
+            var location: PieceLocation = locations[eachLoc];
+            result.addPiece(location.getType(), location.getX(), location.getY(), location.getColor());
+        }
+
+        return result;
+    }
+
     public serialize(): string{
         var serialization: string = "";
         var pieceMap: string[][] = [];
@@ -139,7 +181,7 @@ class Board extends HTMLObject{
 
         for (var location in this.locations) {
             var currLoc = this.locations[location];
-            var strRep = "[" + currLoc.getType();
+            var strRep = "[" + currLoc.getType() + "_";
             if(currLoc.getColor() == Color.WHITE){
                 strRep += "W"
             }
@@ -158,7 +200,9 @@ class Board extends HTMLObject{
                 else {
                     serialization += pieceMap[x][y];
                 }
+                serialization += ",";
             }
+            serialization = serialization.substring(0, serialization.length - 1);
             serialization += "/";
         }
         serialization = serialization.substring(0, serialization.length - 1);
