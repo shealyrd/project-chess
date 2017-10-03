@@ -62,6 +62,8 @@ class Board extends HTMLObject{
             case PieceType.KNIGHT: newPiece = new Knight(this.calcPosFromLeft(x), this.calcPosFromTop(Knight.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Knight.getSizeRatio()), y, color); break;
             case PieceType.KING: newPiece = new King(this.calcPosFromLeft(x), this.calcPosFromTop(King.getSizeRatio(), y), this.squareWidth, (this.squareHeight * King.getSizeRatio()), y, color); break;
         }
+        newPiece.setX(x);
+        newPiece.setY(y);
         this.pieces.push(newPiece);
         this.addLocation(x, y, piece, color);
     }

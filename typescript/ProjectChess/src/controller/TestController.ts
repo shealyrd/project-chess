@@ -73,8 +73,24 @@ class TestController{
     }
 }
 
+var clickState = 1;
+var savedPiece: PieceModel;
+
 var clickingExample = (e) => {
-    alert("in click");
-    var me = TestController.board.getPieceById(e);
-    alert(JSON.stringify(me));
+    var meView = TestController.board.getPieceById(e);
+    var meModel = TestController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+    if(clickState == 1){
+        savedPiece = meModel;
+        clickState = 2;
+    }
+    else if (clickState == 2) {
+        TestController.boardModel.placePiece(savedPiece.getType(), meView.getX(), meView.getY(), savedPiece.getColor());
+        TestController.boardModel.removePiece(savedPiece.getPos());
+        TestController.board = Board.fromSerial(TestController.boardModel.serialize());
+        TestController.update();
+        clickState = 1
+    }
+    savedPiece = meModel;
+
+    //alert(JSON.stringify(meModel));
 };

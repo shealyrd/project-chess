@@ -1,7 +1,9 @@
 abstract class Piece extends HTMLObject{
     z: number;
 	color: Color;
-	
+	x: number;
+    y: number;
+
     constructor(left: number, top: number, width: number, height: number, z:number, color: Color){
         super();
         this.setTopPos(top);
@@ -19,7 +21,21 @@ abstract class Piece extends HTMLObject{
     getZ(): number {
         return this.z;
     }
-	
+
+    setX(x:number){
+      this.x = x;
+    }
+    getX(): number{
+        return this.x;
+    }
+
+    setY(y:number){
+        this.y = y;
+    }
+
+    getY(): number{
+        return this.y;
+    }
 	
 	abstract getWhiteImg(): string;
 	abstract getBlackImg(): string;
