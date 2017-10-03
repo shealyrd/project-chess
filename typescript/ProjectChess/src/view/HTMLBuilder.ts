@@ -4,8 +4,16 @@ class HTMLBuilder{
     classes: string[] = new Array();
 	innerDivs: string[] = new Array();
     base: string = "<div {info-template}>{inner}</div>";
+    id: number;
+
+
 
     newDiv(): HTMLBuilder{
+        return this;
+    }
+
+    setId(id: number): HTMLBuilder{
+        this.id = id;
         return this;
     }
 
@@ -27,8 +35,14 @@ class HTMLBuilder{
     toString(): string{
         var result: string;
         var style: string;
+        var idDef: string = "";
         var classDef: string;
 		var innerDivDef: string = "";
+
+        if(this.id != undefined){
+            idDef = "id=\"" + this.id + "\"";
+        }
+
 
         style = "style=\"";
         for(var each in this.styles){
@@ -48,7 +62,7 @@ class HTMLBuilder{
 			}
 		}
 
-        result = this.base.replace("{info-template}", (classDef + " " + style));
+        result = this.base.replace("{info-template}", (idDef + " " + classDef + " " + style));
 		result = result.replace("{inner}", innerDivDef);
 
         return result;

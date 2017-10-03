@@ -45,8 +45,9 @@ abstract class Piece extends HTMLObject{
                 .addStyle("top", this.getTopPos() + "")
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px")
-				.addStyle("z-index", this.getZ() + "");
-				
+				.addStyle("z-index", this.getZ() + "")
+                .setId(this.getId());
+
 				var contentImg: string;
 				if(this.getColor() == Color.WHITE){
 					contentImg = this.getWhiteImg();

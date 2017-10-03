@@ -60,9 +60,25 @@ class TestController{
 
 
         TestController.board = Board.fromSerial(TestController.boardModel.serialize());
+
+        var pieces: Piece[] = TestController.board.getPieces();
+
+        var clickingExample = () => {alert("Here!")};
+
+        for(var piece in pieces){
+            var each = pieces[piece];
+            document.getElementById(each.getId() + "").onclick = clickingExample;
+        }
     }
 
     static update(){
         document.body.innerHTML = TestController.board.toHTML();
+        var pieces: Piece[] = TestController.board.getPieces();
+        var clickingExample = () => { alert("Here!");};
+        for (var piece in pieces) {
+            var each = pieces[piece];
+            document.getElementById(each.getId() + "").onclick = clickingExample;
+
+        }
     }
 }

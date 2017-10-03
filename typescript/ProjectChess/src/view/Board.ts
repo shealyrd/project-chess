@@ -48,6 +48,10 @@ class Board extends HTMLObject{
         }
     }
 
+    getPieces(): Piece[]{
+        return this.pieces;
+    }
+
     addPiece(piece: PieceType, x: number, y: number, color: Color){
         var newPiece: Piece;
         switch(piece){
@@ -143,7 +147,7 @@ class Board extends HTMLObject{
             length = squares.length;
 
             for(var x = 0; x < squares.length; x++){
-                var sqrData:string = squares[x].substring(1, squares[x] - 1);
+                var sqrData:string = squares[x].substring(1, squares[x].length - 1);
 
                 if(sqrData.length != 0){
                     var sqrDataSplit = sqrData.split("_");
