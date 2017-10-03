@@ -133,6 +133,15 @@ class Board extends HTMLObject{
         return (this.offsetTop + (y * this.squareHeight)) + (this.squareHeight * ( 1 - ratio));
     }
 
+    public getPieceById(id: number): Piece{
+        for(var piece in this.pieces){
+            var each = this.pieces[piece];
+            if(each.getId() == id){
+                return each;
+            }
+        }
+    }
+
     public static fromSerial(serial: string): Board{
         var result: Board;
         var locations: PieceLocation[] = new Array();
