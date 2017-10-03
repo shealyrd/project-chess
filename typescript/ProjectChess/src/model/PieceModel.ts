@@ -1,4 +1,4 @@
-public abstract class PieceModel{
+class PieceModel{
     private pos: Pos;
     private color: Color;
     private boardModel: BoardModel;
@@ -11,4 +11,19 @@ public abstract class PieceModel{
         this.type = type;
     }
 
+    getPos(): Pos{
+        return this.pos;
+    }
+
+    getColor(): Color{
+        return this.color;
+    }
+
+    getBoardModel(): BoardModel{
+        return this.boardModel;
+    }
+
+    getType(): PieceType{
+        return this.type;
+    }
 }

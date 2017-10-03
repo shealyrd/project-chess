@@ -7,4 +7,11 @@ class Pos{
         this.Y = y;
     }
 
+    getX(): number{
+        return this.X;
+    }
+    getY(): number{
+        return this.Y;
+    }
+
 }
