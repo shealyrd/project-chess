@@ -65,10 +65,14 @@ class TestController{
     static update(){
         document.body.innerHTML = TestController.board.toHTML();
         var pieces: Piece[] = TestController.board.getPieces();
+		var squares: Square[] = TestController.board.getSquares();
         for (var piece in pieces) {
             var each = pieces[piece];
             document.getElementById(each.getId() + "").setAttribute("onclick", "clickingExample("+ + each.getId() + ")");
-
+        }
+		for (var square in squares) {
+            var each = squares[square];
+            document.getElementById(each.getId() + "").setAttribute("onclick", "clickingExample3("+ + each.getId() + ")");
         }
     }
 }
@@ -112,4 +116,9 @@ var clickingExample2 = (e) => {
     savedPiece = meModel;
 
     //alert(JSON.stringify(meModel));
+};
+
+var clickingExample3 = (e) => {
+    var meView: Square = TestController.board.getSquareById(e);
+	alert("Found square " + meView.getX() + ", " + meView.getY());
 };

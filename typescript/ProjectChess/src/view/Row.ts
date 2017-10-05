@@ -18,10 +18,15 @@ class Row extends HTMLObject{
 			var newSquare: Square = new Square(this.getSquareLeftPos(i), 0, this.getSquareWidth(), this.getHeight());
 			newSquare.setX(i);
 			newSquare.setY(this.getY());
+			newSquare.setId("square_" + i + "_" + this.getY());
 			this.squares.push(newSquare);
 		}
 	}
-
+	
+	getSquares(): Square[]{
+		return this.squares;
+	}
+	
 	setY(y: number){
 		this.y = y;
 	}

@@ -53,6 +53,19 @@ class Board extends HTMLObject{
     getPieces(): Piece[]{
         return this.pieces;
     }
+	
+	getSquares(): Square[]{
+		var result: Square[] = new Array();
+		
+		for(var row in this.rows){
+			var each: Row = this.rows[row];
+			for(var square in each){
+				result.push(each[square]);
+			}
+		}
+		
+        return result;
+    }
 
     addPiece(piece: PieceType, x: number, y: number, color: Color){
         var newPiece: Piece;
@@ -146,6 +159,16 @@ class Board extends HTMLObject{
         }
     }
 
+	public getSquareById(id: string): Square{
+		var squares = this.getSquares();
+        for(var square in squares){
+            var each = this.squares[square];
+            if(each.getId() == id){
+                return each;
+            }
+        }
+    }
+	
     public static fromSerial(serial: string): Board{
         var result: Board;
         var locations: PieceLocation[] = new Array();
