@@ -1,6 +1,8 @@
 class Square extends HTMLObject{
 	col: Color;
-	
+	x: number;
+    y: number;
+
     constructor(left: number, top: number, width: number, height: number){
         super();
         this.setTopPos(top);
@@ -8,7 +10,23 @@ class Square extends HTMLObject{
         this.setWidth(width);
         this.setHeight(height);
     }
-	
+
+    setX(x: number){
+        this.x = x;
+    }
+
+    setY(y: number){
+        this.y = y;
+    }
+
+    getY(): number{
+        return this.y;
+    }
+
+    getX(): number{
+        return this.x;
+    }
+
 	setColor(newCol: Color){
 		this.col = newCol;
 	}

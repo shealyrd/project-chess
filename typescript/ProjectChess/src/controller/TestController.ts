@@ -20,42 +20,42 @@ class TestController{
 
     static setStandard(){
         TestController.boardModel = new BoardModel(8,8);
-        TestController.boardModel.placePiece(PieceType.ROOK, 0, 0, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.KNIGHT, 1, 0, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.BISHOP, 2, 0, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.QUEEN, 3, 0, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.KING, 4, 0, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.BISHOP, 5, 0, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.KNIGHT, 6, 0, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.ROOK, 7, 0, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.ROOK, 0, 0, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.KNIGHT, 1, 0, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.BISHOP, 2, 0, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.QUEEN, 3, 0, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.KING, 4, 0, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.BISHOP, 5, 0, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.KNIGHT, 6, 0, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.ROOK, 7, 0, Color.BLACK);
 
-        TestController.boardModel.placePiece(PieceType.PAWN, 0, 1, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.PAWN, 1, 1, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.PAWN, 2, 1, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.PAWN, 3, 1, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.PAWN, 4, 1, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.PAWN, 5, 1, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.PAWN, 6, 1, Color.BLACK);
-        TestController.boardModel.placePiece(PieceType.PAWN, 7, 1, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.PAWN, 0, 1, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.PAWN, 1, 1, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.PAWN, 2, 1, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.PAWN, 3, 1, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.PAWN, 4, 1, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.PAWN, 5, 1, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.PAWN, 6, 1, Color.BLACK);
+        TestController.boardModel.addPiece(PieceType.PAWN, 7, 1, Color.BLACK);
 
 
-        TestController.boardModel.placePiece(PieceType.ROOK, 3, 3, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.KNIGHT, 1, 7, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.BISHOP, 2, 7, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.QUEEN, 3, 7, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.KING, 4, 7, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.BISHOP, 5, 7, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.KNIGHT, 6, 7, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.ROOK, 7, 7, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.ROOK, 3, 3, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.KNIGHT, 1, 7, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.BISHOP, 2, 7, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.QUEEN, 3, 7, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.KING, 4, 7, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.BISHOP, 5, 7, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.KNIGHT, 6, 7, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.ROOK, 7, 7, Color.WHITE);
 
-        TestController.boardModel.placePiece(PieceType.PAWN, 0, 6, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.PAWN, 1, 6, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.PAWN, 2, 6, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.PAWN, 3, 6, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.PAWN, 4, 6, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.PAWN, 5, 6, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.PAWN, 6, 6, Color.WHITE);
-        TestController.boardModel.placePiece(PieceType.PAWN, 7, 6, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.PAWN, 0, 6, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.PAWN, 1, 6, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.PAWN, 2, 6, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.PAWN, 3, 6, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.PAWN, 4, 6, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.PAWN, 5, 6, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.PAWN, 6, 6, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.PAWN, 7, 6, Color.WHITE);
 
 
 
@@ -84,8 +84,27 @@ var clickingExample = (e) => {
         clickState = 2;
     }
     else if (clickState == 2) {
-        TestController.boardModel.placePiece(savedPiece.getType(), meView.getX(), meView.getY(), savedPiece.getColor());
+        TestController.boardModel.addPiece(savedPiece.getType(), meView.getX(), meView.getY(), savedPiece.getColor());
         TestController.boardModel.removePiece(savedPiece.getPos());
+        TestController.board = Board.fromSerial(TestController.boardModel.serialize());
+        TestController.update();
+        clickState = 1
+    }
+    savedPiece = meModel;
+
+    //alert(JSON.stringify(meModel));
+};
+
+var clickingExample2 = (e) => {
+    var meView = TestController.board.getPieceById(e);
+    var meModel = TestController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+    if(clickState == 1){
+        savedPiece = meModel;
+        clickState = 2;
+    }
+    else if (clickState == 2) {
+        var move: Move = new Move(savedPiece.getPos(), new Pos(meView.getX(), meView.getY()));
+        TestController.boardModel.executeMove(move);
         TestController.board = Board.fromSerial(TestController.boardModel.serialize());
         TestController.update();
         clickState = 1

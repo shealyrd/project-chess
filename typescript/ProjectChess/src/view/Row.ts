@@ -1,7 +1,7 @@
 class Row extends HTMLObject{
     squares: Square[] = new Array();
 	numSquares: number;
-	
+	y: number;
 	
     constructor(left: number, top: number, width: number, height: number, sqrCount: number){
         super();
@@ -10,12 +10,25 @@ class Row extends HTMLObject{
         this.setWidth(width);
         this.setHeight(height);
 		this.setNumSquares(sqrCount);
-		
-		for(var i: number = 0; i < sqrCount; i++){
+
+    }
+
+	initialize(){
+		for(var i: number = 0; i < this.getNumSquares(); i++){
 			var newSquare: Square = new Square(this.getSquareLeftPos(i), 0, this.getSquareWidth(), this.getHeight());
+			newSquare.setX(i);
+			newSquare.setY(this.getY());
 			this.squares.push(newSquare);
 		}
-    }
+	}
+
+	setY(y: number){
+		this.y = y;
+	}
+
+	getY(): number{
+		return this.y;
+	}
 	
 	setNumSquares(sqrCount: number){
 		this.numSquares = sqrCount;

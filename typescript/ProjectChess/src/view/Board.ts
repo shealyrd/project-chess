@@ -37,6 +37,8 @@ class Board extends HTMLObject{
         for(var i: number = 0; i < this.numRows; i++){
             var row: Row = new Row(this.offsetLeft, this.offsetTop + (i * this.squareHeight), this.squareWidth * this.numColumns, this.squareHeight, this.numColumns);
             row.setAlternating(cornerColor);
+            row.setY(i);
+            row.initialize();
             this.rows.push(row);
 
             if(cornerColor == Color.WHITE){

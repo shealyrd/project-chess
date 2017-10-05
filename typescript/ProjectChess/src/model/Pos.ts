@@ -14,4 +14,8 @@ class Pos{
         return this.Y;
     }
 
+    equals(pos: Pos): boolean{
+        return (this.getX() == pos.getX()) && (this.getY() == pos.getY());
+    }
+
 }

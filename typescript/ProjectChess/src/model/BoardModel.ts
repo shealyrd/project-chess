@@ -15,16 +15,12 @@ class BoardModel{
         }
     }
 
-    placePiece(type: PieceType, x: number, y: number, color: Color){
-        this.addPiece(new PieceModel(this, new Pos(x, y), color, type));
+    addPiece(type: PieceType, x: number, y: number, color: Color){
+        this.placePiece(new PieceModel(this, new Pos(x, y), color, type));
     }
 
-    addPiece(piece: PieceModel){
+    placePiece(piece: PieceModel){
         this.pos2PieceMap.set(piece.getPos(), piece);
-    }
-
-    removePiece(pos: Pos){
-        this.pos2PieceMap.set(pos, null);
     }
 
     getHeight(): number{
@@ -33,6 +29,54 @@ class BoardModel{
 
     getWidth(): number{
         return this.WIDTH;
+    }
+
+    getAllPieces(): PieceModel[]{
+        var result: PieceModel[] = new Array();
+        this.pos2PieceMap.forEach((value, key, map) => {
+            result.push(value);
+        });
+        return result;
+    }
+
+    getAllPiecesOfColor(color: Color): PieceModel[]{
+        var result: PieceModel[] = new Array();
+        this.pos2PieceMap.forEach((value, key, map) => {
+            if(value.getColor() == color){
+                result.push(value);
+            }
+        });
+        return result;
+    }
+
+    removePiece(pos: Pos){
+        this.pos2PieceMap.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                this.pos2PieceMap.set(pos, null);
+            }
+        });
+    }
+
+    executeMove(move: Move){
+        var originalPiece = this.getPieceFromPosition(move.getOrigin());
+        this.movePiece(originalPiece, move.getDest());
+    }
+
+    movePiece(piece: PieceModel, dest: Pos){
+        this.removePiece(piece.getPos());
+        var transposedPiece = PieceFactory.createPieceByTransposition(dest, piece);
+        this.placePiece(transposedPiece);
+    }
+
+    isValidPosition(pos: Pos): boolean{
+        var result = false;
+        this.pos2PieceMap.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                result = true;
+            }
+        });
+
+        return result;
     }
 
     serialize(): string{
@@ -64,7 +108,7 @@ class BoardModel{
     getPieceFromPosition(pos: Pos): any{
         var result;
         this.pos2PieceMap.forEach((value, key, map) => {
-            if (pos.getX() == key.getX() && pos.getY() == key.getY()) {
+            if (pos.equals(key)) {
                 result = this.pos2PieceMap.get(key);
             }
         });

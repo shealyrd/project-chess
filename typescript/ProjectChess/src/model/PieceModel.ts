@@ -26,4 +26,8 @@ class PieceModel{
     getType(): PieceType{
         return this.type;
     }
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getAllUpwards(this);
+    }
 }
