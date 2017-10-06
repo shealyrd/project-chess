@@ -4,7 +4,7 @@ class HTMLBuilder{
     classes: string[] = new Array();
 	innerDivs: string[] = new Array();
     base: string = "<div {info-template}>{inner}</div>";
-    id: number;
+    id: string;
 
 
 
@@ -12,7 +12,7 @@ class HTMLBuilder{
         return this;
     }
 
-    setId(id: number): HTMLBuilder{
+    setId(id: string): HTMLBuilder{
         this.id = id;
         return this;
     }

@@ -3,7 +3,7 @@ abstract class HTMLObject {
     leftPos: number;
     height: number;
     width: number;
-    id: number = IDSequence.nextVal();
+    id: string = IDSequence.nextVal() + "";
 
     setTopPos(input: number): void{
         this.topPos = input;
@@ -29,8 +29,12 @@ abstract class HTMLObject {
         return this.leftPos;
     }
 
-    getId(): number{
+    getId(): string{
         return this.id;
+    }
+
+    setId(id: string){
+       this.id = id;
     }
 
     getHeight(): number{

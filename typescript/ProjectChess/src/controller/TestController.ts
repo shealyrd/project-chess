@@ -71,8 +71,8 @@ class TestController{
             document.getElementById(each.getId() + "").setAttribute("onclick", "clickingExample("+ + each.getId() + ")");
         }
 		for (var square in squares) {
-            var each = squares[square];
-            document.getElementById(each.getId() + "").setAttribute("onclick", "clickingExample3("+ + each.getId() + ")");
+            var eachSqr = squares[square];
+            document.getElementById(eachSqr.getId() + "").setAttribute("onclick", "clickingExample3("+ + eachSqr.getId() + ")");
         }
     }
 }

@@ -36,9 +36,9 @@ class Board extends HTMLObject{
 
         for(var i: number = 0; i < this.numRows; i++){
             var row: Row = new Row(this.offsetLeft, this.offsetTop + (i * this.squareHeight), this.squareWidth * this.numColumns, this.squareHeight, this.numColumns);
-            row.setAlternating(cornerColor);
             row.setY(i);
             row.initialize();
+            row.setAlternating(cornerColor);
             this.rows.push(row);
 
             if(cornerColor == Color.WHITE){
@@ -59,8 +59,10 @@ class Board extends HTMLObject{
 		
 		for(var row in this.rows){
 			var each: Row = this.rows[row];
-			for(var square in each){
-				result.push(each[square]);
+            var meSqrs = each.getSquares();
+			for(var square in each.getSquares()){
+                var eachSqr = meSqrs[square];
+				result.push(eachSqr);
 			}
 		}
 		
@@ -150,7 +152,7 @@ class Board extends HTMLObject{
         return (this.offsetTop + (y * this.squareHeight)) + (this.squareHeight * ( 1 - ratio));
     }
 
-    public getPieceById(id: number): Piece{
+    public getPieceById(id: string): Piece{
         for(var piece in this.pieces){
             var each = this.pieces[piece];
             if(each.getId() == id){
@@ -160,9 +162,9 @@ class Board extends HTMLObject{
     }
 
 	public getSquareById(id: string): Square{
-		var squares = this.getSquares();
-        for(var square in squares){
-            var each = this.squares[square];
+		var locSquares = this.getSquares();
+        for(var square in locSquares){
+            var each = locSquares[square];
             if(each.getId() == id){
                 return each;
             }

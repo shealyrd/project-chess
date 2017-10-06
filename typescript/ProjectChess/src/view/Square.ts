@@ -2,7 +2,6 @@ class Square extends HTMLObject{
 	col: Color;
 	x: number;
     y: number;
-	id: string;
 
     constructor(left: number, top: number, width: number, height: number){
         super();
@@ -18,14 +17,6 @@ class Square extends HTMLObject{
 
     setY(y: number){
         this.y = y;
-    }
-	
-    setID(id: string){
-        this.id = id;
-    }
-	
-	getID(): string{
-		return this.id;
     }
 	
     getY(): number{
@@ -53,8 +44,9 @@ class Square extends HTMLObject{
                 .addStyle("top", this.getTopPos() + "")
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px")
-                .addStyle("border", "1px solid black")
-				.setId(this.getID());
+                .addStyle("border", "1px solid black");
+
+        builder.setId(this.getID());
 				
 		if(this.col != null){
 			var hexColor: string;
