@@ -16,11 +16,35 @@ class BoardModel{
     }
 
     addPiece(type: PieceType, x: number, y: number, color: Color){
-        this.placePiece(new PieceModel(this, new Pos(x, y), color, type));
+        this.placePiece(PieceFactory.createPiece(this, new Pos(x, y), color, type));
     }
 
     placePiece(piece: PieceModel){
         this.pos2PieceMap.set(piece.getPos(), piece);
+    }
+
+    getDirection(color: Color): number{
+        if(Color.WHITE == color){
+            return 1;
+        }
+        else if(Color.BLACK == color){
+            return -1;
+        }
+    }
+
+    isFree(pos: Pos): boolean{
+        var result: boolean;
+        this.pos2PieceMap.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                result = (value == null);
+            }
+        });
+
+        return result;
+    }
+
+    isCapturable(pos: Pos, color: Color): boolean{
+        return this.isFree(pos)
     }
 
     getHeight(): number{
@@ -34,7 +58,9 @@ class BoardModel{
     getAllPieces(): PieceModel[]{
         var result: PieceModel[] = new Array();
         this.pos2PieceMap.forEach((value, key, map) => {
-            result.push(value);
+            if(value != null){
+                result.push(value);
+            }
         });
         return result;
     }
@@ -42,10 +68,13 @@ class BoardModel{
     getAllPiecesOfColor(color: Color): PieceModel[]{
         var result: PieceModel[] = new Array();
         this.pos2PieceMap.forEach((value, key, map) => {
-            if(value.getColor() == color){
-                result.push(value);
+            if(value != null){
+                if(value.getColor() == color){
+                    result.push(value);
+                }
             }
         });
+        alert(result.length);
         return result;
     }
 

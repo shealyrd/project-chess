@@ -2,6 +2,7 @@ class Square extends HTMLObject{
 	col: Color;
 	x: number;
     y: number;
+    selected: boolean;
 
     constructor(left: number, top: number, width: number, height: number){
         super();
@@ -18,7 +19,15 @@ class Square extends HTMLObject{
     setY(y: number){
         this.y = y;
     }
-	
+
+    setSelected(bool: boolean){
+        this.selected = bool;
+    }
+
+    isSelected(): boolean{
+        return this.selected;
+    }
+
     getY(): number{
         return this.y;
     }
@@ -42,12 +51,20 @@ class Square extends HTMLObject{
                 .addStyle("position", "absolute")
                 .addStyle("left", this.getLeftPos() + "")
                 .addStyle("top", this.getTopPos() + "")
-                .addStyle("width", this.getWidth() + "px")
-                .addStyle("height", this.getHeight() + "px")
                 .addStyle("border", "1px solid black");
 
-        builder.setId(this.getID());
-				
+        builder.setId(this.getId());
+
+        if(this.selected){
+            builder.addStyle("border", "5px solid blue")
+                    .addStyle("box-sizing", "border-box")
+                    .addStyle("width", +(this.getWidth() + 2) + "px")
+                    .addStyle("height", +(this.getHeight() + 2) + "px");
+        }
+        else{
+            builder.addStyle("width", this.getWidth() + "px")
+                    .addStyle("height", this.getHeight() + "px");
+        }
 		if(this.col != null){
 			var hexColor: string;
 			

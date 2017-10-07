@@ -19,6 +19,12 @@ type %~dp0\model\Move.ts  >> out.txt
 type %~dp0\model\MoveCollection.ts  >> out.txt 
 type %~dp0\model\MoveFactory.ts  >> out.txt 
 type %~dp0\model\PieceModel.ts  >> out.txt 
+type %~dp0\model\pieces\RookModel.ts  >> out.txt 
+type %~dp0\model\pieces\PawnModel.ts  >> out.txt 
+type %~dp0\model\pieces\KnightModel.ts  >> out.txt 
+type %~dp0\model\pieces\BishopModel.ts  >> out.txt 
+type %~dp0\model\pieces\KingModel.ts  >> out.txt 
+type %~dp0\model\pieces\QueenModel.ts  >> out.txt 
 type %~dp0\model\PieceFactory.ts  >> out.txt 
 type %~dp0\model\BoardModel.ts  >> out.txt 
 type %~dp0\controller\TestController.ts  >> out.txt 

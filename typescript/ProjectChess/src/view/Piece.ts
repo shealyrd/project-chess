@@ -40,6 +40,7 @@ abstract class Piece extends HTMLObject{
 	abstract getWhiteImg(): string;
 	abstract getBlackImg(): string;
 
+
 	static getSizeRatio(): number{
         return 1;
     }

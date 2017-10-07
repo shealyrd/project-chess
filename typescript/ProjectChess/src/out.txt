@@ -203,6 +203,7 @@ abstract class Piece extends HTMLObject{
 	abstract getWhiteImg(): string;
 	abstract getBlackImg(): string;
 
+
 	static getSizeRatio(): number{
         return 1;
     }
@@ -337,10 +338,12 @@ class Pawn extends Piece{
 		return Rook.blackImg;
 	}
 
+
 }class Square extends HTMLObject{
 	col: Color;
 	x: number;
     y: number;
+    selected: boolean;
 
     constructor(left: number, top: number, width: number, height: number){
         super();
@@ -357,7 +360,15 @@ class Pawn extends Piece{
     setY(y: number){
         this.y = y;
     }
-	
+
+    setSelected(bool: boolean){
+        this.selected = bool;
+    }
+
+    isSelected(): boolean{
+        return this.selected;
+    }
+
     getY(): number{
         return this.y;
     }
@@ -381,12 +392,20 @@ class Pawn extends Piece{
                 .addStyle("position", "absolute")
                 .addStyle("left", this.getLeftPos() + "")
                 .addStyle("top", this.getTopPos() + "")
-                .addStyle("width", this.getWidth() + "px")
-                .addStyle("height", this.getHeight() + "px")
                 .addStyle("border", "1px solid black");
 
-        builder.setId(this.getID());
-				
+        builder.setId(this.getId());
+
+        if(this.selected){
+            builder.addStyle("border", "5px solid blue")
+                    .addStyle("box-sizing", "border-box")
+                    .addStyle("width", +(this.getWidth() + 2) + "px")
+                    .addStyle("height", +(this.getHeight() + 2) + "px");
+        }
+        else{
+            builder.addStyle("width", this.getWidth() + "px")
+                    .addStyle("height", this.getHeight() + "px");
+        }
 		if(this.col != null){
 			var hexColor: string;
 			
@@ -420,7 +439,7 @@ class Pawn extends Piece{
 			var newSquare: Square = new Square(this.getSquareLeftPos(i), 0, this.getSquareWidth(), this.getHeight());
 			newSquare.setX(i);
 			newSquare.setY(this.getY());
-			newSquare.setID("square_" + i + "_" + this.getY());
+			newSquare.setId("square_" + i + "_" + this.getY());
 			this.squares.push(newSquare);
 		}
 	}
@@ -734,6 +753,24 @@ class Pawn extends Piece{
         serialization = serialization.substring(0, serialization.length - 1);
         return serialization;
     }
+
+    unselectAllSquares(){
+        var locSquares = this.getSquares();
+        for(var square in locSquares){
+            var each = locSquares[square];
+            each.setSelected(false);
+        }
+    }
+
+    getSquareAtPos(x:Number, y:Number): Square{
+        var locSquares = this.getSquares();
+        for(var square in locSquares){
+            var each = locSquares[square];
+            if(each.getX() == x && each.getY() == y){
+                return each;
+            }
+        }
+    }
 }class Pos{
     private X: number;
     private Y: number;
@@ -775,6 +812,12 @@ class Move{
 
     private moves: Move[] = new Array();
 
+    constructor(moves?: Move[]){
+        if(moves != null && moves != undefined){
+            this.moves = moves;
+        }
+    }
+
     public add(move: Move){
         this.moves.push(move);
     }
@@ -782,22 +825,273 @@ class Move{
     public getMoves(): Move[]{
         return this.moves;
     }
+
+    public addAll(movesArg: MoveCollection): MoveCollection{
+        var moveArray: Move[] = movesArg.getMoves();
+        moveArray.forEach((e, i, me) => {
+            this.moves.push(e);
+        });
+
+        return this;
+    }
+
+    public minus(movesArg: MoveCollection): MoveCollection{
+        var result: Move[] = new Array();
+        var moveArray: Move[] = movesArg.getMoves();
+        moveArray.forEach((e, i, me) => {
+            this.moves.forEach((f, j, me2) => {
+                if(!(f.getDest().equals(e.getDest()))) {
+                        result.push(e);
+                }
+            });
+        });
+        this.moves = result;
+        return this;
+    }
 }class MoveFactory{
 
     static getAllUpwards(piece: PieceModel){
         var board: BoardModel = piece.getBoardModel();
-        var result: MoveCollection = new MoveCollection();
+        var result: Move[] = new Array();
 
         var x = piece.getPos().getX();
         var y = piece.getPos().getY() - 1;
 
         while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            y -= 1;
+        }
+
+        return new MoveCollection(result);
+    }
+
+    static getAllDownwards(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX();
+        var y = piece.getPos().getY() + 1;
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            y += 1;
+        }
+
+        return new MoveCollection(result);
+    }
+
+    static getAllLeft(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY();
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            x -= 1;
+        }
+
+        return new MoveCollection(result);
+    }
+
+    static getAllRight(piece: PieceModel): MoveCollection{
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY();
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(piece.getBoardModel().isFree(new Pos(x, y)) == false){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            x += 1;
+        }
+
+        return new MoveCollection(result);
+    }
+
+    static getAllCardinal(piece: PieceModel){
+        var result: MoveCollection = new MoveCollection();
+
+        result.addAll(MoveFactory.getAllRight(piece));
+        result.addAll(MoveFactory.getAllLeft(piece));
+        result.addAll(MoveFactory.getAllUpwards(piece));
+        result.addAll(MoveFactory.getAllDownwards(piece));
+
+        return result;
+    }
+
+    static getAllLeftUpDiagonal(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() - 1;
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            if (!piece.getBoardModel().isFree(new Pos(x, y))) {
+                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    break;
+                }
+                else {
+                    break;
+                }
+            }
             result.add(new Move(piece.getPos(), new Pos(x, y)));
+            x -= 1;
+            y -= 1;
+        }
+
+
+        return result;
+    }
+
+    static getAllRightUpDiagonal(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() - 1;
+
+    while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+        if(!piece.getBoardModel().isFree(new Pos(x, y))){
+            if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                break;
+            }
+            else{
+                break;
+            }
+            }
+            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            x += 1;
             y -= 1;
         }
 
         return result;
     }
+
+    static getAllRightDownDiagonal(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() + 1;
+
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            x += 1;
+            y += 1;
+        }
+
+        return result;
+    }
+
+    static getAllLeftDownDiagonal(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() + 1;
+
+            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+                if (!piece.getBoardModel().isFree(new Pos(x, y))) {
+                    if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                x -= 1;
+                y += 1;
+            }
+
+
+        return result;
+    }
+
+    static getAllDiagonal(piece: PieceModel){
+        var result: MoveCollection = new MoveCollection();
+
+        result.addAll(MoveFactory.getAllLeftDownDiagonal(piece));
+        result.addAll(MoveFactory.getAllRightDownDiagonal(piece));
+        result.addAll(MoveFactory.getAllRightUpDiagonal(piece));
+        result.addAll(MoveFactory.getAllLeftUpDiagonal(piece));
+
+        return result;
+    }
+
+    static getRelativeToPiece(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+            if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                }
+            }
+            else{
+                result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+            }
+        }
+
+        return result;
+    }
+
+
 
 
 }class PieceModel{
@@ -830,12 +1124,94 @@ class Move{
     }
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getAllUpwards(this);
+        return null; //MoveFactory.getAllUpwards(this);
+    }
+}class RookModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.ROOK);
+    }
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getAllCardinal(this);
+    }
+}class PawnModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.PAWN);
+    }
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getRelativeToPiece(this, 0, -1 * this.getBoardModel().getDirection(this.getColor()));
+    }
+}class KnightModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.KNIGHT);
+    }
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getRelativeToPiece(this, -2, -1)
+        .addAll(MoveFactory.getRelativeToPiece(this, 2, -1))
+        .addAll(MoveFactory.getRelativeToPiece(this, -2, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 2, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, -2))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, 2))
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, 2))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -2));
+    }
+}class BishopModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.BISHOP);
+    }
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getAllDiagonal(this);
+    }
+}class KingModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.KING);
+    }
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getRelativeToPiece(this, 1, 1)
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, -1))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 0, -1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 0, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, 0))
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, 0));
+    }
+}class QueenModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.QUEEN);
+    }
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getAllCardinal(this)
+            .addAll(MoveFactory.getAllDiagonal(this));
     }
 }class PieceFactory{
 
+    static createPiece(board: BoardModel, pos: Pos, color: Color, type: PieceType): PieceModel{
+        var newPiece: PieceModel;
+        switch(type){
+            case PieceType.ROOK: newPiece = new RookModel(board, pos, color); break;
+            case PieceType.BISHOP: newPiece = new BishopModel(board, pos, color); break;
+            case PieceType.PAWN: newPiece = new PawnModel(board, pos, color); break;
+            case PieceType.KING: newPiece = new KingModel(board, pos, color); break;
+            case PieceType.KNIGHT: newPiece = new KnightModel(board, pos, color); break;
+            case PieceType.QUEEN: newPiece = new QueenModel(board, pos, color); break;
+        }
+        return newPiece;
+    }
+
     static createPieceByTransposition(pos: Pos, piece: PieceModel): PieceModel{
-        var newPiece: PieceModel = new PieceModel(piece.getBoardModel(), pos, piece.getColor(), piece.getType());
+        var newPiece: PieceModel = PieceFactory.createPiece(piece.getBoardModel(), pos, piece.getColor(), piece.getType());
         return newPiece;
     }
 }class BoardModel{
@@ -856,11 +1232,35 @@ class Move{
     }
 
     addPiece(type: PieceType, x: number, y: number, color: Color){
-        this.placePiece(new PieceModel(this, new Pos(x, y), color, type));
+        this.placePiece(PieceFactory.createPiece(this, new Pos(x, y), color, type));
     }
 
     placePiece(piece: PieceModel){
         this.pos2PieceMap.set(piece.getPos(), piece);
+    }
+
+    getDirection(color: Color): number{
+        if(Color.WHITE == color){
+            return 1;
+        }
+        else if(Color.BLACK == color){
+            return -1;
+        }
+    }
+
+    isFree(pos: Pos): boolean{
+        var result: boolean;
+        this.pos2PieceMap.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                result = (value == null);
+            }
+        });
+
+        return result;
+    }
+
+    isCapturable(pos: Pos, color: Color): boolean{
+        return this.isFree(pos)
     }
 
     getHeight(): number{
@@ -874,7 +1274,9 @@ class Move{
     getAllPieces(): PieceModel[]{
         var result: PieceModel[] = new Array();
         this.pos2PieceMap.forEach((value, key, map) => {
-            result.push(value);
+            if(value != null){
+                result.push(value);
+            }
         });
         return result;
     }
@@ -882,10 +1284,13 @@ class Move{
     getAllPiecesOfColor(color: Color): PieceModel[]{
         var result: PieceModel[] = new Array();
         this.pos2PieceMap.forEach((value, key, map) => {
-            if(value.getColor() == color){
-                result.push(value);
+            if(value != null){
+                if(value.getColor() == color){
+                    result.push(value);
+                }
             }
         });
+        alert(result.length);
         return result;
     }
 
@@ -1025,11 +1430,11 @@ class Move{
 		var squares: Square[] = TestController.board.getSquares();
         for (var piece in pieces) {
             var each = pieces[piece];
-            document.getElementById(each.getId() + "").setAttribute("onclick", "clickingExample("+ + each.getId() + ")");
+            document.getElementById(each.getId() + "").setAttribute("onclick", "clickingExample2("+ + each.getId() + ")");
         }
 		for (var square in squares) {
-            var eachSqr = squares[square];
-            document.getElementById(eachSqr.getId() + "").setAttribute("onclick", "clickingExample3("+ + eachSqr.getId() + ")");
+            var eachSqr: Square = squares[square];
+            document.getElementById(eachSqr.getId() + "").setAttribute("onclick", "clickingExample3(\""+  eachSqr.getId() + "\")");
         }
     }
 }
@@ -1058,24 +1463,36 @@ var clickingExample = (e) => {
 
 var clickingExample2 = (e) => {
     var meView = TestController.board.getPieceById(e);
-    var meModel = TestController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+    var meModel: PieceModel = TestController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+    var meSqr = TestController.board.getSquareAtPos(meView.getX(), meView.getY());
     if(clickState == 1){
         savedPiece = meModel;
         clickState = 2;
+        meSqr.setSelected(true);
+        var moves: MoveCollection = meModel.getPossibleMoves();
+        for(var eachMoveIdx in moves.getMoves()){
+            var eachMove: Move = moves.getMoves()[eachMoveIdx];
+            var possibleSqr: Square = TestController.board.getSquareAtPos(eachMove.getDest().getX(), eachMove.getDest().getY());
+            possibleSqr.setSelected(true);
+        }
+
+        savedPiece = meModel;
     }
     else if (clickState == 2) {
         var move: Move = new Move(savedPiece.getPos(), new Pos(meView.getX(), meView.getY()));
         TestController.boardModel.executeMove(move);
         TestController.board = Board.fromSerial(TestController.boardModel.serialize());
-        TestController.update();
-        clickState = 1
+        clickState = 1;
+        TestController.board.unselectAllSquares();
     }
-    savedPiece = meModel;
 
+    TestController.update();
     //alert(JSON.stringify(meModel));
 };
 
 var clickingExample3 = (e) => {
     var meView: Square = TestController.board.getSquareById(e);
-	alert("Found square " + meView.getX() + ", " + meView.getY());
+	//alert("Found square " + meView.getX() + ", " + meView.getY());
+    meView.setSelected(true);
+    TestController.update();
 };

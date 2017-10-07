@@ -28,6 +28,6 @@ class PieceModel{
     }
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getAllUpwards(this);
+        return null; //MoveFactory.getAllUpwards(this);
     }
 }

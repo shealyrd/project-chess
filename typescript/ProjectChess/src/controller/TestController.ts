@@ -68,11 +68,11 @@ class TestController{
 		var squares: Square[] = TestController.board.getSquares();
         for (var piece in pieces) {
             var each = pieces[piece];
-            document.getElementById(each.getId() + "").setAttribute("onclick", "clickingExample("+ + each.getId() + ")");
+            document.getElementById(each.getId() + "").setAttribute("onclick", "clickingExample2("+ + each.getId() + ")");
         }
 		for (var square in squares) {
-            var eachSqr = squares[square];
-            document.getElementById(eachSqr.getId() + "").setAttribute("onclick", "clickingExample3("+ + eachSqr.getId() + ")");
+            var eachSqr: Square = squares[square];
+            document.getElementById(eachSqr.getId() + "").setAttribute("onclick", "clickingExample3(\""+  eachSqr.getId() + "\")");
         }
     }
 }
@@ -101,24 +101,36 @@ var clickingExample = (e) => {
 
 var clickingExample2 = (e) => {
     var meView = TestController.board.getPieceById(e);
-    var meModel = TestController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+    var meModel: PieceModel = TestController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+    var meSqr = TestController.board.getSquareAtPos(meView.getX(), meView.getY());
     if(clickState == 1){
         savedPiece = meModel;
         clickState = 2;
+        meSqr.setSelected(true);
+        var moves: MoveCollection = meModel.getPossibleMoves();
+        for(var eachMoveIdx in moves.getMoves()){
+            var eachMove: Move = moves.getMoves()[eachMoveIdx];
+            var possibleSqr: Square = TestController.board.getSquareAtPos(eachMove.getDest().getX(), eachMove.getDest().getY());
+            possibleSqr.setSelected(true);
+        }
+
+        savedPiece = meModel;
     }
     else if (clickState == 2) {
         var move: Move = new Move(savedPiece.getPos(), new Pos(meView.getX(), meView.getY()));
         TestController.boardModel.executeMove(move);
         TestController.board = Board.fromSerial(TestController.boardModel.serialize());
-        TestController.update();
-        clickState = 1
+        clickState = 1;
+        TestController.board.unselectAllSquares();
     }
-    savedPiece = meModel;
 
+    TestController.update();
     //alert(JSON.stringify(meModel));
 };
 
 var clickingExample3 = (e) => {
     var meView: Square = TestController.board.getSquareById(e);
-	alert("Found square " + meView.getX() + ", " + meView.getY());
+	//alert("Found square " + meView.getX() + ", " + meView.getY());
+    meView.setSelected(true);
+    TestController.update();
 };

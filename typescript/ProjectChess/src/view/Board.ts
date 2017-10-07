@@ -250,4 +250,22 @@ class Board extends HTMLObject{
         serialization = serialization.substring(0, serialization.length - 1);
         return serialization;
     }
+
+    unselectAllSquares(){
+        var locSquares = this.getSquares();
+        for(var square in locSquares){
+            var each = locSquares[square];
+            each.setSelected(false);
+        }
+    }
+
+    getSquareAtPos(x:Number, y:Number): Square{
+        var locSquares = this.getSquares();
+        for(var square in locSquares){
+            var each = locSquares[square];
+            if(each.getX() == x && each.getY() == y){
+                return each;
+            }
+        }
+    }
 }
