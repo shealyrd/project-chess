@@ -4,6 +4,9 @@ class KingModel extends PieceModel{
         super(board, pos, color, PieceType.KING);
     }
 
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getRelativeToPiece(this, 1, 1)
         .addAll(MoveFactory.getRelativeToPiece(this, 1, -1))

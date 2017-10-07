@@ -4,6 +4,9 @@ class RookModel extends PieceModel{
         super(board, pos, color, PieceType.ROOK);
     }
 
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllCardinal(this);
     }

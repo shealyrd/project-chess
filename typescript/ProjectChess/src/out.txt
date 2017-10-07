@@ -808,6 +808,11 @@ class Move{
     getOrigin(): Pos{
         return this.origin;
     }
+
+    equals(move: Move): boolean{
+        return this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin());
+    }
+
 }class MoveCollection{
 
     private moves: Move[] = new Array();
@@ -824,6 +829,16 @@ class Move{
 
     public getMoves(): Move[]{
         return this.moves;
+    }
+
+    public contains(move: Move): boolean{
+        var result = false;
+        this.moves.forEach((e, i, me) => {
+            if(move.equals(e)){
+                result = true;
+            }
+        });
+        return result;
     }
 
     public addAll(movesArg: MoveCollection): MoveCollection{
@@ -1091,10 +1106,137 @@ class Move{
         return result;
     }
 
+    static getRelativeToPieceNonCapturing(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+            if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+
+            }
+            else{
+                result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+            }
+        }
+
+        return result;
+    }
+
+    static getRelativeToPieceOnlyIfCapturable(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+            if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    static getLineForward(piece: PieceModel, length: number, direction: number){
+        var result: MoveCollection = new MoveCollection();
+
+        if(direction > 0){
+            var count = length;
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() - 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+                    if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                        if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
+                            result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                            count--;
+                            newY--;
+                        }
+                    }
+                    else{
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        count--;
+                        newY--;
+                    }
+                }
+            }
+        }
+        if(direction < 0){
+            var count = length;
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() + 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+                    if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                        if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
+                            result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                            count--;
+                            newY++;
+                        }
+                    }
+                    else{
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        count--;
+                        newY++;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    static getLineForwardNoncapturing(piece: PieceModel, length: number, direction: number){
+        var result: MoveCollection = new MoveCollection();
+
+        if(direction > 0){
+            var count = length;
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() - 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+                    if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                        break;
+                    }
+                    else{
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        count--;
+                        newY--;
+                    }
+                }
+            }
+        }
+        if(direction < 0){
+            var count = length;
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() + 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+                    if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                        break;
+                    }
+                    else{
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        count--;
+                        newY++;
+                }
+                }
+            }
+        }
+
+        return result;
+    }
 
 
-
-}class PieceModel{
+}abstract class PieceModel{
     private pos: Pos;
     private color: Color;
     private boardModel: BoardModel;
@@ -1126,29 +1268,65 @@ class Move{
     getPossibleMoves(): MoveCollection{
         return null; //MoveFactory.getAllUpwards(this);
     }
+
+    abstract onMove();
+    abstract giveInternalAttributes(piece: PieceModel);
 }class RookModel extends PieceModel{
 
     constructor(board: BoardModel, pos: Pos, color: Color){
         super(board, pos, color, PieceType.ROOK);
     }
 
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllCardinal(this);
     }
 }class PawnModel extends PieceModel{
+    hasMoved: boolean;
 
     constructor(board: BoardModel, pos: Pos, color: Color){
         super(board, pos, color, PieceType.PAWN);
     }
 
+    onMove(){
+       this.hasMoved = true;
+    }
+
+    giveInternalAttributes(piece: PieceModel) {
+        var currPiece = piece as PawnModel;
+        currPiece.hasMoved = this.hasMoved;
+
+    }
+
+    getDirection(): number{
+        return this.getBoardModel().getDirection(this.getColor());
+    }
+
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getRelativeToPiece(this, 0, -1 * this.getBoardModel().getDirection(this.getColor()));
+        if(this.hasMoved){
+            return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
+                    .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()));
+        }
+        else{
+            //alert(MoveFactory.getLineForward(this, 2, this.getDirection()).getMoves.length);
+            return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
+                .addAll(MoveFactory.getLineForwardNoncapturing(this, 2, this.getDirection())
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())));
+        }
+
     }
 }class KnightModel extends PieceModel{
 
     constructor(board: BoardModel, pos: Pos, color: Color){
         super(board, pos, color, PieceType.KNIGHT);
     }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getRelativeToPiece(this, -2, -1)
@@ -1166,6 +1344,9 @@ class Move{
         super(board, pos, color, PieceType.BISHOP);
     }
 
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllDiagonal(this);
     }
@@ -1174,6 +1355,9 @@ class Move{
     constructor(board: BoardModel, pos: Pos, color: Color){
         super(board, pos, color, PieceType.KING);
     }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getRelativeToPiece(this, 1, 1)
@@ -1190,6 +1374,9 @@ class Move{
     constructor(board: BoardModel, pos: Pos, color: Color){
         super(board, pos, color, PieceType.QUEEN);
     }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllCardinal(this)
@@ -1212,6 +1399,7 @@ class Move{
 
     static createPieceByTransposition(pos: Pos, piece: PieceModel): PieceModel{
         var newPiece: PieceModel = PieceFactory.createPiece(piece.getBoardModel(), pos, piece.getColor(), piece.getType());
+        piece.giveInternalAttributes(newPiece);
         return newPiece;
     }
 }class BoardModel{
@@ -1303,7 +1491,8 @@ class Move{
     }
 
     executeMove(move: Move){
-        var originalPiece = this.getPieceFromPosition(move.getOrigin());
+        var originalPiece: PieceModel = this.getPieceFromPosition(move.getOrigin());
+        originalPiece.onMove();
         this.movePiece(originalPiece, move.getDest());
     }
 
@@ -1401,7 +1590,7 @@ class Move{
         TestController.boardModel.addPiece(PieceType.PAWN, 7, 1, Color.BLACK);
 
 
-        TestController.boardModel.addPiece(PieceType.ROOK, 3, 3, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.ROOK, 0, 7, Color.WHITE);
         TestController.boardModel.addPiece(PieceType.KNIGHT, 1, 7, Color.WHITE);
         TestController.boardModel.addPiece(PieceType.BISHOP, 2, 7, Color.WHITE);
         TestController.boardModel.addPiece(PieceType.QUEEN, 3, 7, Color.WHITE);
@@ -1480,10 +1669,17 @@ var clickingExample2 = (e) => {
     }
     else if (clickState == 2) {
         var move: Move = new Move(savedPiece.getPos(), new Pos(meView.getX(), meView.getY()));
-        TestController.boardModel.executeMove(move);
-        TestController.board = Board.fromSerial(TestController.boardModel.serialize());
-        clickState = 1;
-        TestController.board.unselectAllSquares();
+        if(savedPiece.getPossibleMoves().contains(move)){
+            TestController.boardModel.executeMove(move);
+            TestController.board = Board.fromSerial(TestController.boardModel.serialize());
+            clickState = 1;
+            TestController.board.unselectAllSquares();
+        }
+        else if(savedPiece.getPos().equals(meModel.getPos())){
+            TestController.board = Board.fromSerial(TestController.boardModel.serialize());
+            clickState = 1;
+            TestController.board.unselectAllSquares();
+        }
     }
 
     TestController.update();
@@ -1493,6 +1689,15 @@ var clickingExample2 = (e) => {
 var clickingExample3 = (e) => {
     var meView: Square = TestController.board.getSquareById(e);
 	//alert("Found square " + meView.getX() + ", " + meView.getY());
-    meView.setSelected(true);
+    if (clickState == 2) {
+        var move: Move = new Move(savedPiece.getPos(), new Pos(meView.getX(), meView.getY()));
+        if(savedPiece.getPossibleMoves().contains(move)){
+            TestController.boardModel.executeMove(move);
+            TestController.board = Board.fromSerial(TestController.boardModel.serialize());
+            clickState = 1;
+            TestController.board.unselectAllSquares();
+        }
+    }
+    // meView.setSelected(true);
     TestController.update();
 };

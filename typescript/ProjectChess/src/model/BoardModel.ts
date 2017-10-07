@@ -87,7 +87,8 @@ class BoardModel{
     }
 
     executeMove(move: Move){
-        var originalPiece = this.getPieceFromPosition(move.getOrigin());
+        var originalPiece: PieceModel = this.getPieceFromPosition(move.getOrigin());
+        originalPiece.onMove();
         this.movePiece(originalPiece, move.getDest());
     }
 

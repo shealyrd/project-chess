@@ -4,6 +4,9 @@ class BishopModel extends PieceModel{
         super(board, pos, color, PieceType.BISHOP);
     }
 
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllDiagonal(this);
     }

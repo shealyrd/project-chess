@@ -241,7 +241,134 @@ class MoveFactory{
         return result;
     }
 
+    static getRelativeToPieceNonCapturing(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
 
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+            if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+
+            }
+            else{
+                result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+            }
+        }
+
+        return result;
+    }
+
+    static getRelativeToPieceOnlyIfCapturable(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+            if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    static getLineForward(piece: PieceModel, length: number, direction: number){
+        var result: MoveCollection = new MoveCollection();
+
+        if(direction > 0){
+            var count = length;
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() - 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+                    if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                        if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
+                            result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                            count--;
+                            newY--;
+                        }
+                    }
+                    else{
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        count--;
+                        newY--;
+                    }
+                }
+            }
+        }
+        if(direction < 0){
+            var count = length;
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() + 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+                    if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                        if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
+                            result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                            count--;
+                            newY++;
+                        }
+                    }
+                    else{
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        count--;
+                        newY++;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    static getLineForwardNoncapturing(piece: PieceModel, length: number, direction: number){
+        var result: MoveCollection = new MoveCollection();
+
+        if(direction > 0){
+            var count = length;
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() - 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+                    if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                        break;
+                    }
+                    else{
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        count--;
+                        newY--;
+                    }
+                }
+            }
+        }
+        if(direction < 0){
+            var count = length;
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() + 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+                    if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                        break;
+                    }
+                    else{
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        count--;
+                        newY++;
+                }
+                }
+            }
+        }
+
+        return result;
+    }
 
 
 }

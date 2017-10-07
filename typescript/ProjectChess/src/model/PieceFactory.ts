@@ -15,6 +15,7 @@ class PieceFactory{
 
     static createPieceByTransposition(pos: Pos, piece: PieceModel): PieceModel{
         var newPiece: PieceModel = PieceFactory.createPiece(piece.getBoardModel(), pos, piece.getColor(), piece.getType());
+        piece.giveInternalAttributes(newPiece);
         return newPiece;
     }
 }

@@ -16,6 +16,16 @@ class MoveCollection{
         return this.moves;
     }
 
+    public contains(move: Move): boolean{
+        var result = false;
+        this.moves.forEach((e, i, me) => {
+            if(move.equals(e)){
+                result = true;
+            }
+        });
+        return result;
+    }
+
     public addAll(movesArg: MoveCollection): MoveCollection{
         var moveArray: Move[] = movesArg.getMoves();
         moveArray.forEach((e, i, me) => {

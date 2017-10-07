@@ -4,6 +4,9 @@ class QueenModel extends PieceModel{
         super(board, pos, color, PieceType.QUEEN);
     }
 
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllCardinal(this)
             .addAll(MoveFactory.getAllDiagonal(this));

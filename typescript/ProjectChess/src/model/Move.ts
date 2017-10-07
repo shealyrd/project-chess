@@ -14,4 +14,9 @@ class Move{
     getOrigin(): Pos{
         return this.origin;
     }
+
+    equals(move: Move): boolean{
+        return this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin());
+    }
+
 }

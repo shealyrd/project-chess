@@ -1,4 +1,4 @@
-class PieceModel{
+abstract class PieceModel{
     private pos: Pos;
     private color: Color;
     private boardModel: BoardModel;
@@ -30,4 +30,7 @@ class PieceModel{
     getPossibleMoves(): MoveCollection{
         return null; //MoveFactory.getAllUpwards(this);
     }
+
+    abstract onMove();
+    abstract giveInternalAttributes(piece: PieceModel);
 }

@@ -39,7 +39,7 @@ class TestController{
         TestController.boardModel.addPiece(PieceType.PAWN, 7, 1, Color.BLACK);
 
 
-        TestController.boardModel.addPiece(PieceType.ROOK, 3, 3, Color.WHITE);
+        TestController.boardModel.addPiece(PieceType.ROOK, 0, 7, Color.WHITE);
         TestController.boardModel.addPiece(PieceType.KNIGHT, 1, 7, Color.WHITE);
         TestController.boardModel.addPiece(PieceType.BISHOP, 2, 7, Color.WHITE);
         TestController.boardModel.addPiece(PieceType.QUEEN, 3, 7, Color.WHITE);
@@ -118,10 +118,17 @@ var clickingExample2 = (e) => {
     }
     else if (clickState == 2) {
         var move: Move = new Move(savedPiece.getPos(), new Pos(meView.getX(), meView.getY()));
-        TestController.boardModel.executeMove(move);
-        TestController.board = Board.fromSerial(TestController.boardModel.serialize());
-        clickState = 1;
-        TestController.board.unselectAllSquares();
+        if(savedPiece.getPossibleMoves().contains(move)){
+            TestController.boardModel.executeMove(move);
+            TestController.board = Board.fromSerial(TestController.boardModel.serialize());
+            clickState = 1;
+            TestController.board.unselectAllSquares();
+        }
+        else if(savedPiece.getPos().equals(meModel.getPos())){
+            TestController.board = Board.fromSerial(TestController.boardModel.serialize());
+            clickState = 1;
+            TestController.board.unselectAllSquares();
+        }
     }
 
     TestController.update();
@@ -131,6 +138,15 @@ var clickingExample2 = (e) => {
 var clickingExample3 = (e) => {
     var meView: Square = TestController.board.getSquareById(e);
 	//alert("Found square " + meView.getX() + ", " + meView.getY());
-    meView.setSelected(true);
+    if (clickState == 2) {
+        var move: Move = new Move(savedPiece.getPos(), new Pos(meView.getX(), meView.getY()));
+        if(savedPiece.getPossibleMoves().contains(move)){
+            TestController.boardModel.executeMove(move);
+            TestController.board = Board.fromSerial(TestController.boardModel.serialize());
+            clickState = 1;
+            TestController.board.unselectAllSquares();
+        }
+    }
+    // meView.setSelected(true);
     TestController.update();
 };
