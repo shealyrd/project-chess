@@ -28,3 +28,5 @@ type %~dp0\model\pieces\QueenModel.ts  >> out.txt
 type %~dp0\model\PieceFactory.ts  >> out.txt 
 type %~dp0\model\BoardModel.ts  >> out.txt 
 type %~dp0\controller\TestController.ts  >> out.txt 
+type %~dp0\view\Console\ConsoleEntry.ts  >> out.txt 
+type %~dp0\controller\ConsoleController.ts  >> out.txt 
