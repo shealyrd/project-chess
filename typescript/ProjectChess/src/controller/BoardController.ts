@@ -1,0 +1,4 @@
+class BoardController extends AbstractController{
+
+
+}
