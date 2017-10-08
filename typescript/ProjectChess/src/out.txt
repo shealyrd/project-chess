@@ -1709,6 +1709,7 @@ var clickingExample3 = (e) => {
         this.setLeftPos(left);
         this.setWidth(width);
         this.setHeight(height);
+        this.setText(text);
     }
 
     setText(text: string){
@@ -1719,8 +1720,8 @@ var clickingExample3 = (e) => {
         return this.text;
     }
 
-    toHTML(){
-        var innerDiv: string = "<p>{msg}</p>";
+    toHTML(): string{
+        var innerDiv: string = "{msg}";
         var builder = new HTMLBuilder();
         builder.newDiv()
             .addStyle("position", "absolute")
@@ -1730,11 +1731,69 @@ var clickingExample3 = (e) => {
             .addStyle("height", this.getHeight() + "px")
             .addStyle("border", "1px solid black");
 
-        builder.addInnerDiv(innerDiv.replace("{msg}", this.getText));
+        builder.addInnerDiv(innerDiv.replace("{msg}", this.getText()));
+
+        return builder.toString();
+    }
+}class MyConsole extends HTMLObject{
+    lines: ConsoleEntry[] = new Array();
+    entryHeight: number = 20;
+    consoleWidth: number = 500;
+    consoleHeight: number = 200;
+
+    constructor(leftPos: number, upPos: number){
+        super();
+        this.setHeight(this.consoleHeight);
+        this.setWidth(this.consoleWidth);
+        this.setLeftPos(leftPos);
+        this.setTopPos(upPos);
+        this.setId("my-console");
+    }
+
+    addEntry(text: string){
+        var newEntry: ConsoleEntry = new ConsoleEntry(0, (this.entryHeight * (this.lines.length)) - 1, this.getWidth() - 20, this.entryHeight, text);
+        this.lines.push(newEntry);
+    }
+
+    toHTML(): string{
+        var text: string = "";
+
+        for(var lineIdx in this.lines){
+            text += this.lines[lineIdx].toHTML();
+        }
+
+        var builder = new HTMLBuilder();
+        builder.newDiv()
+            .addStyle("overflow-y", "scroll")
+            .addStyle("position", "absolute")
+            .addStyle("left", this.getLeftPos() + "")
+            .addStyle("top", this.getTopPos() + "")
+            .addStyle("width", this.getWidth() + "px")
+            .addStyle("height", this.getHeight() + "px")
+            .setId(this.getId());
+
+        builder.addInnerDiv(text);
+        return builder.toString();
     }
 }class ConsoleController{
-
+    static console: MyConsole = new MyConsole(100, 100);
     static run(){
-        document.body.innerHTML = new ConsoleEntry(100,100,100,100, "Hello world!").toHTML();
+        ConsoleController.update();
+        window.onkeyup = function(e) {
+            var key = e.keyCode ? e.keyCode : e.which;
+            if (key == 13) {
+                ConsoleController.log("New Entry");
+            }
+
+        }
+    }
+    static log(txt: string){
+        ConsoleController.console.addEntry(txt);
+        ConsoleController.update();
+    }
+    static update(){
+        document.body.innerHTML = ConsoleController.console.toHTML();
+        var element = document.getElementById("my-console");
+        element.scrollTop = element.scrollHeight - element.clientHeight;
     }
 }

@@ -7,6 +7,7 @@ class ConsoleEntry extends HTMLObject{
         this.setLeftPos(left);
         this.setWidth(width);
         this.setHeight(height);
+        this.setText(text);
     }
 
     setText(text: string){
@@ -17,8 +18,8 @@ class ConsoleEntry extends HTMLObject{
         return this.text;
     }
 
-    toHTML(){
-        var innerDiv: string = "<p>{msg}</p>";
+    toHTML(): string{
+        var innerDiv: string = "{msg}";
         var builder = new HTMLBuilder();
         builder.newDiv()
             .addStyle("position", "absolute")
@@ -28,6 +29,8 @@ class ConsoleEntry extends HTMLObject{
             .addStyle("height", this.getHeight() + "px")
             .addStyle("border", "1px solid black");
 
-        builder.addInnerDiv(innerDiv.replace("{msg}", this.getText));
+        builder.addInnerDiv(innerDiv.replace("{msg}", this.getText()));
+
+        return builder.toString();
     }
 }
