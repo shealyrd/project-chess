@@ -2,6 +2,21 @@ class StateDriver{
 	state: State;
 	changeStateCallbacks: Map<State, CallbackPool>;
 	
+	initialize(){
+		addStateChangeCallback(State.WHITES_TURN,
+			() => {
+				//turn on white piece click listeners
+			});
+		addStateChangeCallback(State.BLACKS_TURN,
+			() => {
+				//turn off white piece click listeners
+			});
+		addStateChangeCallback(State.FINISH,
+			() => {
+				//print result
+			});
+	}
+	
 	changeState(newState: State){
 		this.state = newState;
 		fireCallbacksForState(this.state);
