@@ -28,7 +28,7 @@ abstract class PieceModel{
     }
 
     getPossibleMoves(): MoveCollection{
-        return null; //MoveFactory.getAllUpwards(this);
+        return MoveFactory.getAllUpwards(this);
     }
 
     abstract onMove();

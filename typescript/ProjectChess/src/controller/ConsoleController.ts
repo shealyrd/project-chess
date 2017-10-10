@@ -1,5 +1,5 @@
 class ConsoleController{
-    static console: MyConsole = new MyConsole(100, 100);
+    static console: MyConsole = new MyConsole(100, 600);
     static run(){
         ConsoleController.update();
         window.onkeyup = function(e) {
@@ -15,7 +15,7 @@ class ConsoleController{
         ConsoleController.update();
     }
     static update(){
-        document.body.innerHTML = ConsoleController.console.toHTML();
+        document.body.innerHTML += ConsoleController.console.toHTML();
         var element = document.getElementById("my-console");
         element.scrollTop = element.scrollHeight - element.clientHeight;
     }

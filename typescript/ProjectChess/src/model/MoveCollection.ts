@@ -48,4 +48,8 @@ class MoveCollection{
         this.moves = result;
         return this;
     }
+
+    public shuffle(){
+        Algorithms.shuffle(this.moves);
+    }
 }

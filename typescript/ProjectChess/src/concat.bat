@@ -1,4 +1,7 @@
-type %~dp0\common\IDSequence.ts > out.txt 
+type %~dp0\common\State.ts > out.txt 
+type %~dp0\common\Algorithms.ts >> out.txt 
+type %~dp0\common\CallbackPool.ts >> out.txt 
+type %~dp0\common\IDSequence.ts >> out.txt 
 type %~dp0\view\HTMLObject.ts >> out.txt 
 type %~dp0\view\HTMLBuilder.ts >> out.txt 
 type %~dp0\common\Color.ts  >> out.txt 
@@ -31,3 +34,4 @@ type %~dp0\controller\TestController.ts  >> out.txt
 type %~dp0\view\Console\ConsoleEntry.ts  >> out.txt 
 type %~dp0\view\Console\MyConsole.ts  >> out.txt 
 type %~dp0\controller\ConsoleController.ts  >> out.txt 
+type %~dp0\controller\GlobalController.ts  >> out.txt 

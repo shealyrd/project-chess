@@ -1,4 +1,44 @@
-class IDSequence{
+enum State{
+
+    WHITES_TURN,
+    BLACKS_TURN,
+    FINISH
+
+}class Algorithms{
+    static shuffle (array) {
+    var i = 0
+        , j = 0
+        , temp = null
+
+    for (i = array.length - 1; i > 0; i -= 1) {
+        j = Math.floor(Math.random() * (i + 1))
+        temp = array[i]
+        array[i] = array[j]
+        array[j] = temp
+    }
+}
+}class CallbackPool{
+    private callbacks: {(): void;}[] = [];
+    
+    constructor(...callbacks: {(): void;}[]){
+        this.callbacks = callbacks;
+    }
+   
+    public addCallback(callback: {(): void;}): CallbackPool{
+        this.callbacks.push(callback);
+        return this;
+    }
+    
+    public fire(): void{
+        for(var i = 0; i < this.callbacks.length; i++){
+            this.callbacks[i]();
+        }
+    }
+    
+    public reset(): void{
+        this.callbacks = [];
+    }
+}class IDSequence{
     static count: number = 0;
 
     static nextVal(): number{
@@ -787,6 +827,10 @@ class Pawn extends Piece{
         return this.Y;
     }
 
+    toString(): string{
+        return this.getX() + ", " + this.getY();
+    }
+
     equals(pos: Pos): boolean{
         return (this.getX() == pos.getX()) && (this.getY() == pos.getY());
     }
@@ -862,6 +906,10 @@ class Move{
         });
         this.moves = result;
         return this;
+    }
+
+    public shuffle(){
+        Algorithms.shuffle(this.moves);
     }
 }class MoveFactory{
 
@@ -1108,13 +1156,11 @@ class Move{
 
     static getRelativeToPieceNonCapturing(piece: PieceModel, x: number, y: number){
         var result: MoveCollection = new MoveCollection();
-
         var newX: number = piece.getPos().getX() + x;
         var newY: number = piece.getPos().getY() + y;
 
         if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
-
             }
             else{
                 result.add(new Move(piece.getPos(), new Pos(newX, newY)));
@@ -1266,7 +1312,7 @@ class Move{
     }
 
     getPossibleMoves(): MoveCollection{
-        return null; //MoveFactory.getAllUpwards(this);
+        return MoveFactory.getAllUpwards(this);
     }
 
     abstract onMove();
@@ -1305,6 +1351,7 @@ class Move{
     }
 
     getPossibleMoves(): MoveCollection{
+
         if(this.hasMoved){
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                     .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
@@ -1440,7 +1487,7 @@ class Move{
         var result: boolean;
         this.pos2PieceMap.forEach((value, key, map) => {
             if (pos.equals(key)) {
-                result = (value == null);
+                result = (value == null || value == undefined);
             }
         });
 
@@ -1472,22 +1519,22 @@ class Move{
     getAllPiecesOfColor(color: Color): PieceModel[]{
         var result: PieceModel[] = new Array();
         this.pos2PieceMap.forEach((value, key, map) => {
-            if(value != null){
+            if(value != null && value != undefined ){
                 if(value.getColor() == color){
                     result.push(value);
                 }
             }
         });
-        alert(result.length);
         return result;
     }
 
     removePiece(pos: Pos){
         this.pos2PieceMap.forEach((value, key, map) => {
-            if (pos.equals(key)) {
-                this.pos2PieceMap.set(pos, null);
+            if(key.equals(pos)){
+                this.pos2PieceMap.delete(key);
             }
         });
+        this.pos2PieceMap.set(pos, null);
     }
 
     executeMove(move: Move){
@@ -1498,6 +1545,7 @@ class Move{
 
     movePiece(piece: PieceModel, dest: Pos){
         this.removePiece(piece.getPos());
+        this.removePiece(dest);
         var transposedPiece = PieceFactory.createPieceByTransposition(dest, piece);
         this.placePiece(transposedPiece);
     }
@@ -1537,6 +1585,51 @@ class Move{
         }
         result = result.substring(0, result.length - 1);
         return result;
+    }
+
+    reset(){
+        this.pos2PieceMap.clear();
+        for(var y:number = 0; y < this.getHeight(); y++){
+            for(var x:number = 0; x < this.getWidth(); x++){
+                this.pos2PieceMap.set(new Pos(x, y), null);
+            }
+        }
+    }
+
+    getAllMovesForColor(color: Color): MoveCollection{
+        var pieces: PieceModel[] = this.getAllPiecesOfColor(color);
+        var resultArr: MoveCollection = new MoveCollection();
+        for(var pieceIdx in pieces){
+            var eachPiece: PieceModel = pieces[pieceIdx];
+            resultArr.addAll(eachPiece.getPossibleMoves());
+        }
+        return resultArr;
+    }
+
+    populateFromSerial(serial: string) {
+        this.reset();
+        var rows:string[] = serial.split("/");
+        for (var y = 0; y < rows.length; y++) {
+            var row = rows[y];
+            var squares:string[] = row.split(",");
+            var length = squares.length;
+            for (var x = 0; x < squares.length; x++) {
+                var sqrData:string = squares[x].substring(1, squares[x].length - 1);
+
+                if (sqrData.length != 0) {
+                    var sqrDataSplit = sqrData.split("_");
+                    var thisColor:Color;
+
+                    if (sqrDataSplit[1] == "W") {
+                        thisColor = Color.WHITE;
+                    }
+                    else {
+                        thisColor = Color.BLACK;
+                    }
+                    this.addPiece(+sqrDataSplit[0], x, y, thisColor);
+                }
+            }
+        }
     }
 
     getPieceFromPosition(pos: Pos): any{
@@ -1776,7 +1869,7 @@ var clickingExample3 = (e) => {
         return builder.toString();
     }
 }class ConsoleController{
-    static console: MyConsole = new MyConsole(100, 100);
+    static console: MyConsole = new MyConsole(100, 600);
     static run(){
         ConsoleController.update();
         window.onkeyup = function(e) {
@@ -1792,8 +1885,201 @@ var clickingExample3 = (e) => {
         ConsoleController.update();
     }
     static update(){
-        document.body.innerHTML = ConsoleController.console.toHTML();
+        document.body.innerHTML += ConsoleController.console.toHTML();
         var element = document.getElementById("my-console");
         element.scrollTop = element.scrollHeight - element.clientHeight;
     }
+}
+class GlobalController{
+	static state: State;
+	static changeStateCallbacks: Map<State, CallbackPool> = new Map<State, CallbackPool>();
+	static boardView: Board;
+	static boardModel: BoardModel;
+
+	static SELECTION_TOGGLE: boolean = false;
+	static SELECTED_PIECE: PieceModel;
+	static WHITE_CLICK_ON: boolean = true;
+
+	static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]";
+
+	static start(){
+	    GlobalController.boardView = new Board(8, 8);
+		GlobalController.boardModel = new BoardModel(8,8);
+		GlobalController.setStandard();
+		GlobalController.initializeStateCallbacks();
+		ConsoleController.run();
+	}
+
+	static initializeStateCallbacks(){
+		GlobalController.addStateChangeCallback(State.WHITES_TURN,
+			() => {
+				GlobalController.WHITE_CLICK_ON = true;
+				GlobalController.update();
+			});
+		GlobalController.addStateChangeCallback(State.BLACKS_TURN,
+			() => {
+				GlobalController.WHITE_CLICK_ON = false;
+				GlobalController.update();
+				GlobalController.makeRandomMoveForBlack();
+				GlobalController.syncToBoard();
+				GlobalController.changeState(State.WHITES_TURN);
+			});
+		GlobalController.addStateChangeCallback(State.FINISH,
+			() => {
+				//print result
+			});
+	}
+
+	static setStandard(){
+		GlobalController.boardModel.populateFromSerial(GlobalController.STANDARD_BOARD);
+		GlobalController.syncToBoard();
+		GlobalController.update();
+	}
+
+	static syncToBoard() {
+		GlobalController.boardView = Board.fromSerial(GlobalController.boardModel.serialize());
+	}
+
+	static update(){
+		document.body.innerHTML = GlobalController.boardView.toHTML();
+		ConsoleController.update();
+		if(GlobalController.WHITE_CLICK_ON){
+			GlobalController.setWhiteClickListeners();
+		}
+    }
+
+	static setWhiteClickListeners(){
+		var pieces: Piece[] = GlobalController.boardView.getPieces();
+		var squares: Square[] = GlobalController.boardView.getSquares();
+		for (var piece in pieces) {
+			var each = pieces[piece];
+			if(each.getColor() == Color.WHITE){
+				document.getElementById(each.getId() + "").setAttribute("onclick", "whiteClickListener(\""+ + each.getId() + "\")");
+			}
+			else{
+				document.getElementById(each.getId() + "").setAttribute("onclick", "blackClickListener(\""+ + each.getId() + "\")");
+			}
+		}
+		for (var square in squares) {
+			var eachSqr:Square = squares[square];
+			document.getElementById(eachSqr.getId() + "").setAttribute("onclick", "squareClickListener(\"" + eachSqr.getId() + "\")");
+		}
+	}
+
+	static changeState(newState: State){
+		this.state = newState;
+		GlobalController.fireCallbacksForState(this.state);
+	}
+
+	static makeRandomMoveForBlack(){
+		var allBlkMoves: MoveCollection = GlobalController.boardModel.getAllMovesForColor(Color.BLACK);
+		allBlkMoves.shuffle();
+		var randomMove = allBlkMoves.getMoves()[0];
+		//ConsoleController.log(randomMove.getOrigin().toString() + " to " + randomMove.getDest().toString());
+		GlobalController.boardModel.executeMove(randomMove);
+	}
+	
+	static addStateChangeCallback(newState: State, callback: {(): void;}){
+		var callbacks = GlobalController.changeStateCallbacks.get(newState);
+		if(callbacks == null || callbacks == undefined){
+			var newCallbackPool = new CallbackPool(callback);
+			GlobalController.changeStateCallbacks.set(newState, newCallbackPool);
+		}
+		else{
+			callbacks.addCallback(callback);
+		}
+	}
+	
+	static fireCallbacksForState(state: State){
+		var callbacks = GlobalController.changeStateCallbacks.get(state);
+		if(callbacks != null && callbacks != undefined){
+			callbacks.fire();
+		}
+	}
+}
+
+var whiteClickListener = (id: string) => {
+	var changeFlag = false;
+	var meView = GlobalController.boardView.getPieceById(id);
+	var meModel: PieceModel = GlobalController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+	var meSqr = GlobalController.boardView.getSquareAtPos(meView.getX(), meView.getY());
+	if(!GlobalController.SELECTION_TOGGLE){
+		GlobalController.SELECTED_PIECE = meModel;
+		GlobalController.SELECTION_TOGGLE = true;
+		meSqr.setSelected(true);
+		var moves: MoveCollection = meModel.getPossibleMoves();
+		for(var eachMoveIdx in moves.getMoves()){
+			var eachMove: Move = moves.getMoves()[eachMoveIdx];
+			var possibleSqr: Square = GlobalController.boardView.getSquareAtPos(eachMove.getDest().getX(), eachMove.getDest().getY());
+			possibleSqr.setSelected(true);
+		}
+		GlobalController.SELECTED_PIECE = meModel;
+	}
+	else if (GlobalController.SELECTION_TOGGLE) {
+		var move: Move = new Move(GlobalController.SELECTED_PIECE.getPos(), new Pos(meView.getX(), meView.getY()));
+		if(GlobalController.SELECTED_PIECE.getPossibleMoves().contains(move)){
+			GlobalController.boardModel.executeMove(move);
+			changeFlag = true;
+			GlobalController.syncToBoard();
+			GlobalController.SELECTION_TOGGLE = false;
+			GlobalController.boardView.unselectAllSquares();
+		}
+		else if(GlobalController.SELECTED_PIECE.getPos().equals(meModel.getPos())){
+			GlobalController.boardView = Board.fromSerial(GlobalController.boardModel.serialize());
+			GlobalController.SELECTION_TOGGLE = false;
+			GlobalController.boardView.unselectAllSquares();
+		}
+	}
+	if(changeFlag){
+		GlobalController.update();
+		GlobalController.changeState(State.BLACKS_TURN);
+	}
+	else{
+		GlobalController.update();
+	}
+}
+
+var squareClickListener = (id: string) => {
+	var changeFlag = false;
+	var meView: Square = GlobalController.boardView.getSquareById(id);
+	if (GlobalController.SELECTION_TOGGLE) {
+		var move: Move = new Move(GlobalController.SELECTED_PIECE.getPos(), new Pos(meView.getX(), meView.getY()));
+		if(GlobalController.SELECTED_PIECE.getPossibleMoves().contains(move)){
+			GlobalController.boardModel.executeMove(move);
+			changeFlag = true;
+			GlobalController.syncToBoard();
+			GlobalController.SELECTION_TOGGLE= false;
+			GlobalController.boardView.unselectAllSquares();
+		}
+	}
+	if(changeFlag){
+		GlobalController.update();
+		GlobalController.changeState(State.BLACKS_TURN);
+	}
+	else{
+		GlobalController.update();
+	}
+}
+
+var blackClickListener = (id: string) => {
+	var changeFlag = false;
+	if (GlobalController.SELECTION_TOGGLE) {
+		var meView = GlobalController.boardView.getPieceById(id);
+		var meModel: PieceModel = GlobalController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+		var move: Move = new Move(GlobalController.SELECTED_PIECE.getPos(), new Pos(meView.getX(), meView.getY()));
+		if(GlobalController.SELECTED_PIECE.getPossibleMoves().contains(move)){
+			GlobalController.boardModel.executeMove(move);
+			changeFlag = true;
+			GlobalController.syncToBoard();
+			GlobalController.SELECTION_TOGGLE= false;
+			GlobalController.boardView.unselectAllSquares();
+		}
+	}
+	if(changeFlag){
+		GlobalController.update();
+		GlobalController.changeState(State.BLACKS_TURN);
+	}
+	else{
+		GlobalController.update();
+	}
 }

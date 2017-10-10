@@ -36,7 +36,7 @@ class BoardModel{
         var result: boolean;
         this.pos2PieceMap.forEach((value, key, map) => {
             if (pos.equals(key)) {
-                result = (value == null);
+                result = (value == null || value == undefined);
             }
         });
 
@@ -68,22 +68,22 @@ class BoardModel{
     getAllPiecesOfColor(color: Color): PieceModel[]{
         var result: PieceModel[] = new Array();
         this.pos2PieceMap.forEach((value, key, map) => {
-            if(value != null){
+            if(value != null && value != undefined ){
                 if(value.getColor() == color){
                     result.push(value);
                 }
             }
         });
-        alert(result.length);
         return result;
     }
 
     removePiece(pos: Pos){
         this.pos2PieceMap.forEach((value, key, map) => {
-            if (pos.equals(key)) {
-                this.pos2PieceMap.set(pos, null);
+            if(key.equals(pos)){
+                this.pos2PieceMap.delete(key);
             }
         });
+        this.pos2PieceMap.set(pos, null);
     }
 
     executeMove(move: Move){
@@ -94,6 +94,7 @@ class BoardModel{
 
     movePiece(piece: PieceModel, dest: Pos){
         this.removePiece(piece.getPos());
+        this.removePiece(dest);
         var transposedPiece = PieceFactory.createPieceByTransposition(dest, piece);
         this.placePiece(transposedPiece);
     }
@@ -133,6 +134,51 @@ class BoardModel{
         }
         result = result.substring(0, result.length - 1);
         return result;
+    }
+
+    reset(){
+        this.pos2PieceMap.clear();
+        for(var y:number = 0; y < this.getHeight(); y++){
+            for(var x:number = 0; x < this.getWidth(); x++){
+                this.pos2PieceMap.set(new Pos(x, y), null);
+            }
+        }
+    }
+
+    getAllMovesForColor(color: Color): MoveCollection{
+        var pieces: PieceModel[] = this.getAllPiecesOfColor(color);
+        var resultArr: MoveCollection = new MoveCollection();
+        for(var pieceIdx in pieces){
+            var eachPiece: PieceModel = pieces[pieceIdx];
+            resultArr.addAll(eachPiece.getPossibleMoves());
+        }
+        return resultArr;
+    }
+
+    populateFromSerial(serial: string) {
+        this.reset();
+        var rows:string[] = serial.split("/");
+        for (var y = 0; y < rows.length; y++) {
+            var row = rows[y];
+            var squares:string[] = row.split(",");
+            var length = squares.length;
+            for (var x = 0; x < squares.length; x++) {
+                var sqrData:string = squares[x].substring(1, squares[x].length - 1);
+
+                if (sqrData.length != 0) {
+                    var sqrDataSplit = sqrData.split("_");
+                    var thisColor:Color;
+
+                    if (sqrDataSplit[1] == "W") {
+                        thisColor = Color.WHITE;
+                    }
+                    else {
+                        thisColor = Color.BLACK;
+                    }
+                    this.addPiece(+sqrDataSplit[0], x, y, thisColor);
+                }
+            }
+        }
     }
 
     getPieceFromPosition(pos: Pos): any{

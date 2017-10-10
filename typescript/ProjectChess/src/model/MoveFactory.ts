@@ -243,13 +243,11 @@ class MoveFactory{
 
     static getRelativeToPieceNonCapturing(piece: PieceModel, x: number, y: number){
         var result: MoveCollection = new MoveCollection();
-
         var newX: number = piece.getPos().getX() + x;
         var newY: number = piece.getPos().getY() + y;
 
         if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
-
             }
             else{
                 result.add(new Move(piece.getPos(), new Pos(newX, newY)));

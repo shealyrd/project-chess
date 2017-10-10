@@ -20,6 +20,7 @@ class PawnModel extends PieceModel{
     }
 
     getPossibleMoves(): MoveCollection{
+
         if(this.hasMoved){
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                     .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
