@@ -1646,7 +1646,9 @@ class Move{
 
 	abstract getNextMove(board): Move;
 
-}class MiniMaxPlayer extends Player{
+}var storageMove;
+
+class MiniMaxPlayer extends Player{
 	myColor: Color = Color.BLACK;
 
 	/*getNextMove(board: BoardModel):Move{
@@ -1682,15 +1684,18 @@ class Move{
 				bestMove = eachMove;
 			}
 		}
+		ConsoleController.log("Best move for white: " + JSON.stringify(storageMove));
 		return bestMove;
 	}
 
 	minimax(move: Move, board: BoardModel, depth: number, color: Color, alpha: number, beta: number, maximize: boolean): number{
 		var newBoard: BoardModel = this.applyMove(move, board);
 		if(depth == 0){
+			//alert(JSON.stringify(move) + " " + this.evaluate(newBoard, color));
 			return this.evaluate(newBoard, color);
 		}
 		var bestValuation: number;
+		var bestValuation2: number;
 		if(maximize){
 			bestValuation = Number.MAX_SAFE_INTEGER * -1;
 			var maxMoves: MoveCollection = newBoard.getAllMovesForColor(color);
@@ -1708,7 +1713,12 @@ class Move{
 			var minMoves: MoveCollection = newBoard.getAllMovesForColor(color);
 			for(var minMoveIdx in minMoves.getMoves()) {
 				var eachMinMove:Move = minMoves.getMoves()[minMoveIdx];
+				bestValuation2 = bestValuation;
 				bestValuation = Math.min(bestValuation, this.minimax(eachMinMove, newBoard, depth - 1, this.swapColor(color), alpha, beta, true));
+				if(bestValuation2 != bestValuation){
+					alert(bestValuation2 + " " + bestValuation);
+					storageMove = eachMinMove;
+				}
 				beta = Math.min(beta, bestValuation);
 				if(beta <= alpha){
 					break;

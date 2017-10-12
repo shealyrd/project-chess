@@ -1,3 +1,5 @@
+//TODO: Log what it thinks the best move for white is
+
 class MiniMaxPlayer extends Player{
 	myColor: Color = Color.BLACK;
 
@@ -34,15 +36,18 @@ class MiniMaxPlayer extends Player{
 				bestMove = eachMove;
 			}
 		}
+		ConsoleController.log("Best move for white: " + JSON.stringify(storageMove));
 		return bestMove;
 	}
 
 	minimax(move: Move, board: BoardModel, depth: number, color: Color, alpha: number, beta: number, maximize: boolean): number{
 		var newBoard: BoardModel = this.applyMove(move, board);
 		if(depth == 0){
+			//alert(JSON.stringify(move) + " " + this.evaluate(newBoard, color));
 			return this.evaluate(newBoard, color);
 		}
 		var bestValuation: number;
+		var bestValuation2: number;
 		if(maximize){
 			bestValuation = Number.MAX_SAFE_INTEGER * -1;
 			var maxMoves: MoveCollection = newBoard.getAllMovesForColor(color);
@@ -60,6 +65,7 @@ class MiniMaxPlayer extends Player{
 			var minMoves: MoveCollection = newBoard.getAllMovesForColor(color);
 			for(var minMoveIdx in minMoves.getMoves()) {
 				var eachMinMove:Move = minMoves.getMoves()[minMoveIdx];
+				bestValuation2 = bestValuation;
 				bestValuation = Math.min(bestValuation, this.minimax(eachMinMove, newBoard, depth - 1, this.swapColor(color), alpha, beta, true));
 				beta = Math.min(beta, bestValuation);
 				if(beta <= alpha){
