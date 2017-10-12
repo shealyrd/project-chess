@@ -1,0 +1,19 @@
+evaluate(board: Board){
+	var numBlack = 0;
+	var numWhite = 0;
+	var blackMaterial = 0;
+	var whiteMaterial = 0;
+
+	for(var pieceIdx: board.getAllPieces()){
+		var eachPiece = board.getAllPieces()[pieceIdx];
+		if(eachPiece.getColor() == Color.WHITE){
+			numWhite++;
+			whiteMaterial += getMaterial(eachPiece);
+		}
+		else{
+			numBlack++;
+			blackMaterial += getMaterial(eachPiece);
+		}
+	}
+
+}

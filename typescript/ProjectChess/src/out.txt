@@ -1646,7 +1646,7 @@ class Move{
 
 	abstract getNextMove(board): Move;
 
-}var storageMove;
+}//TODO: Log what it thinks the best move for white is
 
 class MiniMaxPlayer extends Player{
 	myColor: Color = Color.BLACK;
@@ -1715,10 +1715,6 @@ class MiniMaxPlayer extends Player{
 				var eachMinMove:Move = minMoves.getMoves()[minMoveIdx];
 				bestValuation2 = bestValuation;
 				bestValuation = Math.min(bestValuation, this.minimax(eachMinMove, newBoard, depth - 1, this.swapColor(color), alpha, beta, true));
-				if(bestValuation2 != bestValuation){
-					alert(bestValuation2 + " " + bestValuation);
-					storageMove = eachMinMove;
-				}
 				beta = Math.min(beta, bestValuation);
 				if(beta <= alpha){
 					break;
