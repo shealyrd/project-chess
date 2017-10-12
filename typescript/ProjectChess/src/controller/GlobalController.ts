@@ -10,6 +10,8 @@ class GlobalController{
 
 	static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]";
 
+	static opponent: MiniMaxPlayer = new MiniMaxPlayer();
+
 	static start(){
 	    GlobalController.boardView = new Board(8, 8);
 		GlobalController.boardModel = new BoardModel(8,8);
@@ -27,8 +29,10 @@ class GlobalController{
 		GlobalController.addStateChangeCallback(State.BLACKS_TURN,
 			() => {
 				GlobalController.WHITE_CLICK_ON = false;
+				GlobalController.syncToBoard();
 				GlobalController.update();
-				GlobalController.makeRandomMoveForBlack();
+				//GlobalController.makeRandomMoveForBlack();
+				GlobalController.makeMoveForBlack();
 				GlobalController.syncToBoard();
 				GlobalController.changeState(State.WHITES_TURN);
 			});
@@ -86,7 +90,12 @@ class GlobalController{
 		//ConsoleController.log(randomMove.getOrigin().toString() + " to " + randomMove.getDest().toString());
 		GlobalController.boardModel.executeMove(randomMove);
 	}
-	
+
+	static makeMoveForBlack(){
+		var nextMove = GlobalController.opponent.getNextMove(GlobalController.boardModel);
+		GlobalController.boardModel.executeMove(nextMove);
+	}
+
 	static addStateChangeCallback(newState: State, callback: {(): void;}){
 		var callbacks = GlobalController.changeStateCallbacks.get(newState);
 		if(callbacks == null || callbacks == undefined){
