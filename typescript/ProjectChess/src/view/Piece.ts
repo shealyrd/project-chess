@@ -63,6 +63,7 @@ abstract class Piece extends HTMLObject{
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px")
 				.addStyle("z-index", this.getZ() + "")
+				.addStyle("pointer-events", "none")
                 .setId(this.getId());
 
 				var contentImg: string;

@@ -1,3 +1,25 @@
+class ConsoleController{
+    static console: MyConsole = new MyConsole(100, 600);
+    static run(){
+        ConsoleController.update();
+        window.onkeyup = function(e) {
+            var key = e.keyCode ? e.keyCode : e.which;
+            if (key == 13) {
+                ConsoleController.log("New Entry");
+            }
+
+        }
+    }
+    static log(txt: string){
+        ConsoleController.console.addEntry(txt);
+        ConsoleController.update();
+    }
+    static update(){
+        document.body.innerHTML += ConsoleController.console.toHTML();
+        var element = document.getElementById("my-console");
+        element.scrollTop = element.scrollHeight - element.clientHeight;
+    }
+}
 class GlobalController{
 	static state: State;
 	static changeStateCallbacks: Map<State, CallbackPool> = new Map<State, CallbackPool>();
@@ -41,7 +63,7 @@ class GlobalController{
 					ConsoleController.log("Black has lost.");
 					GlobalController.update();
 				}
-				else{
+                else {
 					if(GlobalController.isInCheck(Color.BLACK)){
 						ConsoleController.log("Black is in check");
 					}
@@ -49,9 +71,11 @@ class GlobalController{
 					GlobalController.syncToBoard();
 					GlobalController.update();
 					//GlobalController.makeRandomMoveForBlack();
-					GlobalController.makeMoveForBlack();
-					GlobalController.syncToBoard();
-					GlobalController.changeState(State.WHITES_TURN);
+                    setTimeout(() => {
+                        GlobalController.makeMoveForBlack();
+                        GlobalController.syncToBoard();
+					    GlobalController.changeState(State.WHITES_TURN);
+                    }, 10);
 				}
 			});
 		GlobalController.addStateChangeCallback(State.FINISH,
@@ -70,12 +94,12 @@ class GlobalController{
 		GlobalController.boardView = Board.fromSerial(GlobalController.boardModel.serialize());
 	}
 
-	static update(){
-		document.body.innerHTML = GlobalController.boardView.toHTML();
-		ConsoleController.update();
-		if(GlobalController.WHITE_CLICK_ON){
-			GlobalController.setWhiteClickListeners();
-		}
+    static update() {
+        document.body.innerHTML = GlobalController.boardView.toHTML();
+        ConsoleController.update();
+        if (GlobalController.WHITE_CLICK_ON) {
+            GlobalController.setWhiteClickListeners();
+        }
     }
 
 	static hasLost(color: Color): boolean{
@@ -107,8 +131,9 @@ class GlobalController{
 		var squares: Square[] = GlobalController.boardView.getSquares();
 		for (var piece in pieces) {
 			var each = pieces[piece];
-			if(each.getColor() == Color.WHITE){
-				document.getElementById(each.getId() + "").setAttribute("onclick", "whiteClickListener(\""+ + each.getId() + "\")");
+            if (each.getColor() == Color.WHITE) {
+                var coSqr: Square = GlobalController.boardView.getSquareAtPos(each.getX(), each.getY());
+				document.getElementById(coSqr.getId() + "").setAttribute("onclick", "whiteClickListener(\""+ + each.getId() + "\")");
 			}
 			else{
 				document.getElementById(each.getId() + "").setAttribute("onclick", "blackClickListener(\""+ + each.getId() + "\")");
@@ -116,7 +141,9 @@ class GlobalController{
 		}
 		for (var square in squares) {
 			var eachSqr:Square = squares[square];
-			document.getElementById(eachSqr.getId() + "").setAttribute("onclick", "squareClickListener(\"" + eachSqr.getId() + "\")");
+            if (document.getElementById(eachSqr.getId() + "").onclick == null || document.getElementById(eachSqr.getId() + "").onclick == undefined) {
+                document.getElementById(eachSqr.getId() + "").setAttribute("onclick", "squareClickListener(\"" + eachSqr.getId() + "\")");   
+            }
 		}
 	}
 
