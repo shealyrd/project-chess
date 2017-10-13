@@ -49,6 +49,16 @@ class MoveCollection{
         return this;
     }
 
+    public containsDestination(pos: Pos){
+        for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.getDest().equals(pos)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public shuffle(){
         Algorithms.shuffle(this.moves);
     }

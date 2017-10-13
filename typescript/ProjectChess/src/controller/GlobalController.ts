@@ -23,18 +23,36 @@ class GlobalController{
 	static initializeStateCallbacks(){
 		GlobalController.addStateChangeCallback(State.WHITES_TURN,
 			() => {
-				GlobalController.WHITE_CLICK_ON = true;
-				GlobalController.update();
+				if(GlobalController.hasLost(Color.WHITE)){
+					ConsoleController.log("White has lost.");
+					GlobalController.update();
+				}
+				else{
+					if(GlobalController.isInCheck(Color.WHITE)){
+						ConsoleController.log("White is in check");
+					}
+					GlobalController.WHITE_CLICK_ON = true;
+					GlobalController.update();
+				}
 			});
 		GlobalController.addStateChangeCallback(State.BLACKS_TURN,
 			() => {
-				GlobalController.WHITE_CLICK_ON = false;
-				GlobalController.syncToBoard();
-				GlobalController.update();
-				//GlobalController.makeRandomMoveForBlack();
-				GlobalController.makeMoveForBlack();
-				GlobalController.syncToBoard();
-				GlobalController.changeState(State.WHITES_TURN);
+				if(GlobalController.hasLost(Color.BLACK)){
+					ConsoleController.log("Black has lost.");
+					GlobalController.update();
+				}
+				else{
+					if(GlobalController.isInCheck(Color.BLACK)){
+						ConsoleController.log("Black is in check");
+					}
+					GlobalController.WHITE_CLICK_ON = false;
+					GlobalController.syncToBoard();
+					GlobalController.update();
+					//GlobalController.makeRandomMoveForBlack();
+					GlobalController.makeMoveForBlack();
+					GlobalController.syncToBoard();
+					GlobalController.changeState(State.WHITES_TURN);
+				}
 			});
 		GlobalController.addStateChangeCallback(State.FINISH,
 			() => {
@@ -60,6 +78,30 @@ class GlobalController{
 		}
     }
 
+	static hasLost(color: Color): boolean{
+		var pieces: PieceModel[] = GlobalController.boardModel.getAllPiecesOfColor(color);
+		for(var pieceIdx in pieces){
+			var eachPiece = pieces[pieceIdx];
+			if(eachPiece.getType() == PieceType.KING){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	static isInCheck(color: Color): boolean{
+		var pieces: PieceModel[] = GlobalController.boardModel.getAllPiecesOfColor(color);
+		for(var pieceIdx in pieces){
+			var eachPiece = pieces[pieceIdx];
+			if(eachPiece.getType() == PieceType.KING){
+				if(GlobalController.boardModel.getAllMovesForColor(GlobalController.swapColor(color)).containsDestination(eachPiece.getPos())){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	static setWhiteClickListeners(){
 		var pieces: Piece[] = GlobalController.boardView.getPieces();
 		var squares: Square[] = GlobalController.boardView.getSquares();
@@ -81,6 +123,15 @@ class GlobalController{
 	static changeState(newState: State){
 		this.state = newState;
 		GlobalController.fireCallbacksForState(this.state);
+	}
+
+	static swapColor(color: Color): Color{
+		if(color == Color.BLACK){
+			return Color.WHITE;
+		}
+		else{
+			return Color.BLACK;
+		}
 	}
 
 	static makeRandomMoveForBlack(){
