@@ -1,7 +1,7 @@
 class MyConsole extends HTMLObject{
     lines: ConsoleEntry[] = new Array();
     entryHeight: number = 20;
-    consoleWidth: number = 500;
+    consoleWidth: number = 400;
     consoleHeight: number = 200;
 
     constructor(leftPos: number, upPos: number){
@@ -29,6 +29,7 @@ class MyConsole extends HTMLObject{
         builder.newDiv()
             .addStyle("overflow-y", "scroll")
             .addStyle("position", "absolute")
+            .addStyle("border", "1px solid black")
             .addStyle("left", this.getLeftPos() + "")
             .addStyle("top", this.getTopPos() + "")
             .addStyle("width", this.getWidth() + "px")

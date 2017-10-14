@@ -1,13 +1,10 @@
 class MiniMaxPlayer extends Player{
-	myColor: Color = Color.BLACK;
-
 
 	getNextMove(board: BoardModel):Move{
-		var moves: MoveCollection = board.getAllMovesForColor(Color.BLACK);
+		var moves: MoveCollection = board.getAllMovesForColor(this.getColor());
 		moves.shuffle();
 		var bestValuation: number = Number.MAX_SAFE_INTEGER * -1;
-		var bestMove: Move = this.rootMiniMax(board, 2, this.myColor);
-		//ConsoleController.log("Best move for white: " + JSON.stringify(storageMove));
+		var bestMove: Move = this.rootMiniMax(board, 2, this.getColor());
 		return bestMove;
 	}
 	

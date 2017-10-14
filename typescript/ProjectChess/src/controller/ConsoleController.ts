@@ -1,5 +1,5 @@
 class ConsoleController{
-    static console: MyConsole = new MyConsole(100, 600);
+    static console: MyConsole = new MyConsole(100, 400);
     static run(){
         ConsoleController.update();
         window.onkeyup = function(e) {

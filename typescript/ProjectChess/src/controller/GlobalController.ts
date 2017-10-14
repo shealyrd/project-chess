@@ -11,7 +11,7 @@ class GlobalController{
 
 	static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]";
 
-	static opponent: MiniMaxPlayer = new MiniMaxPlayer();
+	static opponent: MiniMaxPlayer = new MiniMaxPlayer(Color.BLACK);
 
 	static start(){
 	    GlobalController.boardView = new Board(8, 8);
@@ -75,7 +75,7 @@ class GlobalController{
 
     static update() {
         document.body.innerHTML = GlobalController.boardView.toHTML();
-        ConsoleController.update();
+		ConsoleController.update();
         if (GlobalController.WHITE_CLICK_ON) {
             GlobalController.setWhiteClickListeners();
         }
