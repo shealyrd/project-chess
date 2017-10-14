@@ -1,4 +1,5 @@
 type %~dp0\common\State.ts > out.txt 
+type %~dp0\common\StaticColors.ts >> out.txt 
 type %~dp0\common\Algorithms.ts >> out.txt 
 type %~dp0\common\CallbackPool.ts >> out.txt 
 type %~dp0\common\IDSequence.ts >> out.txt 
@@ -31,8 +32,7 @@ type %~dp0\model\pieces\QueenModel.ts  >> out.txt
 type %~dp0\model\PieceFactory.ts  >> out.txt 
 type %~dp0\model\BoardModel.ts  >> out.txt 
 type %~dp0\model\Player.ts  >> out.txt 
-type %~dp0\model\MiniMaxPlayer.ts  >> out.txt 
-type %~dp0\controller\TestController.ts  >> out.txt 
+type %~dp0\model\MiniMaxPlayer.ts  >> out.txt  
 type %~dp0\view\Console\ConsoleEntry.ts  >> out.txt 
 type %~dp0\view\Console\MyConsole.ts  >> out.txt 
 type %~dp0\controller\ConsoleController.ts  >> out.txt 

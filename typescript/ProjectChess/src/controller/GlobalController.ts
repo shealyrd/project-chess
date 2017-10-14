@@ -1,25 +1,3 @@
-class ConsoleController{
-    static console: MyConsole = new MyConsole(100, 600);
-    static run(){
-        ConsoleController.update();
-        window.onkeyup = function(e) {
-            var key = e.keyCode ? e.keyCode : e.which;
-            if (key == 13) {
-                ConsoleController.log("New Entry");
-            }
-
-        }
-    }
-    static log(txt: string){
-        ConsoleController.console.addEntry(txt);
-        ConsoleController.update();
-    }
-    static update(){
-        document.body.innerHTML += ConsoleController.console.toHTML();
-        var element = document.getElementById("my-console");
-        element.scrollTop = element.scrollHeight - element.clientHeight;
-    }
-}
 class GlobalController{
 	static state: State;
 	static changeStateCallbacks: Map<State, CallbackPool> = new Map<State, CallbackPool>();
@@ -27,7 +5,8 @@ class GlobalController{
 	static boardModel: BoardModel;
 
 	static SELECTION_TOGGLE: boolean = false;
-	static SELECTED_PIECE: PieceModel;
+	static SELECTED_PIECE: PieceModel = null;
+	static SELECTED_OPP_PIECE: PieceModel = null;
 	static WHITE_CLICK_ON: boolean = true;
 
 	static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]";
@@ -136,7 +115,8 @@ class GlobalController{
 				document.getElementById(coSqr.getId() + "").setAttribute("onclick", "whiteClickListener(\""+ + each.getId() + "\")");
 			}
 			else{
-				document.getElementById(each.getId() + "").setAttribute("onclick", "blackClickListener(\""+ + each.getId() + "\")");
+				var coSqr: Square = GlobalController.boardView.getSquareAtPos(each.getX(), each.getY());
+				document.getElementById(coSqr.getId() + "").setAttribute("onclick", "blackClickListener(\""+ + each.getId() + "\")");
 			}
 		}
 		for (var square in squares) {
@@ -201,12 +181,12 @@ var whiteClickListener = (id: string) => {
 	if(!GlobalController.SELECTION_TOGGLE){
 		GlobalController.SELECTED_PIECE = meModel;
 		GlobalController.SELECTION_TOGGLE = true;
-		meSqr.setSelected(true);
+		meSqr.setHexColor(StaticColors.SQUARE_SELECTION_BLUE);
 		var moves: MoveCollection = meModel.getPossibleMoves();
 		for(var eachMoveIdx in moves.getMoves()){
 			var eachMove: Move = moves.getMoves()[eachMoveIdx];
 			var possibleSqr: Square = GlobalController.boardView.getSquareAtPos(eachMove.getDest().getX(), eachMove.getDest().getY());
-			possibleSqr.setSelected(true);
+			possibleSqr.setHexColor(StaticColors.SQUARE_SELECTION_BLUE);
 		}
 		GlobalController.SELECTED_PIECE = meModel;
 	}
@@ -217,11 +197,13 @@ var whiteClickListener = (id: string) => {
 			changeFlag = true;
 			GlobalController.syncToBoard();
 			GlobalController.SELECTION_TOGGLE = false;
+			GlobalController.SELECTED_PIECE= null;
 			GlobalController.boardView.unselectAllSquares();
 		}
 		else if(GlobalController.SELECTED_PIECE.getPos().equals(meModel.getPos())){
 			GlobalController.boardView = Board.fromSerial(GlobalController.boardModel.serialize());
 			GlobalController.SELECTION_TOGGLE = false;
+			GlobalController.SELECTED_PIECE= null;
 			GlobalController.boardView.unselectAllSquares();
 		}
 	}
@@ -244,6 +226,7 @@ var squareClickListener = (id: string) => {
 			changeFlag = true;
 			GlobalController.syncToBoard();
 			GlobalController.SELECTION_TOGGLE= false;
+			GlobalController.SELECTED_PIECE= null;
 			GlobalController.boardView.unselectAllSquares();
 		}
 	}
@@ -258,16 +241,38 @@ var squareClickListener = (id: string) => {
 
 var blackClickListener = (id: string) => {
 	var changeFlag = false;
-	if (GlobalController.SELECTION_TOGGLE) {
-		var meView = GlobalController.boardView.getPieceById(id);
-		var meModel: PieceModel = GlobalController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+	var meView = GlobalController.boardView.getPieceById(id);
+	var meModel: PieceModel = GlobalController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
+	var meSqr = GlobalController.boardView.getSquareAtPos(meView.getX(), meView.getY());
+	if (GlobalController.SELECTION_TOGGLE && GlobalController.SELECTED_PIECE != null) {
 		var move: Move = new Move(GlobalController.SELECTED_PIECE.getPos(), new Pos(meView.getX(), meView.getY()));
 		if(GlobalController.SELECTED_PIECE.getPossibleMoves().contains(move)){
 			GlobalController.boardModel.executeMove(move);
 			changeFlag = true;
 			GlobalController.syncToBoard();
 			GlobalController.SELECTION_TOGGLE= false;
+			GlobalController.SELECTED_PIECE= null;
 			GlobalController.boardView.unselectAllSquares();
+		}
+	}
+	else{
+		if (GlobalController.SELECTION_TOGGLE && GlobalController.SELECTED_PIECE == null) {
+			if(GlobalController.SELECTED_OPP_PIECE.getPos().equals(meModel.getPos())){
+				GlobalController.SELECTION_TOGGLE = false;
+				GlobalController.SELECTED_OPP_PIECE = null;
+				GlobalController.boardView.unselectAllSquares();
+			}
+		}
+		else{
+			GlobalController.SELECTION_TOGGLE = true;
+			meSqr.setHexColor(StaticColors.SQUARE_SELECTION_RED);
+			var moves: MoveCollection = meModel.getPossibleMoves();
+			for(var eachMoveIdx in moves.getMoves()){
+				var eachMove: Move = moves.getMoves()[eachMoveIdx];
+				var possibleSqr: Square = GlobalController.boardView.getSquareAtPos(eachMove.getDest().getX(), eachMove.getDest().getY());
+				possibleSqr.setHexColor(StaticColors.SQUARE_SELECTION_RED);
+			}
+			GlobalController.SELECTED_OPP_PIECE = meModel;
 		}
 	}
 	if(changeFlag){

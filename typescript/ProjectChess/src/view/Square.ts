@@ -2,7 +2,7 @@ class Square extends HTMLObject{
 	col: Color;
 	x: number;
     y: number;
-    selected: boolean;
+    hexColor: string;
 
     constructor(left: number, top: number, width: number, height: number){
         super();
@@ -20,12 +20,19 @@ class Square extends HTMLObject{
         this.y = y;
     }
 
-    setSelected(bool: boolean){
-        this.selected = bool;
+    setHexColor(hex: string){
+        this.hexColor = hex;
     }
 
-    isSelected(): boolean{
-        return this.selected;
+    resetHexColor(){
+       var hexColor: string;
+
+        switch(this.col){
+            case Color.WHITE: hexColor = "#f0d9b5"; break;
+            case Color.BLACK: hexColor = "#b58863"; break;
+        }
+
+        this.setHexColor(hexColor);
     }
 
     getY(): number{
@@ -38,6 +45,7 @@ class Square extends HTMLObject{
 
 	setColor(newCol: Color){
 		this.col = newCol;
+        this.resetHexColor();
 	}
 	
 	getColor(): Color{
@@ -51,30 +59,13 @@ class Square extends HTMLObject{
                 .addStyle("position", "absolute")
                 .addStyle("left", this.getLeftPos() + "")
                 .addStyle("top", this.getTopPos() + "")
-                .addStyle("border", "1px solid black");
+                .addStyle("width", this.getWidth() + "px")
+                .addStyle("height", this.getHeight() + "px");
 
         builder.setId(this.getId());
+        builder.addStyle("border", "1px solid black");
+		builder.addStyle("background-color", this.hexColor);
 
-        if(this.selected){
-            builder.addStyle("border", "5px solid blue")
-                    .addStyle("box-sizing", "border-box")
-                    .addStyle("width", +(this.getWidth() + 2) + "px")
-                    .addStyle("height", +(this.getHeight() + 2) + "px");
-        }
-        else{
-            builder.addStyle("width", this.getWidth() + "px")
-                    .addStyle("height", this.getHeight() + "px");
-        }
-		if(this.col != null){
-			var hexColor: string;
-			
-			switch(this.col){
-				case Color.WHITE: hexColor = "#f0d9b5"; break;
-				case Color.BLACK: hexColor = "#b58863"; break;
-			}
-			
-			builder.addStyle("background-color", hexColor);
-		}
         return builder.toString();
     }
 

@@ -255,7 +255,7 @@ class Board extends HTMLObject{
         var locSquares = this.getSquares();
         for(var square in locSquares){
             var each = locSquares[square];
-            each.setSelected(false);
+            each.resetHexColor();
         }
     }
 
