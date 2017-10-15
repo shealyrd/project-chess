@@ -117,4 +117,8 @@ class MiniMaxPlayer extends Player{
 		var oppMoves = board.getAllMovesForColor(this.swapColor(color));
 		return myMoves.getMoves().length - oppMoves.getMoves().length;
 	}
+
+	isAutoExecute(){
+		return true;
+	}
 }

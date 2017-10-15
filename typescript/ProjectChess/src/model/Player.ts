@@ -1,5 +1,6 @@
 abstract class Player{
 	color: Color;
+	autoExecute: boolean
 
 	constructor(color: Color){
 		this.color = color;
@@ -9,6 +10,11 @@ abstract class Player{
 		return this.color;
 	}
 
-	abstract getNextMove(board): Move;
+	readyForMove(){}
+	afterMove(board: BoardModel){}
+	beforeMove(board: BoardModel){}
+
+	abstract getNextMove(board: BoardModel): Move;
+	abstract isAutoExecute(): boolean;
 
 }

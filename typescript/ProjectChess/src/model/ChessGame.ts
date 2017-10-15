@@ -11,13 +11,43 @@ class ChessGame{
         this.board = board;
     }
 
+    start(){
+        this.currentTurn = Color.WHITE;
+        this.getCurrentPlayer().readyForMove();
+    }
+
     executeNextMove(){
-        if(!this.hasFinished){
+        if(!this.isFinished()){
             var move: Move = this.getCurrentPlayer().getNextMove(this.board);
+            this.getCurrentPlayer().beforeMove(this.board);
             this.board.executeMove(move);
+            this.getCurrentPlayer().afterMove(this.board);
             if(this.hasLost(this.swapColor(this.currentTurn))){
                 this.hasFinished = true;
             }
+            this.swapPlayers();
+        }
+        setTimeout(() => {
+            if(!this.isFinished()){
+                if(this.getCurrentPlayer().isAutoExecute()){
+                    this.executeNextMove();
+                }
+                else{
+                    this.getCurrentPlayer().readyForMove();
+                }
+            }
+            else{
+                this.getCurrentPlayer().afterMove(this.board);
+            }
+        }, 10);
+    }
+
+    swapPlayers(){
+        if(this.currentTurn == Color.WHITE){
+            return this.currentTurn = Color.BLACK;
+        }
+        else{
+            return this.currentTurn = Color.WHITE;
         }
     }
 
@@ -30,7 +60,7 @@ class ChessGame{
         }
     }
 
-    hasFinished(): boolean{
+    isFinished(): boolean{
         return this.hasFinished;
     }
 

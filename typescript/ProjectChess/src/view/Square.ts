@@ -52,6 +52,10 @@ class Square extends HTMLObject{
 		return this.col;
 	}
 
+    getPos(): Pos{
+        return new Pos(this.getX(), this.getY());
+    }
+
     toHTML():string {
         var builder: HTMLBuilder = new HTMLBuilder();
         builder.newDiv()

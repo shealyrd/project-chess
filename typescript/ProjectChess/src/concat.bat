@@ -31,9 +31,11 @@ type %~dp0\model\pieces\KingModel.ts  >> out.txt
 type %~dp0\model\pieces\QueenModel.ts  >> out.txt 
 type %~dp0\model\PieceFactory.ts  >> out.txt 
 type %~dp0\model\BoardModel.ts  >> out.txt 
+type %~dp0\model\BoardFactory.ts  >> out.txt 
 type %~dp0\model\Player.ts  >> out.txt 
-type %~dp0\model\MiniMaxPlayer.ts  >> out.txt  
+type %~dp0\model\MiniMaxPlayer.ts  >> out.txt 
+type %~dp0\model\ChessGame.ts  >> out.txt  
 type %~dp0\view\Console\ConsoleEntry.ts  >> out.txt 
 type %~dp0\view\Console\MyConsole.ts  >> out.txt 
 type %~dp0\controller\ConsoleController.ts  >> out.txt 
-type %~dp0\controller\GlobalController.ts  >> out.txt 
+type %~dp0\controller\GameController.ts  >> out.txt 

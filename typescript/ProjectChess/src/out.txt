@@ -287,6 +287,9 @@ abstract class Piece extends HTMLObject{
         return builder.toString();
     }
 
+    getPos():Pos {
+        return new Pos(this.getX(), this.getY());
+    }
 }
 class Pawn extends Piece{
     static blackImg: string = "http://chessboardjs.com/img/chesspieces/wikipedia/bP.png";
@@ -438,6 +441,10 @@ class Pawn extends Piece{
 	getColor(): Color{
 		return this.col;
 	}
+
+    getPos(): Pos{
+        return new Pos(this.getX(), this.getY());
+    }
 
     toHTML():string {
         var builder: HTMLBuilder = new HTMLBuilder();
@@ -799,15 +806,16 @@ class Pawn extends Piece{
         }
     }
 
-    getSquareAtPos(x:Number, y:Number): Square{
+    getSquareAtPos(pos: Pos): Square{
         var locSquares = this.getSquares();
         for(var square in locSquares){
             var each = locSquares[square];
-            if(each.getX() == x && each.getY() == y){
+            if(each.getPos().equals(pos)){
                 return each;
             }
         }
     }
+
 }class Pos{
     private X: number;
     private Y: number;
@@ -1649,23 +1657,41 @@ class Move{
 
         return result;
     }
+}class BoardFactory{
+    static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]";
+
+    static getStandardBoard(): BoardModel{
+        var board: BoardModel = new BoardModel(8,8);
+        board.populateFromSerial(BoardFactory.STANDARD_BOARD);
+        return board;
+    }
+
 }abstract class Player{
-
-	abstract getNextMove(board): Move;
-
-}class MiniMaxPlayer extends Player{
-	myColor: Color;
+	color: Color;
+	autoExecute: boolean
 
 	constructor(color: Color){
-		super();
-		this.myColor = color;
+		this.color = color;
 	}
 
+	getColor(): Color{
+		return this.color;
+	}
+
+	readyForMove(){}
+	afterMove(board: BoardModel){}
+	beforeMove(board: BoardModel){}
+
+	abstract getNextMove(board: BoardModel): Move;
+	abstract isAutoExecute(): boolean;
+
+}class MiniMaxPlayer extends Player{
+
 	getNextMove(board: BoardModel):Move{
-		var moves: MoveCollection = board.getAllMovesForColor(this.myColor);
+		var moves: MoveCollection = board.getAllMovesForColor(this.getColor());
 		moves.shuffle();
 		var bestValuation: number = Number.MAX_SAFE_INTEGER * -1;
-		var bestMove: Move = this.rootMiniMax(board, 2, this.myColor);
+		var bestMove: Move = this.rootMiniMax(board, 2, this.getColor());
 		return bestMove;
 	}
 	
@@ -1778,6 +1804,108 @@ class Move{
 		var oppMoves = board.getAllMovesForColor(this.swapColor(color));
 		return myMoves.getMoves().length - oppMoves.getMoves().length;
 	}
+
+	isAutoExecute(){
+		return true;
+	}
+}class ChessGame{
+    board: BoardModel;
+    white: Player;
+    black: Player;
+    currentTurn: Color;
+    hasFinished: boolean;
+
+    constructor(board: BoardModel, white: Player, black: Player){
+        this.white = white;
+        this.black = black;
+        this.board = board;
+    }
+
+    start(){
+        this.currentTurn = Color.WHITE;
+        this.getCurrentPlayer().readyForMove();
+    }
+
+    executeNextMove(){
+        if(!this.isFinished()){
+            var move: Move = this.getCurrentPlayer().getNextMove(this.board);
+            this.getCurrentPlayer().beforeMove(this.board);
+            this.board.executeMove(move);
+            this.getCurrentPlayer().afterMove(this.board);
+            if(this.hasLost(this.swapColor(this.currentTurn))){
+                this.hasFinished = true;
+            }
+            this.swapPlayers();
+        }
+        setTimeout(() => {
+            if(!this.isFinished()){
+                if(this.getCurrentPlayer().isAutoExecute()){
+                    this.executeNextMove();
+                }
+                else{
+                    this.getCurrentPlayer().readyForMove();
+                }
+            }
+            else{
+                this.getCurrentPlayer().afterMove(this.board);
+            }
+        }, 10);
+    }
+
+    swapPlayers(){
+        if(this.currentTurn == Color.WHITE){
+            return this.currentTurn = Color.BLACK;
+        }
+        else{
+            return this.currentTurn = Color.WHITE;
+        }
+    }
+
+    getCurrentPlayer(): Player{
+        if(this.currentTurn == Color.WHITE){
+            return this.white;
+        }
+        else{
+            return this.black;
+        }
+    }
+
+    isFinished(): boolean{
+        return this.hasFinished;
+    }
+
+    hasLost(color: Color): boolean{
+        var pieces: PieceModel[] = this.board.getAllPiecesOfColor(color);
+        for(var pieceIdx in pieces){
+            var eachPiece = pieces[pieceIdx];
+            if(eachPiece.getType() == PieceType.KING){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    isInCheck(color: Color): boolean{
+        var pieces: PieceModel[] = this.board.getAllPiecesOfColor(color);
+        for(var pieceIdx in pieces){
+            var eachPiece = pieces[pieceIdx];
+            if(eachPiece.getType() == PieceType.KING){
+                if(this.board.getAllMovesForColor(this.swapColor(color)).containsDestination(eachPiece.getPos())){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    swapColor(color: Color): Color{
+        if(color == Color.BLACK){
+            return Color.WHITE;
+        }
+        else{
+            return Color.BLACK;
+        }
+    }
 }class ConsoleEntry extends HTMLObject{
     text: string;
 
@@ -1816,8 +1944,8 @@ class Move{
 }class MyConsole extends HTMLObject{
     lines: ConsoleEntry[] = new Array();
     entryHeight: number = 20;
-    consoleWidth: number = 500;
-    consoleHeight: number = 100;
+    consoleWidth: number = 400;
+    consoleHeight: number = 200;
 
     constructor(leftPos: number, upPos: number){
         super();
@@ -1855,7 +1983,7 @@ class Move{
         return builder.toString();
     }
 }class ConsoleController{
-    static console: MyConsole = new MyConsole(100, 600);
+    static console: MyConsole = new MyConsole(100, 400);
     static run(){
         ConsoleController.update();
         window.onkeyup = function(e) {
@@ -1876,288 +2004,281 @@ class Move{
         element.scrollTop = element.scrollHeight - element.clientHeight;
     }
 }
-class GlobalController{
-	static state: State;
-	static changeStateCallbacks: Map<State, CallbackPool> = new Map<State, CallbackPool>();
-	static boardView: Board;
-	static boardModel: BoardModel;
+class GameController extends Player{
+    baseElement: HTMLElement;
+    chessGame: ChessGame;
+    myColor: Color = Color.WHITE;
+    boardView: Board;
 
-	static SELECTION_TOGGLE: boolean = false;
-	static SELECTED_PIECE: PieceModel = null;
-	static SELECTED_OPP_PIECE: PieceModel = null;
-	static WHITE_CLICK_ON: boolean = true;
+    //temp storage
+    SELECTED_PIECE: PieceModel;
+    CHOSEN_MOVE: Move;
 
-	static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]";
+    constructor(baseElement: HTMLElement){
+        super(Color.WHITE);
+        this.baseElement = baseElement;
+    }
 
-	static opponent: MiniMaxPlayer = new MiniMaxPlayer(Color.BLACK);
+    start(){
+        var board: BoardModel = BoardFactory.getStandardBoard();
+        this.boardView = Board.fromSerial(board.serialize());
+        var miniMaxAI = new MiniMaxPlayer(Color.BLACK);
+        this.chessGame = new ChessGame(board, this, miniMaxAI);
+        this.update();
+        this.chessGame.start();
+    }
 
-	static start(){
-	    GlobalController.boardView = new Board(8, 8);
-		GlobalController.boardModel = new BoardModel(8,8);
-		GlobalController.setStandard();
-		GlobalController.initializeStateCallbacks();
-		ConsoleController.run();
-	}
+    update(){
+        this.baseElement.innerHTML = this.boardView.toHTML();
+        if (this.chessGame.currentTurn == this.getColor()) {
+            this.addClickListeners();
+        }
+        //ConsoleController.update();
+    }
 
-	static initializeStateCallbacks(){
-		GlobalController.addStateChangeCallback(State.WHITES_TURN,
-			() => {
-				if(GlobalController.hasLost(Color.WHITE)){
-					ConsoleController.log("White has lost.");
-					GlobalController.update();
-				}
-				else{
-					if(GlobalController.isInCheck(Color.WHITE)){
-						ConsoleController.log("White is in check");
-					}
-					GlobalController.WHITE_CLICK_ON = true;
-					GlobalController.update();
-				}
-			});
-		GlobalController.addStateChangeCallback(State.BLACKS_TURN,
-			() => {
-				if(GlobalController.hasLost(Color.BLACK)){
-					ConsoleController.log("Black has lost.");
-					GlobalController.update();
-				}
-                else {
-					if(GlobalController.isInCheck(Color.BLACK)){
-						ConsoleController.log("Black is in check");
-					}
-					GlobalController.WHITE_CLICK_ON = false;
-					GlobalController.syncToBoard();
-					GlobalController.update();
-					//GlobalController.makeRandomMoveForBlack();
-                    setTimeout(() => {
-                        GlobalController.makeMoveForBlack();
-                        GlobalController.syncToBoard();
-					    GlobalController.changeState(State.WHITES_TURN);
-                    }, 10);
-				}
-			});
-		GlobalController.addStateChangeCallback(State.FINISH,
-			() => {
-				//print result
-			});
-	}
-
-	static setStandard(){
-		GlobalController.boardModel.populateFromSerial(GlobalController.STANDARD_BOARD);
-		GlobalController.syncToBoard();
-		GlobalController.update();
-	}
-
-	static syncToBoard() {
-		GlobalController.boardView = Board.fromSerial(GlobalController.boardModel.serialize());
-	}
-
-    static update() {
-        document.body.innerHTML = GlobalController.boardView.toHTML();
-        ConsoleController.update();
-        if (GlobalController.WHITE_CLICK_ON) {
-            GlobalController.setWhiteClickListeners();
+    turnOffClickListeners():void {
+        var squares: Square[] = this.boardView.getSquares();
+        for (var square in squares) {
+            var each = squares[square];
+            this.setElementOnClick(each.getId(), () => {});
         }
     }
 
-	static hasLost(color: Color): boolean{
-		var pieces: PieceModel[] = GlobalController.boardModel.getAllPiecesOfColor(color);
-		for(var pieceIdx in pieces){
-			var eachPiece = pieces[pieceIdx];
-			if(eachPiece.getType() == PieceType.KING){
-				return false;
-			}
-		}
-		return true;
-	}
+    addClickListeners(){
+        this.addMyPieceClickListeners();
+        this.addOppPieceClickListeners();
+        this.addSquareClickListeners();
+    }
 
-	static isInCheck(color: Color): boolean{
-		var pieces: PieceModel[] = GlobalController.boardModel.getAllPiecesOfColor(color);
-		for(var pieceIdx in pieces){
-			var eachPiece = pieces[pieceIdx];
-			if(eachPiece.getType() == PieceType.KING){
-				if(GlobalController.boardModel.getAllMovesForColor(GlobalController.swapColor(color)).containsDestination(eachPiece.getPos())){
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+    addMyPieceClickListeners():void {
+        var pieces: Piece[] = this.boardView.getPieces();
+        for (var piece in pieces) {
+            var each = pieces[piece];
+            if (each.getColor() == this.getColor()) {
+                var coSqr = this.boardView.getSquareAtPos(each.getPos());
+                //document.getElementById(coSqr.getId()).onclick = this.getMyPieceClickListenerFunction(coSqr.getId());
+                this.setElementOnClick(coSqr.getId(),this.getMyPieceClickListenerFunction(coSqr.getId(), this));
 
-	static setWhiteClickListeners(){
-		var pieces: Piece[] = GlobalController.boardView.getPieces();
-		var squares: Square[] = GlobalController.boardView.getSquares();
-		for (var piece in pieces) {
-			var each = pieces[piece];
-            if (each.getColor() == Color.WHITE) {
-                var coSqr: Square = GlobalController.boardView.getSquareAtPos(each.getX(), each.getY());
-				document.getElementById(coSqr.getId() + "").setAttribute("onclick", "whiteClickListener(\""+ + each.getId() + "\")");
-			}
-			else{
-				var coSqr: Square = GlobalController.boardView.getSquareAtPos(each.getX(), each.getY());
-				document.getElementById(coSqr.getId() + "").setAttribute("onclick", "blackClickListener(\""+ + each.getId() + "\")");
-			}
-		}
-		for (var square in squares) {
-			var eachSqr:Square = squares[square];
-            if (document.getElementById(eachSqr.getId() + "").onclick == null || document.getElementById(eachSqr.getId() + "").onclick == undefined) {
-                document.getElementById(eachSqr.getId() + "").setAttribute("onclick", "squareClickListener(\"" + eachSqr.getId() + "\")");   
             }
-		}
-	}
+        }
+    }
 
-	static changeState(newState: State){
-		this.state = newState;
-		GlobalController.fireCallbacksForState(this.state);
-	}
+    getMyPieceClickListenerFunction(id: string, control: GameController){
+        return function () {
+            if(!control.myPieceIsSelected()){
+                control.unselectPiece();
+                control.resetSquareColors();
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
+                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+            }
+            else if(control.myPieceIsSelected()){
+                control.unselectPiece();
+                control.resetSquareColors();
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
+                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+            }
+            else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
+                control.unselectPiece();
+                control.resetSquareColors();
+                control.update();
+            }
+            else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
+                var sqr: Square = control.getSquareAtId(id);
+                control.moveSelectedPieceToSquare(sqr);
+                control.signalOpponentsMove();
+            }
+        };
+    }
 
-	static swapColor(color: Color): Color{
-		if(color == Color.BLACK){
-			return Color.WHITE;
-		}
-		else{
-			return Color.BLACK;
-		}
-	}
+    addOppPieceClickListeners(){
+        var pieces: Piece[] = this.boardView.getPieces();
+        for (var piece in pieces) {
+            var each = pieces[piece];
+            if (each.getColor() == this.swapColor(this.getColor())) {
+                var coSqr = this.boardView.getSquareAtPos(each.getPos());
+                this.setElementOnClick(coSqr.getId(),this.getOppPieceClickListenerFunction(coSqr.getId(), this));
+            }
+        }
+    }
 
-	static makeRandomMoveForBlack(){
-		var allBlkMoves: MoveCollection = GlobalController.boardModel.getAllMovesForColor(Color.BLACK);
-		allBlkMoves.shuffle();
-		var randomMove = allBlkMoves.getMoves()[0];
-		//ConsoleController.log(randomMove.getOrigin().toString() + " to " + randomMove.getDest().toString());
-		GlobalController.boardModel.executeMove(randomMove);
-	}
+    getOppPieceClickListenerFunction(id: string, control: GameController){
+        return function () {
+            if(!control.oppPieceIsSelected()){
+                control.unselectPiece();
+                control.resetSquareColors();
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
+                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_RED);
+            }
+            else if (control.oppPieceIsSelected()) {
+                control.unselectPiece();
+                control.resetSquareColors();
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
+                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_RED);
+            }
+            else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
+                control.unselectPiece();
+                control.resetSquareColors();
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
+                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_RED);
+            }
+            else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
+                var sqr: Square = control.getSquareAtId(id);
+                control.moveSelectedPieceToSquare(sqr);
+                control.signalOpponentsMove();
+            }
+        };
+    }
 
-	static makeMoveForBlack(){
-		var nextMove = GlobalController.opponent.getNextMove(GlobalController.boardModel);
-		GlobalController.boardModel.executeMove(nextMove);
-	}
+    addSquareClickListeners(){
+        var squares: Square[] = this.boardView.getSquares();
+        for (var square in squares) {
+            var each = squares[square];
+            if (this.hasNoClickListener(each.getId())) {
+                this.setElementOnClick(each.getId(),this.getSquareClickListenerFunction(each.getId(), this));
+            }
+        }
+    }
 
-	static addStateChangeCallback(newState: State, callback: {(): void;}){
-		var callbacks = GlobalController.changeStateCallbacks.get(newState);
-		if(callbacks == null || callbacks == undefined){
-			var newCallbackPool = new CallbackPool(callback);
-			GlobalController.changeStateCallbacks.set(newState, newCallbackPool);
-		}
-		else{
-			callbacks.addCallback(callback);
-		}
-	}
-	
-	static fireCallbacksForState(state: State){
-		var callbacks = GlobalController.changeStateCallbacks.get(state);
-		if(callbacks != null && callbacks != undefined){
-			callbacks.fire();
-		}
-	}
-}
+    getSquareClickListenerFunction(id: string, control: GameController){
+        return function () {
+            if(control.oppPieceIsSelected()){
+                control.unselectPiece();
+                control.resetSquareColors();
+            }
+            else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
+                var sqr: Square = control.getSquareAtId(id);
+                control.moveSelectedPieceToSquare(sqr);
+            }
+            else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
+                control.unselectPiece();
+                control.resetSquareColors();
+                control.update();
+            }
+        };
+    }
 
-var whiteClickListener = (id: string) => {
-	var changeFlag = false;
-	var meView = GlobalController.boardView.getPieceById(id);
-	var meModel: PieceModel = GlobalController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
-	var meSqr = GlobalController.boardView.getSquareAtPos(meView.getX(), meView.getY());
-	if(!GlobalController.SELECTION_TOGGLE){
-		GlobalController.SELECTED_PIECE = meModel;
-		GlobalController.SELECTION_TOGGLE = true;
-		meSqr.setHexColor(StaticColors.SQUARE_SELECTION_BLUE);
-		var moves: MoveCollection = meModel.getPossibleMoves();
-		for(var eachMoveIdx in moves.getMoves()){
-			var eachMove: Move = moves.getMoves()[eachMoveIdx];
-			var possibleSqr: Square = GlobalController.boardView.getSquareAtPos(eachMove.getDest().getX(), eachMove.getDest().getY());
-			possibleSqr.setHexColor(StaticColors.SQUARE_SELECTION_BLUE);
-		}
-		GlobalController.SELECTED_PIECE = meModel;
-	}
-	else if (GlobalController.SELECTION_TOGGLE) {
-		var move: Move = new Move(GlobalController.SELECTED_PIECE.getPos(), new Pos(meView.getX(), meView.getY()));
-		if(GlobalController.SELECTED_PIECE.getPossibleMoves().contains(move)){
-			GlobalController.boardModel.executeMove(move);
-			changeFlag = true;
-			GlobalController.syncToBoard();
-			GlobalController.SELECTION_TOGGLE = false;
-			GlobalController.SELECTED_PIECE= null;
-			GlobalController.boardView.unselectAllSquares();
-		}
-		else if(GlobalController.SELECTED_PIECE.getPos().equals(meModel.getPos())){
-			GlobalController.boardView = Board.fromSerial(GlobalController.boardModel.serialize());
-			GlobalController.SELECTION_TOGGLE = false;
-			GlobalController.SELECTED_PIECE= null;
-			GlobalController.boardView.unselectAllSquares();
-		}
-	}
-	if(changeFlag){
-		GlobalController.update();
-		GlobalController.changeState(State.BLACKS_TURN);
-	}
-	else{
-		GlobalController.update();
-	}
-}
+    hasNoClickListener(id: string) {
+        return document.getElementById(id).onclick == null || document.getElementById(id).onclick == undefined;
+    }
 
-var squareClickListener = (id: string) => {
-	var changeFlag = false;
-	var meView: Square = GlobalController.boardView.getSquareById(id);
-	if (GlobalController.SELECTION_TOGGLE) {
-		var move: Move = new Move(GlobalController.SELECTED_PIECE.getPos(), new Pos(meView.getX(), meView.getY()));
-		if(GlobalController.SELECTED_PIECE.getPossibleMoves().contains(move)){
-			GlobalController.boardModel.executeMove(move);
-			changeFlag = true;
-			GlobalController.syncToBoard();
-			GlobalController.SELECTION_TOGGLE= false;
-			GlobalController.SELECTED_PIECE= null;
-			GlobalController.boardView.unselectAllSquares();
-		}
-	}
-	if(changeFlag){
-		GlobalController.update();
-		GlobalController.changeState(State.BLACKS_TURN);
-	}
-	else{
-		GlobalController.update();
-	}
-}
+    getBoardModel(): BoardModel{
+        return this.chessGame.board;
+    }
 
-var blackClickListener = (id: string) => {
-	var changeFlag = false;
-	var meView = GlobalController.boardView.getPieceById(id);
-	var meModel: PieceModel = GlobalController.boardModel.getPieceFromPosition(new Pos(meView.getX(), meView.getY()));
-	var meSqr = GlobalController.boardView.getSquareAtPos(meView.getX(), meView.getY());
-	if (GlobalController.SELECTION_TOGGLE && GlobalController.SELECTED_PIECE != null) {
-		var move: Move = new Move(GlobalController.SELECTED_PIECE.getPos(), new Pos(meView.getX(), meView.getY()));
-		if(GlobalController.SELECTED_PIECE.getPossibleMoves().contains(move)){
-			GlobalController.boardModel.executeMove(move);
-			changeFlag = true;
-			GlobalController.syncToBoard();
-			GlobalController.SELECTION_TOGGLE= false;
-			GlobalController.SELECTED_PIECE= null;
-			GlobalController.boardView.unselectAllSquares();
-		}
-	}
-	else{
-		if (GlobalController.SELECTION_TOGGLE && GlobalController.SELECTED_PIECE == null) {
-			if(GlobalController.SELECTED_OPP_PIECE.getPos().equals(meModel.getPos())){
-				GlobalController.SELECTION_TOGGLE = false;
-				GlobalController.SELECTED_OPP_PIECE = null;
-				GlobalController.boardView.unselectAllSquares();
-			}
-		}
-		else{
-			GlobalController.SELECTION_TOGGLE = true;
-			meSqr.setHexColor(StaticColors.SQUARE_SELECTION_RED);
-			var moves: MoveCollection = meModel.getPossibleMoves();
-			for(var eachMoveIdx in moves.getMoves()){
-				var eachMove: Move = moves.getMoves()[eachMoveIdx];
-				var possibleSqr: Square = GlobalController.boardView.getSquareAtPos(eachMove.getDest().getX(), eachMove.getDest().getY());
-				possibleSqr.setHexColor(StaticColors.SQUARE_SELECTION_RED);
-			}
-			GlobalController.SELECTED_OPP_PIECE = meModel;
-		}
-	}
-	if(changeFlag){
-		GlobalController.update();
-		GlobalController.changeState(State.BLACKS_TURN);
-	}
-	else{
-		GlobalController.update();
-	}
+    swapColor(color: Color): Color{
+        if(color == Color.BLACK){
+            return Color.WHITE;
+        }
+        else{
+            return Color.BLACK;
+        }
+    }
+
+    setElementOnClick(id: string, func: () => void ):void {
+        document.getElementById(id).onclick = func;
+    }
+
+    setSelectedPiece(piece: PieceModel){
+        this.SELECTED_PIECE = piece;
+    }
+
+    myPieceIsSelected():boolean {
+        return ((this.SELECTED_PIECE != null && this.SELECTED_PIECE != undefined) && this.SELECTED_PIECE.getColor() == this.getColor());
+    }
+
+    representsMovableSpace(id: string): boolean {
+        var moves: MoveCollection = this.SELECTED_PIECE.getPossibleMoves();
+        var sqr: Square = this.boardView.getSquareById(id);
+        var thisMove = new Move(this.SELECTED_PIECE.getPos(), new Pos(sqr.getX(), sqr.getY()));
+        return moves.contains(thisMove);
+    }
+
+    oppPieceIsSelected():boolean {
+        return ((this.SELECTED_PIECE != null && this.SELECTED_PIECE != undefined) && this.SELECTED_PIECE.getColor() == this.swapColor(this.getColor()));
+    }
+
+    getSquareAtId(id: string): Square{
+        return this.boardView.getSquareById(id);
+    }
+
+    tracePieceMoves(piece: PieceModel, hex: string):void {
+        var moves: MoveCollection = piece.getPossibleMoves();
+        this.setSquaresToColor(moves, hex);
+        this.setSquareToColor(piece.getPos(), hex);
+        this.setSelectedPiece(piece);
+        this.update();
+    }
+
+    moveSelectedPieceToSquare(sqr:Square):void {
+        var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos());
+        this.setChosenMove(move);
+        this.unselectPiece();
+        this.resetSquareColors();
+        this.signalOpponentsMove();
+    }
+
+    getPieceAtSquareId(id: string): PieceModel{
+        var sqr = this.getSquareAtId(id);
+        var result: PieceModel = this.getBoardModel().getPieceFromPosition(sqr.getPos());
+        return result;
+    }
+
+    unselectPiece():void {
+        this.SELECTED_PIECE = null;
+    }
+
+    resetSquareColors():void {
+        this.boardView.unselectAllSquares();
+    }
+
+    signalOpponentsMove():void {
+        this.turnOffClickListeners();
+        this.chessGame.executeNextMove();
+    }
+
+    getNextMove(board): Move{
+        return this.getChosenMove();
+    }
+
+    getChosenMove():Move {
+        return this.CHOSEN_MOVE;
+    }
+
+    setChosenMove(move: Move){
+        this.CHOSEN_MOVE = move;
+    }
+
+    isAutoExecute(): boolean{
+        return false;
+    }
+
+    afterMove(board: BoardModel) {
+        this.boardView = Board.fromSerial(this.getBoardModel().serialize());
+        this.update();
+    }
+
+
+    beforeMove(board: BoardModel) {
+        this.boardView = Board.fromSerial(this.getBoardModel().serialize());
+        this.update();
+    }
+
+    setSquareToColor(pos: Pos, hex: string):void {
+        var eachSqr: Square = this.boardView.getSquareAtPos(pos);
+        eachSqr.setHexColor(hex);
+    }
+
+    setSquaresToColor(moves: MoveCollection, hex: string):void {
+        for(var moveIdx in moves.getMoves()){
+            var eachMove: Move = moves.getMoves()[moveIdx];
+            var eachSqr: Square = this.boardView.getSquareAtPos(eachMove.getDest());
+            eachSqr.setHexColor(hex);
+        }
+    }
+
+    readyForMove(){
+        this.boardView = Board.fromSerial(this.getBoardModel().serialize());
+        this.update();
+        this.addClickListeners();
+    }
 }

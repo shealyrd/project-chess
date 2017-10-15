@@ -79,4 +79,7 @@ abstract class Piece extends HTMLObject{
         return builder.toString();
     }
 
+    getPos():Pos {
+        return new Pos(this.getX(), this.getY());
+    }
 }

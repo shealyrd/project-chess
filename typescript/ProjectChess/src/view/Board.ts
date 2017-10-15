@@ -259,13 +259,14 @@ class Board extends HTMLObject{
         }
     }
 
-    getSquareAtPos(x:Number, y:Number): Square{
+    getSquareAtPos(pos: Pos): Square{
         var locSquares = this.getSquares();
         for(var square in locSquares){
             var each = locSquares[square];
-            if(each.getX() == x && each.getY() == y){
+            if(each.getPos().equals(pos)){
                 return each;
             }
         }
     }
+
 }
