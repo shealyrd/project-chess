@@ -1,11 +1,14 @@
 class MyConsole extends HTMLObject{
     lines: ConsoleEntry[] = new Array();
-    entryHeight: number = 20;
-    consoleWidth: number = 400;
-    consoleHeight: number = 200;
+    entryHeight: number;
+    consoleWidth: number;
+    consoleHeight: number;
 
-    constructor(leftPos: number, upPos: number){
+    constructor(leftPos: number, upPos: number, consoleWidth: number, consoleHeight: number, entryHeight:number){
         super();
+        this.consoleHeight = consoleHeight;
+        this.consoleWidth = consoleWidth;
+        this.entryHeight = entryHeight;
         this.setHeight(this.consoleHeight);
         this.setWidth(this.consoleWidth);
         this.setLeftPos(leftPos);
@@ -30,8 +33,8 @@ class MyConsole extends HTMLObject{
             .addStyle("overflow-y", "scroll")
             .addStyle("position", "absolute")
             .addStyle("border", "1px solid black")
-            .addStyle("left", this.getLeftPos() + "")
-            .addStyle("top", this.getTopPos() + "")
+            .addStyle("left", this.getLeftPos() + "px")
+            .addStyle("top", this.getTopPos() + "px")
             .addStyle("width", this.getWidth() + "px")
             .addStyle("height", this.getHeight() + "px")
             .setId(this.getId());

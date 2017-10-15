@@ -3,7 +3,7 @@ class GameController extends Player{
     chessGame: ChessGame;
     myColor: Color = Color.WHITE;
     boardView: Board;
-
+    consoleCtrl: ConsoleController;
     //temp storage
     SELECTED_PIECE: PieceModel;
     CHOSEN_MOVE: Move;
@@ -20,7 +20,9 @@ class GameController extends Player{
         this.offsetLeft = offsetLeft;
         this.squareWidth = squareWidth;
         this.squareHeight = squareHeight;
+        this.consoleCtrl = new ConsoleController(offsetLeft, offsetTop + (squareWidth * 8), squareWidth * 8, squareWidth * 2, 50);
     }
+
 
     start(){
         var board: BoardModel = BoardFactory.getStandardBoard();
@@ -33,14 +35,14 @@ class GameController extends Player{
     }
 
     update(){
-        this.baseElement.innerHTML = this.boardView.toHTML();
+        this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML();
         if (this.chessGame.currentTurn == this.getColor()) {
             this.addClickListeners();
         }
         else{
             this.turnOffClickListeners();
         }
-        //ConsoleController.update();
+      //  this.consoleCtrl.update();
     }
 
     turnOffClickListeners():void {
@@ -70,6 +72,12 @@ class GameController extends Player{
         }
     }
 
+    log(txt: string){
+        if(this.consoleCtrl){
+            this.consoleCtrl.log(txt);
+        }
+    }
+
     getMyPieceClickListenerFunction(id: string, control: GameController){
         return function () {
             if(!control.myPieceIsSelected()){
@@ -78,7 +86,12 @@ class GameController extends Player{
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
                 control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
             }
-            else if(control.myPieceIsSelected()){
+            else if(control.myPieceIsSelected() && control.selectedPieceIsAtSquareId(id)){
+                control.unselectPiece();
+                control.resetSquareColors();
+                control.update();
+            }
+            else if(control.myPieceIsSelected() && !control.selectedPieceIsAtSquareId(id)){
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
@@ -116,11 +129,16 @@ class GameController extends Player{
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
                 control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_RED);
             }
-            else if (control.oppPieceIsSelected()) {
+            else if (control.oppPieceIsSelected() && !control.selectedPieceIsAtSquareId(id)) {
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
                 control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_RED);
+            }
+            else if (control.oppPieceIsSelected() && control.selectedPieceIsAtSquareId(id)) {
+                control.unselectPiece();
+                control.resetSquareColors();
+                control.update();
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
@@ -261,6 +279,7 @@ class GameController extends Player{
 
     afterMove(board: BoardModel) {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
+        this.doCheckLogging();
         this.update();
         this.turnOffClickListeners();
     }
@@ -268,6 +287,7 @@ class GameController extends Player{
 
     beforeMove(board: BoardModel) {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
+        this.doCheckLogging();
         this.update();
         this.turnOffClickListeners();
     }
@@ -275,6 +295,14 @@ class GameController extends Player{
     setSquareToColor(pos: Pos, hex: string):void {
         var eachSqr: Square = this.boardView.getSquareAtPos(pos);
         eachSqr.setHexColor(hex);
+    }
+
+    selectedPieceIsAtSquareId(id:string):Boolean {
+        var sqr: Square = this.getSquareAtId(id);
+        if(this.SELECTED_PIECE.getPos().equals(sqr.getPos())){
+            return true;
+        }
+        return false;
     }
 
     setSquaresToColor(moves: MoveCollection, hex: string):void {
@@ -285,9 +313,27 @@ class GameController extends Player{
         }
     }
 
+    doCheckLogging(){
+        if(this.chessGame.isInCheck(this.getColor())){
+            this.log("You are in check")
+        }
+        if(this.chessGame.isInCheck(this.swapColor(this.getColor()))){
+            this.log("Opponent is in check")
+        }
+        if(this.chessGame.hasLost(this.getColor())){
+            this.log("You lose.")
+        }
+        if(this.chessGame.hasLost(this.swapColor(this.getColor()))){
+            this.log("You win.")
+        }
+    }
+
     readyForMove(){
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
+        this.doCheckLogging();
         this.update();
         this.addClickListeners();
     }
+
+
 }

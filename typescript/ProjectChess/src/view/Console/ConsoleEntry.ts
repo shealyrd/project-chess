@@ -23,10 +23,11 @@ class ConsoleEntry extends HTMLObject{
         var builder = new HTMLBuilder();
         builder.newDiv()
             .addStyle("position", "absolute")
-            .addStyle("left", this.getLeftPos() + "")
-            .addStyle("top", this.getTopPos() + "")
+            .addStyle("left", this.getLeftPos() + "px")
+            .addStyle("top", this.getTopPos() + "px")
             .addStyle("width", this.getWidth() + "px")
             .addStyle("height", this.getHeight() + "px")
+            .addStyle("font-size", this.getHeight() + "px")
             .addStyle("border", "1px solid black");
 
         builder.addInnerDiv(innerDiv.replace("{msg}", this.getText()));
