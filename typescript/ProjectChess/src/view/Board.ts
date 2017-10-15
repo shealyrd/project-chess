@@ -10,19 +10,27 @@ class Board extends HTMLObject{
     offsetTop: number;
     offsetLeft: number;
 
-    squareWidth: number = 50;
-    squareHeight: number = 50;
+    squareWidth: number;
+    squareHeight: number;
 
 
 
-    constructor(numCol: number, numRows: number, offsetTop?: number, offsetLeft?: number) {
+    constructor(numCol: number, numRows: number, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number) {
         super();
         if (offsetTop == null) {
-            offsetTop = 100;
+            offsetTop = 25;
         }
         if (offsetLeft == null) {
-            offsetLeft = 100;
+            offsetLeft = 25;
         }
+        if (squareWidth == null) {
+            squareWidth = 50;
+        }
+        if (squareHeight == null) {
+            squareHeight = 50;
+        }
+        this.squareHeight = squareHeight;
+        this.squareWidth = squareWidth;
         this.initialize(numCol, numRows, offsetTop, offsetLeft);
     }
 
@@ -32,6 +40,7 @@ class Board extends HTMLObject{
         this.offsetTop = offsetTop;
         this.offsetLeft = offsetLeft;
 
+        this.rows = new Array();
         var cornerColor: Color = Color.WHITE;
 
         for(var i: number = 0; i < this.numRows; i++){
@@ -171,7 +180,7 @@ class Board extends HTMLObject{
         }
     }
 	
-    public static fromSerial(serial: string): Board{
+    public static fromSerial(serial: string, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number): Board{
         var result: Board;
         var locations: PieceLocation[] = new Array();
         var length: number;
@@ -203,7 +212,7 @@ class Board extends HTMLObject{
             }
         }
 
-        result = new Board(length, height);
+        result = new Board(length, height, offsetTop, offsetLeft, squareWidth, squareHeight);
 
         for(var eachLoc in locations){
             var location: PieceLocation = locations[eachLoc];

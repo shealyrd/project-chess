@@ -8,14 +8,24 @@ class GameController extends Player{
     SELECTED_PIECE: PieceModel;
     CHOSEN_MOVE: Move;
 
-    constructor(baseElement: HTMLElement){
+    offsetTop: number;
+    offsetLeft: number;
+    squareWidth: number;
+    squareHeight: number;
+
+    constructor(baseElement: HTMLElement, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number){
         super(Color.WHITE);
         this.baseElement = baseElement;
+        this.offsetTop = offsetTop;
+        this.offsetLeft = offsetLeft;
+        this.squareWidth = squareWidth;
+        this.squareHeight = squareHeight;
     }
 
     start(){
         var board: BoardModel = BoardFactory.getStandardBoard();
-        this.boardView = Board.fromSerial(board.serialize());
+        //alert(this.offsetTop + " " + this.offsetLeft + " " + this.squareWidth + " " + this.squareHeight);
+        this.boardView = Board.fromSerial(board.serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         var miniMaxAI = new MiniMaxPlayer(Color.BLACK);
         this.chessGame = new ChessGame(board, this, miniMaxAI);
         this.update();
@@ -26,6 +36,9 @@ class GameController extends Player{
         this.baseElement.innerHTML = this.boardView.toHTML();
         if (this.chessGame.currentTurn == this.getColor()) {
             this.addClickListeners();
+        }
+        else{
+            this.turnOffClickListeners();
         }
         //ConsoleController.update();
     }
@@ -97,7 +110,7 @@ class GameController extends Player{
 
     getOppPieceClickListenerFunction(id: string, control: GameController){
         return function () {
-            if(!control.oppPieceIsSelected()){
+            if (!control.oppPieceIsSelected() && !control.myPieceIsSelected()) {
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
@@ -118,7 +131,6 @@ class GameController extends Player{
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
                 control.moveSelectedPieceToSquare(sqr);
-                control.signalOpponentsMove();
             }
         };
     }
@@ -204,6 +216,7 @@ class GameController extends Player{
     }
 
     moveSelectedPieceToSquare(sqr:Square):void {
+        this.turnOffClickListeners();
         var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos());
         this.setChosenMove(move);
         this.unselectPiece();
@@ -247,14 +260,16 @@ class GameController extends Player{
     }
 
     afterMove(board: BoardModel) {
-        this.boardView = Board.fromSerial(this.getBoardModel().serialize());
+        this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.update();
+        this.turnOffClickListeners();
     }
 
 
     beforeMove(board: BoardModel) {
-        this.boardView = Board.fromSerial(this.getBoardModel().serialize());
+        this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.update();
+        this.turnOffClickListeners();
     }
 
     setSquareToColor(pos: Pos, hex: string):void {
@@ -271,7 +286,7 @@ class GameController extends Player{
     }
 
     readyForMove(){
-        this.boardView = Board.fromSerial(this.getBoardModel().serialize());
+        this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.update();
         this.addClickListeners();
     }

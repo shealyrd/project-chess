@@ -61,8 +61,8 @@ class Square extends HTMLObject{
         builder.newDiv()
                 .addClass("square")
                 .addStyle("position", "absolute")
-                .addStyle("left", this.getLeftPos() + "")
-                .addStyle("top", this.getTopPos() + "")
+                .addStyle("left", this.getLeftPos() + "px")
+                .addStyle("top", this.getTopPos() + "px")
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px");
 

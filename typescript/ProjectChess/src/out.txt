@@ -266,8 +266,8 @@ abstract class Piece extends HTMLObject{
         builder.newDiv()
                 .addClass("piece")
                 .addStyle("position", "absolute")
-                .addStyle("left", this.getLeftPos() + "")
-                .addStyle("top", this.getTopPos() + "")
+                .addStyle("left", this.getLeftPos() + "px")
+                .addStyle("top", this.getTopPos() + "px")
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px")
 				.addStyle("z-index", this.getZ() + "")
@@ -451,8 +451,8 @@ class Pawn extends Piece{
         builder.newDiv()
                 .addClass("square")
                 .addStyle("position", "absolute")
-                .addStyle("left", this.getLeftPos() + "")
-                .addStyle("top", this.getTopPos() + "")
+                .addStyle("left", this.getLeftPos() + "px")
+                .addStyle("top", this.getTopPos() + "px")
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px");
 
@@ -534,8 +534,8 @@ class Pawn extends Piece{
         builder.newDiv()
                 .addClass("row")
                 .addStyle("position", "absolute")
-                .addStyle("left", this.getLeftPos() + "")
-                .addStyle("top", this.getTopPos() + "")
+                .addStyle("left", this.getLeftPos() + "px")
+                .addStyle("top", this.getTopPos() + "px")
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px");
         for(var each in this.squares) {
@@ -557,19 +557,27 @@ class Pawn extends Piece{
     offsetTop: number;
     offsetLeft: number;
 
-    squareWidth: number = 50;
-    squareHeight: number = 50;
+    squareWidth: number;
+    squareHeight: number;
 
 
 
-    constructor(numCol: number, numRows: number, offsetTop?: number, offsetLeft?: number) {
+    constructor(numCol: number, numRows: number, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number) {
         super();
         if (offsetTop == null) {
-            offsetTop = 100;
+            offsetTop = 25;
         }
         if (offsetLeft == null) {
-            offsetLeft = 100;
+            offsetLeft = 25;
         }
+        if (squareWidth == null) {
+            squareWidth = 50;
+        }
+        if (squareHeight == null) {
+            squareHeight = 50;
+        }
+        this.squareHeight = squareHeight;
+        this.squareWidth = squareWidth;
         this.initialize(numCol, numRows, offsetTop, offsetLeft);
     }
 
@@ -579,6 +587,7 @@ class Pawn extends Piece{
         this.offsetTop = offsetTop;
         this.offsetLeft = offsetLeft;
 
+        this.rows = new Array();
         var cornerColor: Color = Color.WHITE;
 
         for(var i: number = 0; i < this.numRows; i++){
@@ -718,7 +727,7 @@ class Pawn extends Piece{
         }
     }
 	
-    public static fromSerial(serial: string): Board{
+    public static fromSerial(serial: string, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number): Board{
         var result: Board;
         var locations: PieceLocation[] = new Array();
         var length: number;
@@ -750,7 +759,7 @@ class Pawn extends Piece{
             }
         }
 
-        result = new Board(length, height);
+        result = new Board(length, height, offsetTop, offsetLeft, squareWidth, squareHeight);
 
         for(var eachLoc in locations){
             var location: PieceLocation = locations[eachLoc];
@@ -2014,14 +2023,24 @@ class GameController extends Player{
     SELECTED_PIECE: PieceModel;
     CHOSEN_MOVE: Move;
 
-    constructor(baseElement: HTMLElement){
+    offsetTop: number;
+    offsetLeft: number;
+    squareWidth: number;
+    squareHeight: number;
+
+    constructor(baseElement: HTMLElement, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number){
         super(Color.WHITE);
         this.baseElement = baseElement;
+        this.offsetTop = offsetTop;
+        this.offsetLeft = offsetLeft;
+        this.squareWidth = squareWidth;
+        this.squareHeight = squareHeight;
     }
 
     start(){
         var board: BoardModel = BoardFactory.getStandardBoard();
-        this.boardView = Board.fromSerial(board.serialize());
+        //alert(this.offsetTop + " " + this.offsetLeft + " " + this.squareWidth + " " + this.squareHeight);
+        this.boardView = Board.fromSerial(board.serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         var miniMaxAI = new MiniMaxPlayer(Color.BLACK);
         this.chessGame = new ChessGame(board, this, miniMaxAI);
         this.update();
@@ -2032,6 +2051,9 @@ class GameController extends Player{
         this.baseElement.innerHTML = this.boardView.toHTML();
         if (this.chessGame.currentTurn == this.getColor()) {
             this.addClickListeners();
+        }
+        else{
+            this.turnOffClickListeners();
         }
         //ConsoleController.update();
     }
@@ -2103,7 +2125,7 @@ class GameController extends Player{
 
     getOppPieceClickListenerFunction(id: string, control: GameController){
         return function () {
-            if(!control.oppPieceIsSelected()){
+            if (!control.oppPieceIsSelected() && !control.myPieceIsSelected()) {
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
@@ -2124,7 +2146,6 @@ class GameController extends Player{
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
                 control.moveSelectedPieceToSquare(sqr);
-                control.signalOpponentsMove();
             }
         };
     }
@@ -2210,6 +2231,7 @@ class GameController extends Player{
     }
 
     moveSelectedPieceToSquare(sqr:Square):void {
+        this.turnOffClickListeners();
         var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos());
         this.setChosenMove(move);
         this.unselectPiece();
@@ -2253,14 +2275,16 @@ class GameController extends Player{
     }
 
     afterMove(board: BoardModel) {
-        this.boardView = Board.fromSerial(this.getBoardModel().serialize());
+        this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.update();
+        this.turnOffClickListeners();
     }
 
 
     beforeMove(board: BoardModel) {
-        this.boardView = Board.fromSerial(this.getBoardModel().serialize());
+        this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.update();
+        this.turnOffClickListeners();
     }
 
     setSquareToColor(pos: Pos, hex: string):void {
@@ -2277,7 +2301,7 @@ class GameController extends Player{
     }
 
     readyForMove(){
-        this.boardView = Board.fromSerial(this.getBoardModel().serialize());
+        this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.update();
         this.addClickListeners();
     }

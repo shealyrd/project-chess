@@ -69,8 +69,8 @@ class Row extends HTMLObject{
         builder.newDiv()
                 .addClass("row")
                 .addStyle("position", "absolute")
-                .addStyle("left", this.getLeftPos() + "")
-                .addStyle("top", this.getTopPos() + "")
+                .addStyle("left", this.getLeftPos() + "px")
+                .addStyle("top", this.getTopPos() + "px")
                 .addStyle("width", this.getWidth() + "px")
                 .addStyle("height", this.getHeight() + "px");
         for(var each in this.squares) {
