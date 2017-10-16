@@ -3,7 +3,8 @@ evaluate(board: Board){
 	var numWhite = 0;
 	var blackMaterial = 0;
 	var whiteMaterial = 0;
-
+	//centralized position
+	
 	for(var pieceIdx: board.getAllPieces()){
 		var eachPiece = board.getAllPieces()[pieceIdx];
 		if(eachPiece.getColor() == Color.WHITE){
@@ -17,3 +18,4 @@ evaluate(board: Board){
 	}
 
 }
+document.body.innerHTML += "<img src=\"https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif\" alt=\"Mountain View\" style=\"width:304px;height:228px;\">";
