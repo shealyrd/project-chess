@@ -1,10 +1,11 @@
-abstract class Piece extends HTMLObject{
+class Piece extends HTMLObject{
     z: number;
 	color: Color;
 	x: number;
     y: number;
+    type: PieceType;
 
-    constructor(left: number, top: number, width: number, height: number, z:number, color: Color){
+    constructor(left: number, top: number, width: number, height: number, z:number, color: Color, type: PieceType){
         super();
         this.setTopPos(top);
         this.setLeftPos(left);
@@ -12,6 +13,15 @@ abstract class Piece extends HTMLObject{
         this.setHeight(height);
         this.setZ(z);
 		this.setColor(color);
+        this.setType(type);
+    }
+
+    setType(type: PieceType){
+        this.type = type;
+    }
+
+    getType(): PieceType{
+        return this.type;
     }
 
     setZ(z: number) {
@@ -36,13 +46,18 @@ abstract class Piece extends HTMLObject{
     getY(): number{
         return this.y;
     }
-	
-	abstract getWhiteImg(): string;
-	abstract getBlackImg(): string;
+
+	getWhiteImg(): string{
+        return PieceImageDatabase.getImageURL(this.getType(), Color.WHITE);
+    }
+
+    getBlackImg(): string{
+        return PieceImageDatabase.getImageURL(this.getType(), Color.BLACK);
+    }
 
 
 	static getSizeRatio(): number{
-        return 1;
+        return 1.5;
     }
 	
 	setColor(color: Color){

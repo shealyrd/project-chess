@@ -3,6 +3,7 @@ class Square extends HTMLObject{
 	x: number;
     y: number;
     hexColor: string;
+	sqrType: SquareType = SquareType.NORMAL;
 
     constructor(left: number, top: number, width: number, height: number){
         super();
@@ -24,6 +25,14 @@ class Square extends HTMLObject{
         this.hexColor = hex;
     }
 
+	setType(type: SquareType){
+		this.sqrType = type;
+	}
+	
+	getType(): SquareType{
+		return this.sqrType;
+	}
+	
     resetHexColor(){
        var hexColor: string;
 
@@ -67,8 +76,11 @@ class Square extends HTMLObject{
                 .addStyle("height", this.getHeight() + "px");
 
         builder.setId(this.getId());
-        builder.addStyle("border", "1px solid black");
-		builder.addStyle("background-color", this.hexColor);
+		
+		if(!(this.getType() == SquareType.NON_EXISTENT)){
+		    builder.addStyle("border", "1px solid black");
+			builder.addStyle("background-color", this.hexColor);
+		}
 
         return builder.toString();
     }

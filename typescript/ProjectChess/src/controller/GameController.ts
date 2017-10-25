@@ -7,6 +7,8 @@ class GameController extends Player{
     //temp storage
     SELECTED_PIECE: PieceModel;
     CHOSEN_MOVE: Move;
+	
+	SHOW_SPINNER: boolean;
 
     offsetTop: number;
     offsetLeft: number;
@@ -35,7 +37,12 @@ class GameController extends Player{
     }
 
     update(){
-        this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML();
+		if(this.SHOW_SPINNER){
+			this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML() + "<div class=\"spin sqr\"></div>";
+		}
+        else{
+			this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML();
+		}
         if (this.chessGame.currentTurn == this.getColor()) {
             this.addClickListeners();
         }
@@ -280,6 +287,7 @@ class GameController extends Player{
     afterMove(board: BoardModel) {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.doCheckLogging();
+		this.SHOW_SPINNER = true;
         this.update();
         this.turnOffClickListeners();
     }
@@ -331,6 +339,7 @@ class GameController extends Player{
     readyForMove(){
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.doCheckLogging();
+		this.SHOW_SPINNER = false;
         this.update();
         this.addClickListeners();
     }

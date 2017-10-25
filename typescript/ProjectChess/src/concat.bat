@@ -6,15 +6,11 @@ type %~dp0\common\IDSequence.ts >> out.txt
 type %~dp0\view\HTMLObject.ts >> out.txt 
 type %~dp0\view\HTMLBuilder.ts >> out.txt 
 type %~dp0\common\Color.ts  >> out.txt 
+type %~dp0\common\SquareType.ts  >> out.txt 
 type %~dp0\common\PieceType.ts  >> out.txt 
 type %~dp0\common\PieceLocation.ts  >> out.txt 
+type %~dp0\view\PieceImageDatabase.ts  >> out.txt 
 type %~dp0\view\Piece.ts  >> out.txt 
-type %~dp0\view\Pawn.ts  >> out.txt 
-type %~dp0\view\Bishop.ts  >> out.txt 
-type %~dp0\view\King.ts  >> out.txt 
-type %~dp0\view\Queen.ts  >> out.txt 
-type %~dp0\view\Knight.ts  >> out.txt 
-type %~dp0\view\Rook.ts  >> out.txt 
 type %~dp0\view\Square.ts  >> out.txt 
 type %~dp0\view\Row.ts  >> out.txt 
 type %~dp0\view\Board.ts  >> out.txt 
@@ -29,6 +25,8 @@ type %~dp0\model\pieces\KnightModel.ts  >> out.txt
 type %~dp0\model\pieces\BishopModel.ts  >> out.txt 
 type %~dp0\model\pieces\KingModel.ts  >> out.txt 
 type %~dp0\model\pieces\QueenModel.ts  >> out.txt 
+type %~dp0\model\pieces\GeneralModel.ts  >> out.txt 
+type %~dp0\model\pieces\MinisterModel.ts  >> out.txt 
 type %~dp0\model\PieceFactory.ts  >> out.txt 
 type %~dp0\model\BoardModel.ts  >> out.txt 
 type %~dp0\model\BoardFactory.ts  >> out.txt 
@@ -39,3 +37,6 @@ type %~dp0\view\Console\ConsoleEntry.ts  >> out.txt
 type %~dp0\view\Console\MyConsole.ts  >> out.txt 
 type %~dp0\controller\ConsoleController.ts  >> out.txt 
 type %~dp0\controller\GameController.ts  >> out.txt 
+type %~dp0\global\Preloader.ts  >> out.txt 
+type %~dp0\global\CSSClass.ts  >> out.txt 
+type %~dp0\global\CSSManager.ts  >> out.txt 

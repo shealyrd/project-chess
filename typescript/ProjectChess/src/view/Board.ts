@@ -80,20 +80,22 @@ class Board extends HTMLObject{
 
     addPiece(piece: PieceType, x: number, y: number, color: Color){
         var newPiece: Piece;
-        switch(piece){
+       /* switch(piece){
             case PieceType.ROOK: newPiece = new Rook(this.calcPosFromLeft(x), this.calcPosFromTop(Rook.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Rook.getSizeRatio()), y, color); break;
             case PieceType.QUEEN: newPiece = new Queen(this.calcPosFromLeft(x), this.calcPosFromTop(Queen.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Queen.getSizeRatio()), y, color); break;
             case PieceType.BISHOP: newPiece = new Bishop(this.calcPosFromLeft(x), this.calcPosFromTop(Bishop.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Bishop.getSizeRatio()), y, color); break;
             case PieceType.PAWN: newPiece = new Pawn(this.calcPosFromLeft(x), this.calcPosFromTop(Pawn.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Pawn.getSizeRatio()), y, color); break;
             case PieceType.KNIGHT: newPiece = new Knight(this.calcPosFromLeft(x), this.calcPosFromTop(Knight.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Knight.getSizeRatio()), y, color); break;
             case PieceType.KING: newPiece = new King(this.calcPosFromLeft(x), this.calcPosFromTop(King.getSizeRatio(), y), this.squareWidth, (this.squareHeight * King.getSizeRatio()), y, color); break;
-        }
+            case PieceType.GENERAL: newPiece = new General(this.calcPosFromLeft(x), this.calcPosFromTop(Knight.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Knight.getSizeRatio()), y, color); break;
+            case PieceType.MINISTER: newPiece = new Minister(this.calcPosFromLeft(x), this.calcPosFromTop(King.getSizeRatio(), y), this.squareWidth, (this.squareHeight * King.getSizeRatio()), y, color); break;
+        }*/
+        newPiece = new Piece(this.calcPosFromLeft(x), this.calcPosFromTop(Piece.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Piece.getSizeRatio()), y, color, piece);
         newPiece.setX(x);
         newPiece.setY(y);
         this.pieces.push(newPiece);
         this.addLocation(x, y, piece, color);
     }
-
 
     toHTML():string {
         var result: string = "";
@@ -185,7 +187,9 @@ class Board extends HTMLObject{
         var locations: PieceLocation[] = new Array();
         var length: number;
         var height: number;
-        var rows: string[] = serial.split("/");
+		var dataHalves: string[] = serial.split("-");
+        var rows: string[] = dataHalves[0].split("/");
+		var configRows: string[] = dataHalves[1].split("/");
         height = rows.length;
 
         for(var y = 0; y < rows.length; y++){
@@ -218,7 +222,18 @@ class Board extends HTMLObject{
             var location: PieceLocation = locations[eachLoc];
             result.addPiece(location.getType(), location.getX(), location.getY(), location.getColor());
         }
+		
+        for(var y = 0; y < rows.length; y++){
+            var row = configRows[y];
+            var squares: string[] = row.split(",");
+            length = squares.length;
 
+            for(var x = 0; x < squares.length; x++){
+                var eachSqr: Square = result.getSquareAtPos(new Pos(x,y));
+				var sqrData: string = squares[x].substring(1, squares[x].length - 1);
+				eachSqr.setType(+sqrData);
+            }
+        }
         return result;
     }
 
@@ -257,6 +272,18 @@ class Board extends HTMLObject{
             serialization += "/";
         }
         serialization = serialization.substring(0, serialization.length - 1);
+		
+		serialization += "-";
+		
+		for(var y: number = 0; y < this.numRows; y++ ){
+            for (var x: number = 0; x < this.numColumns; x++){
+                serialization += "[" + this.getSquareAtPos(new Pos(x,y)).getType() + "],";
+            }
+            serialization = serialization.substring(0, serialization.length - 1);
+            serialization += "/";
+        }
+		serialization = serialization.substring(0, serialization.length - 1);
+		
         return serialization;
     }
 

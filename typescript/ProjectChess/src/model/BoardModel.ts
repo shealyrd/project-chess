@@ -3,7 +3,8 @@ class BoardModel{
     WIDTH: number;
 
     pos2PieceMap: Map<Pos, PieceModel> = new Map();
-
+	pos2SquareType: Map<Pos, SquareType> = new Map();
+	
     constructor(argWidth:number, argHeight:number){
         this.HEIGHT = argHeight;
         this.WIDTH = argWidth;
@@ -11,6 +12,7 @@ class BoardModel{
         for(var y:number = 0; y < argHeight; y++){
             for(var x:number = 0; x < argWidth; x++){
                 this.pos2PieceMap.set(new Pos(x, y), null);
+				this.pos2SquareType.set(new Pos(x, y), SquareType.NORMAL);
             }
         }
     }
@@ -22,6 +24,14 @@ class BoardModel{
     placePiece(piece: PieceModel){
         this.pos2PieceMap.set(piece.getPos(), piece);
     }
+	
+	setSquareTypeAtPos(pos: Pos, type: SquareType){
+        this.pos2SquareType.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                this.pos2SquareType.set(key, type);
+            }
+        });
+	}
 
     getDirection(color: Color): number{
         if(Color.WHITE == color){
@@ -133,6 +143,17 @@ class BoardModel{
             result += "/";
         }
         result = result.substring(0, result.length - 1);
+		
+		result += "-";
+		
+		for(var y: number = 0; y < this.getHeight(); y++){
+            for (var x: number = 0; x < this.getWidth(); x++){
+                result += "[" + this.getSquareTypeFromPosition(new Pos(x,y)) + "],";
+            }
+            result = result.substring(0, result.length - 1);
+            result += "/";
+        }
+		result = result.substring(0, result.length - 1);
         return result;
     }
 
@@ -141,6 +162,7 @@ class BoardModel{
         for(var y:number = 0; y < this.getHeight(); y++){
             for(var x:number = 0; x < this.getWidth(); x++){
                 this.pos2PieceMap.set(new Pos(x, y), null);
+				this.pos2SquareType.set(new Pos(x, y), SquareType.NORMAL);
             }
         }
     }
@@ -157,7 +179,9 @@ class BoardModel{
 
     populateFromSerial(serial: string) {
         this.reset();
-        var rows:string[] = serial.split("/");
+		var halvedData:string[] = serial.split("-");
+		var configRows:string[] = halvedData[1].split("/");
+        var rows:string[] = halvedData[0].split("/");
         for (var y = 0; y < rows.length; y++) {
             var row = rows[y];
             var squares:string[] = row.split(",");
@@ -179,6 +203,15 @@ class BoardModel{
                 }
             }
         }
+	    for (var y = 0; y < configRows.length; y++) {
+            var row = configRows[y];
+            var squares:string[] = row.split(",");
+            var length = squares.length;
+            for (var x = 0; x < squares.length; x++) {
+                var sqrData:string = squares[x].substring(1, squares[x].length - 1);
+				this.pos2SquareType.set(new Pos(x,y), +sqrData);
+            }
+        }
     }
 
     getPieceFromPosition(pos: Pos): any{
@@ -186,6 +219,17 @@ class BoardModel{
         this.pos2PieceMap.forEach((value, key, map) => {
             if (pos.equals(key)) {
                 result = this.pos2PieceMap.get(key);
+            }
+        });
+
+        return result;
+    }
+	
+	 getSquareTypeFromPosition(pos: Pos): any{
+        var result;
+        this.pos2SquareType.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                result = this.pos2SquareType.get(key);
             }
         });
 
