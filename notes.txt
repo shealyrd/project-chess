@@ -288,3 +288,8 @@ class Board{
 }
 
 
+
+
+http://www.phpied.com/css-animations-off-the-ui-thread/
+
+
