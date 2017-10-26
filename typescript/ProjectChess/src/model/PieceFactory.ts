@@ -11,7 +11,7 @@ class PieceFactory{
             case PieceType.QUEEN: newPiece = new QueenModel(board, pos, color); break;
             case PieceType.GENERAL: newPiece = new GeneralModel(board, pos, color); break;
             case PieceType.MINISTER: newPiece = new MinisterModel(board, pos, color); break;
-            case PieceType.GIRAFFE_RIDER: newPiece = new GeneralModel(board, pos, color); break;
+            case PieceType.GIRAFFE_RIDER: newPiece = new GiraffeRiderModel(board, pos, color); break;
             case PieceType.WAR_ENGINE: newPiece = new MinisterModel(board, pos, color); break;
             case PieceType.CAMEL_RIDER: newPiece = new MinisterModel(board, pos, color); break;
         }

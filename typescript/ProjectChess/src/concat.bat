@@ -21,6 +21,7 @@ type %~dp0\model\MoveFactory.ts  >> out.txt
 type %~dp0\model\PieceModel.ts  >> out.txt 
 type %~dp0\model\pieces\RookModel.ts  >> out.txt 
 type %~dp0\model\pieces\PawnModel.ts  >> out.txt 
+type %~dp0\model\pieces\GiraffeRiderModel.ts  >> out.txt 
 type %~dp0\model\pieces\KnightModel.ts  >> out.txt 
 type %~dp0\model\pieces\BishopModel.ts  >> out.txt 
 type %~dp0\model\pieces\KingModel.ts  >> out.txt 

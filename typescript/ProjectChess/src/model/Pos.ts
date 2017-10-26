@@ -22,4 +22,9 @@ class Pos{
         return (this.getX() == pos.getX()) && (this.getY() == pos.getY());
     }
 
+    plus(addPos: Pos): Pos{
+        var newX = this.getX() + addPos.getX();
+        var newY = this.getY() + addPos.getY();
+        return new Pos(newX, newY);
+    }
 }

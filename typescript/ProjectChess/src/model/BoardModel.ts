@@ -53,6 +53,17 @@ class BoardModel{
         return result;
     }
 
+    isAllFree(positions: Pos[]):boolean{
+        for(var posIdx in positions){
+            var eachPosition = positions[posIdx];
+            if(!(this.isFree(eachPosition))){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     isCapturable(pos: Pos, color: Color): boolean{
         return this.isFree(pos)
     }
