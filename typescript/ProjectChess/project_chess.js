@@ -770,6 +770,11 @@ var Pos = /** @class */ (function () {
     Pos.prototype.equals = function (pos) {
         return (this.getX() == pos.getX()) && (this.getY() == pos.getY());
     };
+    Pos.prototype.plus = function (addPos) {
+        var newX = this.getX() + addPos.getX();
+        var newY = this.getY() + addPos.getY();
+        return new Pos(newX, newY);
+    };
     return Pos;
 }());
 var Move = /** @class */ (function () {
@@ -928,6 +933,118 @@ var MoveFactory = /** @class */ (function () {
             x += 1;
         }
         return new MoveCollection(result);
+    };
+    MoveFactory.getGiraffeMovement = function (piece) {
+        var board = piece.getBoardModel();
+        var result = new MoveCollection();
+        var x = piece.getPos().getX();
+        var y = piece.getPos().getY();
+        result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x + 1, y - 1)));
+        result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x - 1, y - 1)));
+        result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x + 1, y + 1)));
+        result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x - 1, y + 1)));
+        return result;
+    };
+    MoveFactory.getGiraffeMovementQuarter = function (piece, pos) {
+        var board = piece.getBoardModel();
+        var result = new MoveCollection();
+        var x = pos.getX();
+        var y = pos.getY();
+        var positionsThatMustBeClear = new Array();
+        positionsThatMustBeClear.push(new Pos(x, y));
+        y = y - 1;
+        positionsThatMustBeClear.push(new Pos(x, y));
+        y = y - 1;
+        positionsThatMustBeClear.push(new Pos(x, y));
+        y = y - 1;
+        if (piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
+            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+                if (!piece.getBoardModel().isFree(new Pos(x, y))) {
+                    if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                y -= 1;
+            }
+        }
+        x = pos.getX();
+        y = pos.getY();
+        positionsThatMustBeClear = new Array();
+        positionsThatMustBeClear.push(new Pos(x, y));
+        x = x + 1;
+        positionsThatMustBeClear.push(new Pos(x, y));
+        x = x + 1;
+        positionsThatMustBeClear.push(new Pos(x, y));
+        x = x + 1;
+        if (piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
+            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+                if (!piece.getBoardModel().isFree(new Pos(x, y))) {
+                    if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                x += 1;
+            }
+        }
+        x = pos.getX();
+        y = pos.getY();
+        positionsThatMustBeClear = new Array();
+        positionsThatMustBeClear.push(new Pos(x, y));
+        x = x - 1;
+        positionsThatMustBeClear.push(new Pos(x, y));
+        x = x - 1;
+        positionsThatMustBeClear.push(new Pos(x, y));
+        x = x - 1;
+        if (piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
+            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+                if (!piece.getBoardModel().isFree(new Pos(x, y))) {
+                    if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                x -= 1;
+            }
+        }
+        x = pos.getX();
+        y = pos.getY();
+        positionsThatMustBeClear = new Array();
+        positionsThatMustBeClear.push(new Pos(x, y));
+        y = y + 1;
+        positionsThatMustBeClear.push(new Pos(x, y));
+        y = y + 1;
+        positionsThatMustBeClear.push(new Pos(x, y));
+        y = y + 1;
+        if (piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
+            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+                if (!piece.getBoardModel().isFree(new Pos(x, y))) {
+                    if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                y += 1;
+            }
+        }
+        return result;
     };
     MoveFactory.getAllCardinal = function (piece) {
         var result = new MoveCollection();
@@ -1224,6 +1341,26 @@ var PawnModel = /** @class */ (function (_super) {
     };
     return PawnModel;
 }(PieceModel));
+var GiraffeRiderModel = /** @class */ (function (_super) {
+    __extends(GiraffeRiderModel, _super);
+    function GiraffeRiderModel(board, pos, color) {
+        return _super.call(this, board, pos, color, PieceType.GIRAFFE_RIDER) || this;
+    }
+    GiraffeRiderModel.prototype.onMove = function () { };
+    GiraffeRiderModel.prototype.giveInternalAttributes = function (piece) { };
+    GiraffeRiderModel.prototype.getPossibleMoves = function () {
+        //return MoveFactory.getGiraffeMovement(this);
+        return MoveFactory.getRelativeToPiece(this, -3, -1)
+            .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
+            .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
+            .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
+            .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
+            .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
+            .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
+            .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+    };
+    return GiraffeRiderModel;
+}(PieceModel));
 var KnightModel = /** @class */ (function (_super) {
     __extends(KnightModel, _super);
     function KnightModel(board, pos, color) {
@@ -1348,7 +1485,7 @@ var PieceFactory = /** @class */ (function () {
                 newPiece = new MinisterModel(board, pos, color);
                 break;
             case PieceType.GIRAFFE_RIDER:
-                newPiece = new GeneralModel(board, pos, color);
+                newPiece = new GiraffeRiderModel(board, pos, color);
                 break;
             case PieceType.WAR_ENGINE:
                 newPiece = new MinisterModel(board, pos, color);
@@ -1409,6 +1546,15 @@ var BoardModel = /** @class */ (function () {
             }
         });
         return result;
+    };
+    BoardModel.prototype.isAllFree = function (positions) {
+        for (var posIdx in positions) {
+            var eachPosition = positions[posIdx];
+            if (!(this.isFree(eachPosition))) {
+                return false;
+            }
+        }
+        return true;
     };
     BoardModel.prototype.isCapturable = function (pos, color) {
         return this.isFree(pos);
@@ -1582,7 +1728,7 @@ var BoardFactory = /** @class */ (function () {
         board.populateFromSerial(BoardFactory.STANDARD_BOARD);
         return board;
     };
-    BoardFactory.STANDARD_BOARD = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]";
+    BoardFactory.STANDARD_BOARD = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[10_B],[4_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[4_W],[10_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     return BoardFactory;
 }());
 var Player = /** @class */ (function () {
@@ -2276,8 +2422,4 @@ var CSSManager = /** @class */ (function () {
     CSSManager.raw = new Array();
     return CSSManager;
 }());
-var board = new BoardModel(8, 8);
-board.addPiece(PieceType.GIRAFFE_RIDER, 1, 7, Color.BLACK);
-board.addPiece(PieceType.PAWN, 3, 7, Color.WHITE);
-var boardView = Board.fromSerial(board.serialize());
-document.body.innerHTML += boardView.toHTML();
+new GameController(document.body, 100, 100, 50, 50).start();

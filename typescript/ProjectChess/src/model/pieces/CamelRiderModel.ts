@@ -1,14 +1,13 @@
-class GiraffeRiderModel extends PieceModel{
+class CamelRiderModel extends PieceModel{
 
     constructor(board: BoardModel, pos: Pos, color: Color){
-        super(board, pos, color, PieceType.GIRAFFE_RIDER);
+        super(board, pos, color, PieceType.CAMEL_RIDER);
     }
 
     onMove(){}
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-        //return MoveFactory.getGiraffeMovement(this);
         return MoveFactory.getRelativeToPiece(this, -3, -1)
         .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
         .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))

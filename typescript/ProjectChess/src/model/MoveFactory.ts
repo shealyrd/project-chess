@@ -96,16 +96,31 @@ class MoveFactory{
         return new MoveCollection(result);
     }
 
+	static getGiraffeMovement(piece: PieceModel){
+		var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+		
+		var x = piece.getPos().getX();
+        var y = piece.getPos().getY();
+		
+		result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x + 1, y - 1))); 
+		result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x - 1, y - 1)));
+		result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x + 1, y + 1)));
+		result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x - 1, y + 1)));
+		
+		return result;
+	}
+	
 
-    static getGiraffeMovementTopRight(piece: PieceModel){
-        var board: BoardModel = piece.getBoardModel();
-        var result: Move[] = new Array();
-
-        //top right 4th
-        var x = piece.getPos().getX() + 1;
-        var y = piece.getPos().getY() - 1;
-
-        var positionsThatMustBeClear: Pos[] = new Array();
+	
+	static getGiraffeMovementQuarter(piece: PieceModel, pos: Pos): MoveCollection{
+		var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+		
+		var x = pos.getX();
+        var y = pos.getY();
+		
+		var positionsThatMustBeClear: Pos[] = new Array();
         positionsThatMustBeClear.push(new Pos(x,y));
         y = y - 1;
         positionsThatMustBeClear.push(new Pos(x,y));
@@ -117,20 +132,20 @@ class MoveFactory{
             while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
                 if(!piece.getBoardModel().isFree(new Pos(x, y))){
                     if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                        result.push(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
                         break;
                     }
                     else{
                         break;
                     }
                 }
-                result.push(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
                 y -= 1;
             }
         }
 
-        x = piece.getPos().getX() + 1;
-        y = piece.getPos().getY() - 1;
+        x = pos.getX();
+        y = pos.getY();
 
         positionsThatMustBeClear = new Array();
         positionsThatMustBeClear.push(new Pos(x,y));
@@ -144,20 +159,20 @@ class MoveFactory{
             while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
                 if(!piece.getBoardModel().isFree(new Pos(x, y))){
                     if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                        result.push(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
                         break;
                     }
                     else{
                         break;
                     }
                 }
-                result.push(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
                 x += 1;
             }
         }
 
-        x = piece.getPos().getX() + 1;
-        y = piece.getPos().getY() - 1;
+        x = pos.getX();
+        y = pos.getY();
 
         positionsThatMustBeClear = new Array();
         positionsThatMustBeClear.push(new Pos(x,y));
@@ -171,20 +186,20 @@ class MoveFactory{
             while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
                 if(!piece.getBoardModel().isFree(new Pos(x, y))){
                     if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                        result.push(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
                         break;
                     }
                     else{
                         break;
                     }
                 }
-                result.push(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
                 x -= 1;
             }
         }
 
-        x = piece.getPos().getX() + 1;
-        y = piece.getPos().getY() - 1;
+        x = pos.getX();
+        y = pos.getY();
 
         positionsThatMustBeClear = new Array();
         positionsThatMustBeClear.push(new Pos(x,y));
@@ -198,55 +213,21 @@ class MoveFactory{
             while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
                 if(!piece.getBoardModel().isFree(new Pos(x, y))){
                     if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                        result.push(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
                         break;
                     }
                     else{
                         break;
                     }
                 }
-                result.push(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
                 y += 1;
             }
         }
 
-        return new MoveCollection(result);
-    }
-
-    static getGiraffeMovementTopLeft(piece: PieceModel){
-        var board: BoardModel = piece.getBoardModel();
-        var result: Move[] = new Array();
-
-        //top right 4th
-        var x = piece.getPos().getX() - 1;
-        var y = piece.getPos().getY() - 1;
-
-        var positionsThatMustBeClear: Pos[] = new Array();
-        positionsThatMustBeClear.push(new Pos(x,y));
-        y = y - 1;
-        positionsThatMustBeClear.push(new Pos(x,y));
-        y = y - 1;
-        positionsThatMustBeClear.push(new Pos(x,y));
-        y = y - 1;
-
-        if(!piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
-            while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
-                if(!piece.getBoardModel().isFree(new Pos(x, y))){
-                    if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                        result.push(new Move(piece.getPos(), new Pos(x, y)));
-                        break;
-                    }
-                    else{
-                        break;
-                    }
-                }
-                result.push(new Move(piece.getPos(), new Pos(x, y)));
-                y -= 1;
-            }
-        }
-
-        return new MoveCollection(result);
-    }
+        return result;
+	}
+	
 
     static getAllCardinal(piece: PieceModel){
         var result: MoveCollection = new MoveCollection();
@@ -519,6 +500,4 @@ class MoveFactory{
 
         return result;
     }
-
-
 }
