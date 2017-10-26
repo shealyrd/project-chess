@@ -824,17 +824,18 @@ var MoveCollection = /** @class */ (function () {
         return this;
     };
     MoveCollection.prototype.minus = function (movesArg) {
-        var _this = this;
         var result = new Array();
         var moveArray = movesArg.getMoves();
-        moveArray.forEach(function (e, i, me) {
-            _this.moves.forEach(function (f, j, me2) {
-                if (!(f.getDest().equals(e.getDest()))) {
-                    result.push(e);
+        var length = this.moves.length;
+        for (var i = 0; i < moveArray.length; i++) {
+            var eachArgMove = moveArray[i];
+            for (var j = 0; j < this.moves.length; j++) {
+                var eachThisMove = this.moves[j];
+                if (eachArgMove.equals(eachThisMove)) {
+                    this.moves.splice(j, 1);
                 }
-            });
-        });
-        this.moves = result;
+            }
+        }
         return this;
     };
     MoveCollection.prototype.containsDestination = function (pos) {
@@ -1349,15 +1350,18 @@ var GiraffeRiderModel = /** @class */ (function (_super) {
     GiraffeRiderModel.prototype.onMove = function () { };
     GiraffeRiderModel.prototype.giveInternalAttributes = function (piece) { };
     GiraffeRiderModel.prototype.getPossibleMoves = function () {
-        //return MoveFactory.getGiraffeMovement(this);
-        return MoveFactory.getRelativeToPiece(this, -3, -1)
-            .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+        var x = this.getPos().getX();
+        var y = this.getPos().getY();
+        var invalidMoves = new MoveCollection();
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1)));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2)));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1)));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2)));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1)));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2)));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1)));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2)));
+        return MoveFactory.getAllDiagonal(this).minus(invalidMoves);
     };
     return GiraffeRiderModel;
 }(PieceModel));

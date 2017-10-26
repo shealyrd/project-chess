@@ -950,17 +950,30 @@ class Move{
 
     public minus(movesArg: MoveCollection): MoveCollection{
         var result: Move[] = new Array();
+		var minusArr: Move[] = new Array();
         var moveArray: Move[] = movesArg.getMoves();
-        moveArray.forEach((e, i, me) => {
-            this.moves.forEach((f, j, me2) => {
-                if(!(f.getDest().equals(e.getDest()))) {
-                        result.push(e);
-                }
-            });
-        });
-        this.moves = result;
-        return this;
-    }
+		
+		for(var i = 0; i < moveArray.length; i++){
+			var eachArgMove = moveArray[i];
+			for(var j = 0; j < this.moves.length; j++){
+				var eachThisMove = this.moves[j];
+				if(eachArgMove.equals(eachThisMove)){
+					minusArr.push(eachArgMove);
+				}
+			}
+		}
+		var length = this.moves.length;
+		for(var i = 0; i < minusArr.length; i++){
+			var eachMinusMove = minusArr[i];
+			for(var j = 0; j < length; j++){
+				var eachThisMove = this.moves[j];
+				if(eachMinusMove.equals(eachThisMove)){
+					this.moves.splice(j,1);
+				}
+			}
+		}
+		return this;
+	}
 
     public containsDestination(pos: Pos){
         for(var moveIdx in this.getMoves()){
@@ -1571,15 +1584,20 @@ class Move{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-        //return MoveFactory.getGiraffeMovement(this);
-        return MoveFactory.getRelativeToPiece(this, -3, -1)
-        .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
-        .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
-        .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
-        .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
-        .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+        var x = piece.getX();
+		var y = piece.getY();
+	
+		var invalidMoves = new MoveCollection();
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2)));
+		
+		return MoveFactory.getAllDiagonal(this).minus(invalidMoves);
     }
 }class KnightModel extends PieceModel{
 

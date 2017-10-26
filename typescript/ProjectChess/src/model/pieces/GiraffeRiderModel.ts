@@ -8,14 +8,6 @@ class GiraffeRiderModel extends PieceModel{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-        //return MoveFactory.getGiraffeMovement(this);
-        return MoveFactory.getRelativeToPiece(this, -3, -1)
-        .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
-        .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
-        .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
-        .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
-        .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+		return MoveFactory.getGiraffeMovement(this);
     }
 }

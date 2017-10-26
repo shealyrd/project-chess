@@ -37,17 +37,21 @@ class MoveCollection{
 
     public minus(movesArg: MoveCollection): MoveCollection{
         var result: Move[] = new Array();
+		
         var moveArray: Move[] = movesArg.getMoves();
-        moveArray.forEach((e, i, me) => {
-            this.moves.forEach((f, j, me2) => {
-                if(!(f.getDest().equals(e.getDest()))) {
-                        result.push(e);
-                }
-            });
-        });
-        this.moves = result;
-        return this;
-    }
+		var length = this.moves.length;
+		for(var i = 0; i < moveArray.length; i++){
+			var eachArgMove = moveArray[i];
+			for(var j = 0; j < this.moves.length; j++){
+				var eachThisMove = this.moves[j];
+				if(eachArgMove.equals(eachThisMove)){
+					this.moves.splice(j, 1);
+				}
+			}
+		}
+		
+		return this;
+	}
 
     public containsDestination(pos: Pos){
         for(var moveIdx in this.getMoves()){
