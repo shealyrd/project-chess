@@ -31,6 +31,7 @@ abstract class PieceModel{
         return MoveFactory.getAllUpwards(this);
     }
 
-    abstract onMove();
+	
+    abstract onMove(move: Move);
     abstract giveInternalAttributes(piece: PieceModel);
 }

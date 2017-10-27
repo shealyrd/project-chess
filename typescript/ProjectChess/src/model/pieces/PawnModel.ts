@@ -7,6 +7,10 @@ class PawnModel extends PieceModel{
 
     onMove(){
        this.hasMoved = true;
+	   if(this.isOnOppositeBackRank()){
+			//this.promoteTo(PieceType.HERO);
+			alert("I'm promoting!");
+	   }
     }
 
     giveInternalAttributes(piece: PieceModel) {

@@ -32,7 +32,7 @@ class BoardModel{
             }
         });
 	}
-
+	
     getDirection(color: Color): number{
         if(Color.WHITE == color){
             return 1;
@@ -41,7 +41,37 @@ class BoardModel{
             return -1;
         }
     }
-
+	
+	getBackRank(color: Color): Pos[]{
+		var result: Pos[] = new Array();
+		
+		if(this.getDirection(color) > 0){
+			for(var i = 0; i < this.getWidth(); i++){
+				result.push(new Pos(i, 0));
+			}
+		}
+		else{
+			for(var i = 0; i < this.getWidth(); i++){
+				result.push(new Pos(i, this.getHeight() - 1));
+			}
+		}
+		
+		return result;
+	}
+	
+	isOnOppositeBackRank(pos: Pos, color: Color): boolean{
+		var backRank: Pos[] = this.boardModel.getBackRank(color);
+		
+		for(var eachIdx in backRank){
+			var eachPos = backRank[eachIdx];
+			if(eachPos.equals(pos)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
     isFree(pos: Pos): boolean{
         var result: boolean;
         this.pos2PieceMap.forEach((value, key, map) => {
@@ -109,7 +139,7 @@ class BoardModel{
 
     executeMove(move: Move){
         var originalPiece: PieceModel = this.getPieceFromPosition(move.getOrigin());
-        originalPiece.onMove();
+        originalPiece.onMove(move);
         this.movePiece(originalPiece, move.getDest());
     }
 

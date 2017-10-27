@@ -187,6 +187,7 @@ var PieceType;
     PieceType[PieceType["PICKET"] = 11] = "PICKET";
     PieceType[PieceType["ELEPHANT_RIDER"] = 12] = "ELEPHANT_RIDER";
     PieceType[PieceType["CAMEL_RIDER"] = 13] = "CAMEL_RIDER";
+    PieceType[PieceType["HERO"] = 14] = "HERO";
 })(PieceType || (PieceType = {}));
 var PieceLocation = /** @class */ (function () {
     function PieceLocation(x, y, type, color) {
@@ -1316,8 +1317,12 @@ var PawnModel = /** @class */ (function (_super) {
     function PawnModel(board, pos, color) {
         return _super.call(this, board, pos, color, PieceType.PAWN) || this;
     }
-    PawnModel.prototype.onMove = function () {
+    PawnModel.prototype.onMove = function (move) {
         this.hasMoved = true;
+        if (this.getBoardModel().isOnOppositeBackRank(move.getDest(), this.getColor())) {
+            //this.promoteTo(PieceType.HERO);
+            alert("I'm promoting!");
+        }
     };
     PawnModel.prototype.giveInternalAttributes = function (piece) {
         var currPiece = piece;
@@ -1350,18 +1355,7 @@ var GiraffeRiderModel = /** @class */ (function (_super) {
     GiraffeRiderModel.prototype.onMove = function () { };
     GiraffeRiderModel.prototype.giveInternalAttributes = function (piece) { };
     GiraffeRiderModel.prototype.getPossibleMoves = function () {
-        var x = this.getPos().getX();
-        var y = this.getPos().getY();
-        var invalidMoves = new MoveCollection();
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2)));
-        return MoveFactory.getAllDiagonal(this).minus(invalidMoves);
+        return MoveFactory.getGiraffeMovement(this);
     };
     return GiraffeRiderModel;
 }(PieceModel));
@@ -1542,6 +1536,30 @@ var BoardModel = /** @class */ (function () {
             return -1;
         }
     };
+    BoardModel.prototype.getBackRank = function (color) {
+        var result = new Array();
+        if (this.getDirection(color) > 0) {
+            for (var i = 0; i < this.getWidth(); i++) {
+                result.push(new Pos(i, 0));
+            }
+        }
+        else {
+            for (var i = 0; i < this.getWidth(); i++) {
+                result.push(new Pos(i, this.getHeight() - 1));
+            }
+        }
+        return result;
+    };
+    BoardModel.prototype.isOnOppositeBackRank = function (pos, color) {
+        var backRank = this.getBackRank(color);
+        for (var eachIdx in backRank) {
+            var eachPos = backRank[eachIdx];
+            if (eachPos.equals(pos)) {
+                return true;
+            }
+        }
+        return false;
+    };
     BoardModel.prototype.isFree = function (pos) {
         var result;
         this.pos2PieceMap.forEach(function (value, key, map) {
@@ -1600,7 +1618,7 @@ var BoardModel = /** @class */ (function () {
     };
     BoardModel.prototype.executeMove = function (move) {
         var originalPiece = this.getPieceFromPosition(move.getOrigin());
-        originalPiece.onMove();
+        originalPiece.onMove(move);
         this.movePiece(originalPiece, move.getDest());
     };
     BoardModel.prototype.movePiece = function (piece, dest) {
@@ -1732,7 +1750,7 @@ var BoardFactory = /** @class */ (function () {
         board.populateFromSerial(BoardFactory.STANDARD_BOARD);
         return board;
     };
-    BoardFactory.STANDARD_BOARD = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[10_B],[4_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[4_W],[10_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
+    BoardFactory.STANDARD_BOARD = "[6_B],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[7_W],[8_W],[9_W],[10_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     return BoardFactory;
 }());
 var Player = /** @class */ (function () {
@@ -1894,10 +1912,10 @@ var ChessGame = /** @class */ (function () {
             this.getCurrentPlayer().beforeMove(this.board);
             this.board.executeMove(move);
             this.getCurrentPlayer().afterMove(this.board);
-            if (this.hasLost(this.swapColor(this.currentTurn))) {
-                this.hasFinished = true;
-            }
-            this.swapPlayers();
+            //if(this.hasLost(this.swapColor(this.currentTurn))){
+            //   this.hasFinished = true;
+            //}
+            // this.swapPlayers();
         }
         setTimeout(function () {
             if (!_this.isFinished()) {
