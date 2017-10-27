@@ -1298,6 +1298,10 @@ var PieceModel = /** @class */ (function () {
     PieceModel.prototype.getPossibleMoves = function () {
         return MoveFactory.getAllUpwards(this);
     };
+    PieceModel.prototype.transformInto = function (type) {
+        this.getBoardModel().removePiece(this.getPos());
+        this.getBoardModel().addPiece(type, this.getPos().getX(), this.getPos().getY(), this.getColor());
+    };
     return PieceModel;
 }());
 var RookModel = /** @class */ (function (_super) {
@@ -1320,8 +1324,9 @@ var PawnModel = /** @class */ (function (_super) {
     PawnModel.prototype.onMove = function (move) {
         this.hasMoved = true;
         if (this.getBoardModel().isOnOppositeBackRank(move.getDest(), this.getColor())) {
-            //this.promoteTo(PieceType.HERO);
+            this.transformInto(PieceType.QUEEN);
             alert("I'm promoting!");
+            //this.getBoardModel().addPiece();
         }
     };
     PawnModel.prototype.giveInternalAttributes = function (piece) {
@@ -1619,9 +1624,10 @@ var BoardModel = /** @class */ (function () {
     BoardModel.prototype.executeMove = function (move) {
         var originalPiece = this.getPieceFromPosition(move.getOrigin());
         originalPiece.onMove(move);
-        this.movePiece(originalPiece, move.getDest());
+        this.movePiece(originalPiece.getPos(), move.getDest());
     };
-    BoardModel.prototype.movePiece = function (piece, dest) {
+    BoardModel.prototype.movePiece = function (origin, dest) {
+        var piece = this.getPieceFromPosition(origin);
         this.removePiece(piece.getPos());
         this.removePiece(dest);
         var transposedPiece = PieceFactory.createPieceByTransposition(dest, piece);
@@ -1750,7 +1756,7 @@ var BoardFactory = /** @class */ (function () {
         board.populateFromSerial(BoardFactory.STANDARD_BOARD);
         return board;
     };
-    BoardFactory.STANDARD_BOARD = "[6_B],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[7_W],[8_W],[9_W],[10_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
+    BoardFactory.STANDARD_BOARD = "[6_B],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     return BoardFactory;
 }());
 var Player = /** @class */ (function () {
@@ -1912,10 +1918,10 @@ var ChessGame = /** @class */ (function () {
             this.getCurrentPlayer().beforeMove(this.board);
             this.board.executeMove(move);
             this.getCurrentPlayer().afterMove(this.board);
-            //if(this.hasLost(this.swapColor(this.currentTurn))){
-            //   this.hasFinished = true;
+            // if(this.hasLost(this.swapColor(this.currentTurn))){
+            //     this.hasFinished = true;
             //}
-            // this.swapPlayers();
+            //this.swapPlayers();
         }
         setTimeout(function () {
             if (!_this.isFinished()) {

@@ -5,11 +5,12 @@ class PawnModel extends PieceModel{
         super(board, pos, color, PieceType.PAWN);
     }
 
-    onMove(){
+    onMove(move: Move){
        this.hasMoved = true;
-	   if(this.isOnOppositeBackRank()){
-			//this.promoteTo(PieceType.HERO);
-			alert("I'm promoting!");
+	   if(this.isOnOppositeBackRank(move.getDest(), this.getColor())){
+			this.transformInto(PieceType.QUEEN);
+			//alert("I'm promoting!");
+			//this.getBoardModel().addPiece();
 	   }
     }
 

@@ -1,246 +1,257 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var State;
-(function (State) {
-    State[State["WHITES_TURN"] = 0] = "WHITES_TURN";
-    State[State["BLACKS_TURN"] = 1] = "BLACKS_TURN";
-    State[State["FINISH"] = 2] = "FINISH";
-})(State || (State = {}));
-var StaticColors = /** @class */ (function () {
-    function StaticColors() {
+enum State{
+
+    WHITES_TURN,
+    BLACKS_TURN,
+    FINISH
+
+}class StaticColors{
+    static BASIC_BOARD_WHITE = "#f0d9b5";
+    static BASIC_BOARD_BLACK = "#b58863";
+    static SQUARE_SELECTION_BLUE = "#7294da";
+    static SQUARE_SELECTION_RED = "#e60000";
+}class Algorithms{
+    static shuffle (array) {
+    var i = 0
+        , j = 0
+        , temp = null
+
+    for (i = array.length - 1; i > 0; i -= 1) {
+        j = Math.floor(Math.random() * (i + 1))
+        temp = array[i]
+        array[i] = array[j]
+        array[j] = temp
     }
-    StaticColors.BASIC_BOARD_WHITE = "#f0d9b5";
-    StaticColors.BASIC_BOARD_BLACK = "#b58863";
-    StaticColors.SQUARE_SELECTION_BLUE = "#7294da";
-    StaticColors.SQUARE_SELECTION_RED = "#e60000";
-    return StaticColors;
-}());
-var Algorithms = /** @class */ (function () {
-    function Algorithms() {
-    }
-    Algorithms.shuffle = function (array) {
-        var i = 0, j = 0, temp = null;
-        for (i = array.length - 1; i > 0; i -= 1) {
-            j = Math.floor(Math.random() * (i + 1));
-            temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
-        }
-    };
-    return Algorithms;
-}());
-var CallbackPool = /** @class */ (function () {
-    function CallbackPool() {
-        var callbacks = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            callbacks[_i] = arguments[_i];
-        }
-        this.callbacks = [];
+}
+}class CallbackPool{
+    private callbacks: {(): void;}[] = [];
+    
+    constructor(...callbacks: {(): void;}[]){
         this.callbacks = callbacks;
     }
-    CallbackPool.prototype.addCallback = function (callback) {
+   
+    public addCallback(callback: {(): void;}): CallbackPool{
         this.callbacks.push(callback);
         return this;
-    };
-    CallbackPool.prototype.fire = function () {
-        for (var i = 0; i < this.callbacks.length; i++) {
+    }
+    
+    public fire(): void{
+        for(var i = 0; i < this.callbacks.length; i++){
             this.callbacks[i]();
         }
-    };
-    CallbackPool.prototype.reset = function () {
-        this.callbacks = [];
-    };
-    return CallbackPool;
-}());
-var IDSequence = /** @class */ (function () {
-    function IDSequence() {
     }
-    IDSequence.nextVal = function () {
+    
+    public reset(): void{
+        this.callbacks = [];
+    }
+}class IDSequence{
+    static count: number = 0;
+
+    static nextVal(): number{
         IDSequence.count = IDSequence.count + 1;
         return IDSequence.count;
-    };
-    IDSequence.count = 0;
-    return IDSequence;
-}());
-var HTMLObject = /** @class */ (function () {
-    function HTMLObject() {
-        this.id = IDSequence.nextVal() + "";
     }
-    HTMLObject.prototype.setTopPos = function (input) {
+}abstract class HTMLObject {
+    topPos: number;
+    leftPos: number;
+    height: number;
+    width: number;
+    id: string = IDSequence.nextVal() + "";
+
+    setTopPos(input: number): void{
         this.topPos = input;
-    };
-    HTMLObject.prototype.setLeftPos = function (input) {
-        this.leftPos = input;
-    };
-    HTMLObject.prototype.setHeight = function (input) {
-        this.height = input;
-    };
-    HTMLObject.prototype.setWidth = function (input) {
-        this.width = input;
-    };
-    HTMLObject.prototype.getTopPos = function () {
-        return this.topPos;
-    };
-    HTMLObject.prototype.getLeftPos = function () {
-        return this.leftPos;
-    };
-    HTMLObject.prototype.getId = function () {
-        return this.id;
-    };
-    HTMLObject.prototype.setId = function (id) {
-        this.id = id;
-    };
-    HTMLObject.prototype.getHeight = function () {
-        return this.height;
-    };
-    HTMLObject.prototype.getWidth = function () {
-        return this.width;
-    };
-    return HTMLObject;
-}());
-var HTMLBuilder = /** @class */ (function () {
-    function HTMLBuilder() {
-        this.styles = {};
-        this.classes = new Array();
-        this.innerDivs = new Array();
-        this.base = "<div {info-template}>{inner}</div>";
     }
-    HTMLBuilder.prototype.newDiv = function () {
+
+    setLeftPos(input: number): void{
+        this.leftPos = input;
+    }
+
+    setHeight(input: number): void{
+        this.height = input;
+    }
+
+    setWidth(input: number): void{
+        this.width = input;
+    }
+
+    getTopPos(): number{
+        return this.topPos;
+    }
+
+    getLeftPos(): number{
+        return this.leftPos;
+    }
+
+    getId(): string{
+        return this.id;
+    }
+
+    setId(id: string){
+       this.id = id;
+    }
+
+    getHeight(): number{
+        return this.height;
+    }
+
+    getWidth(): number{
+        return this.width;
+    }
+
+    abstract toHTML(): string;
+}class HTMLBuilder{
+
+    styles = {};
+    classes: string[] = new Array();
+	innerDivs: string[] = new Array();
+    base: string = "<div {info-template}>{inner}</div>";
+    id: string;
+
+
+
+    newDiv(): HTMLBuilder{
         return this;
-    };
-    HTMLBuilder.prototype.setId = function (id) {
+    }
+
+    setId(id: string): HTMLBuilder{
         this.id = id;
         return this;
-    };
-    HTMLBuilder.prototype.addStyle = function (type, value) {
+    }
+
+    addStyle(type: string, value: string): HTMLBuilder{
         this.styles[type] = value;
         return this;
-    };
-    HTMLBuilder.prototype.addClass = function (classname) {
+    }
+
+    addClass(classname: string): HTMLBuilder{
         this.classes.push(classname);
         return this;
-    };
-    HTMLBuilder.prototype.addInnerDiv = function (innerDiv) {
+    }
+	
+	addInnerDiv(innerDiv: string): HTMLBuilder{
         this.innerDivs.push(innerDiv);
         return this;
-    };
-    HTMLBuilder.prototype.toString = function () {
-        var result;
-        var style;
-        var idDef = "";
-        var classDef;
-        var innerDivDef = "";
-        if (this.id != undefined) {
+    }
+
+    toString(): string{
+        var result: string;
+        var style: string;
+        var idDef: string = "";
+        var classDef: string;
+		var innerDivDef: string = "";
+
+        if(this.id != undefined){
             idDef = "id=\"" + this.id + "\"";
         }
+
+
         style = "style=\"";
-        for (var each in this.styles) {
+        for(var each in this.styles){
             style = style + each + ": " + this.styles[each] + "; ";
         }
         style = style + "\"";
+
         classDef = "class=\"";
         for (var eachClass in this.classes) {
             classDef = classDef + this.classes[eachClass] + " ";
         }
         classDef = classDef + "\"";
-        if (this.innerDivs.length > 0) {
-            for (var eachDiv in this.innerDivs) {
-                innerDivDef += this.innerDivs[eachDiv];
-            }
-        }
+		
+		if(this.innerDivs.length > 0){
+			for(var eachDiv in this.innerDivs){
+				innerDivDef += this.innerDivs[eachDiv];
+			}
+		}
+
         result = this.base.replace("{info-template}", (idDef + " " + classDef + " " + style));
-        result = result.replace("{inner}", innerDivDef);
+		result = result.replace("{inner}", innerDivDef);
+
         return result;
-    };
-    return HTMLBuilder;
-}());
-var Color;
-(function (Color) {
-    Color[Color["WHITE"] = 0] = "WHITE";
-    Color[Color["BLACK"] = 1] = "BLACK";
-})(Color || (Color = {}));
-var SquareType;
-(function (SquareType) {
-    SquareType[SquareType["NORMAL"] = 0] = "NORMAL";
-    SquareType[SquareType["NON_EXISTENT"] = 1] = "NON_EXISTENT";
-})(SquareType || (SquareType = {}));
-var PieceType;
-(function (PieceType) {
-    PieceType[PieceType["PAWN"] = 1] = "PAWN";
-    PieceType[PieceType["KNIGHT"] = 2] = "KNIGHT";
-    PieceType[PieceType["BISHOP"] = 3] = "BISHOP";
-    PieceType[PieceType["ROOK"] = 4] = "ROOK";
-    PieceType[PieceType["QUEEN"] = 5] = "QUEEN";
-    PieceType[PieceType["KING"] = 6] = "KING";
-    PieceType[PieceType["WAR_ENGINE"] = 7] = "WAR_ENGINE";
-    PieceType[PieceType["MINISTER"] = 8] = "MINISTER";
-    PieceType[PieceType["GENERAL"] = 9] = "GENERAL";
-    PieceType[PieceType["GIRAFFE_RIDER"] = 10] = "GIRAFFE_RIDER";
-    PieceType[PieceType["PICKET"] = 11] = "PICKET";
-    PieceType[PieceType["ELEPHANT_RIDER"] = 12] = "ELEPHANT_RIDER";
-    PieceType[PieceType["CAMEL_RIDER"] = 13] = "CAMEL_RIDER";
-    PieceType[PieceType["HERO"] = 14] = "HERO";
-})(PieceType || (PieceType = {}));
-var PieceLocation = /** @class */ (function () {
-    function PieceLocation(x, y, type, color) {
+    }
+}enum Color{
+	WHITE,
+	BLACK
+}enum SquareType{
+    NORMAL = 0,
+    NON_EXISTENT = 1
+}enum PieceType{
+
+    PAWN = 1,
+    KNIGHT = 2,
+    BISHOP = 3,
+    ROOK = 4,
+    QUEEN = 5,
+    KING = 6,
+	WAR_ENGINE = 7,
+	MINISTER = 8,
+	GENERAL = 9,
+	GIRAFFE_RIDER = 10,
+	PICKET = 11,
+	ELEPHANT_RIDER = 12,
+	CAMEL_RIDER = 13,
+	HERO = 14
+}
+class PieceLocation{
+    x : number;
+    y: number;
+    type: PieceType;
+    color: Color;
+
+    constructor(x:number, y: number, type: PieceType, color: Color){
         this.x = x;
         this.y = y;
         this.type = type;
         this.color = color;
     }
-    PieceLocation.prototype.getX = function () {
+
+    getX(): number{
         return this.x;
-    };
-    PieceLocation.prototype.getY = function () {
-        return this.y;
-    };
-    PieceLocation.prototype.getType = function () {
-        return this.type;
-    };
-    PieceLocation.prototype.getColor = function () {
-        return this.color;
-    };
-    return PieceLocation;
-}());
-var PieceImageDatabase = /** @class */ (function () {
-    function PieceImageDatabase() {
     }
-    PieceImageDatabase.getImageURL = function (type, color) {
-        if (color == Color.WHITE) {
+    getY(): number{
+        return this.y;
+    }
+    getType(): PieceType{
+        return this.type;
+    }
+    getColor(): Color{
+        return this.color;
+    }
+}
+class PieceImageDatabase{
+
+    static whiteImages: Map<PieceType, string> = PieceImageDatabase.whiteMap();
+    static blackImages: Map<PieceType, string> = PieceImageDatabase.blackMap();
+
+    public static getImageURL(type: PieceType, color: Color): string{
+        if(color == Color.WHITE){
             return PieceImageDatabase.getWhiteImage(type);
         }
-        else if (color == Color.BLACK) {
+        else if(color == Color.BLACK){
             return PieceImageDatabase.getBlackImage(type);
         }
-    };
-    PieceImageDatabase.getWhiteImage = function (type) {
-        var result = "";
-        this.whiteImages.forEach(function (value, key, map) {
-            if (key == type) {
+    }
+
+   static getWhiteImage(type: PieceType): string{
+        var result: string = "";
+        this.whiteImages.forEach((value, key, map) => {
+            if(key == type){
                 result = value;
             }
         });
         return result;
-    };
-    PieceImageDatabase.getBlackImage = function (type) {
-        var result = "";
-        this.blackImages.forEach(function (value, key, map) {
-            if (key == type) {
+    }
+
+   static getBlackImage(type: PieceType): string{
+        var result: string = "";
+        this.blackImages.forEach((value, key, map) => {
+            if(key == type){
                 result = value;
             }
         });
         return result;
-    };
-    PieceImageDatabase.whiteMap = function () {
-        var whiteImages = new Map();
+    }
+
+    static whiteMap(): Map<PieceType, string>{
+        var whiteImages: Map<PieceType, string> = new Map();
         whiteImages.set(PieceType.PAWN, 'imgs//pieces//pawn_w.png');
         whiteImages.set(PieceType.KNIGHT, 'imgs//pieces//Knight_W.png');
         whiteImages.set(PieceType.BISHOP, 'imgs//pieces//Bishop_W.png');
@@ -255,9 +266,10 @@ var PieceImageDatabase = /** @class */ (function () {
         whiteImages.set(PieceType.PICKET, 'imgs//pieces//Picket_W.png');
         whiteImages.set(PieceType.WAR_ENGINE, 'imgs//pieces//War_Machine_W.png');
         return whiteImages;
-    };
-    PieceImageDatabase.blackMap = function () {
-        var blackImages = new Map();
+    }
+
+    static blackMap(): Map<PieceType, string>{
+        var blackImages: Map<PieceType, string> = new Map();
         blackImages.set(PieceType.PAWN, 'imgs//pieces//pawn_b.png');
         blackImages.set(PieceType.KNIGHT, 'imgs//pieces//Knight_B.png');
         blackImages.set(PieceType.BISHOP, 'imgs//pieces//Bishop_B.png');
@@ -272,239 +284,295 @@ var PieceImageDatabase = /** @class */ (function () {
         blackImages.set(PieceType.PICKET, 'imgs//pieces//Picket_B.png');
         blackImages.set(PieceType.WAR_ENGINE, 'imgs//pieces//War_Machine_B.png');
         return blackImages;
-    };
-    PieceImageDatabase.whiteImages = PieceImageDatabase.whiteMap();
-    PieceImageDatabase.blackImages = PieceImageDatabase.blackMap();
-    return PieceImageDatabase;
-}());
-var Piece = /** @class */ (function (_super) {
-    __extends(Piece, _super);
-    function Piece(left, top, width, height, z, color, type) {
-        var _this = _super.call(this) || this;
-        _this.setTopPos(top);
-        _this.setLeftPos(left);
-        _this.setWidth(width);
-        _this.setHeight(height);
-        _this.setZ(z);
-        _this.setColor(color);
-        _this.setType(type);
-        return _this;
     }
-    Piece.prototype.setType = function (type) {
+}class Piece extends HTMLObject{
+    z: number;
+	color: Color;
+	x: number;
+    y: number;
+    type: PieceType;
+
+    constructor(left: number, top: number, width: number, height: number, z:number, color: Color, type: PieceType){
+        super();
+        this.setTopPos(top);
+        this.setLeftPos(left);
+        this.setWidth(width);
+        this.setHeight(height);
+        this.setZ(z);
+		this.setColor(color);
+        this.setType(type);
+    }
+
+    setType(type: PieceType){
         this.type = type;
-    };
-    Piece.prototype.getType = function () {
+    }
+
+    getType(): PieceType{
         return this.type;
-    };
-    Piece.prototype.setZ = function (z) {
+    }
+
+    setZ(z: number) {
         this.z = z;
-    };
-    Piece.prototype.getZ = function () {
+    }
+	
+    getZ(): number {
         return this.z;
-    };
-    Piece.prototype.setX = function (x) {
-        this.x = x;
-    };
-    Piece.prototype.getX = function () {
+    }
+
+    setX(x:number){
+      this.x = x;
+    }
+    getX(): number{
         return this.x;
-    };
-    Piece.prototype.setY = function (y) {
+    }
+
+    setY(y:number){
         this.y = y;
-    };
-    Piece.prototype.getY = function () {
+    }
+
+    getY(): number{
         return this.y;
-    };
-    Piece.prototype.getWhiteImg = function () {
+    }
+
+	getWhiteImg(): string{
         return PieceImageDatabase.getImageURL(this.getType(), Color.WHITE);
-    };
-    Piece.prototype.getBlackImg = function () {
+    }
+
+    getBlackImg(): string{
         return PieceImageDatabase.getImageURL(this.getType(), Color.BLACK);
-    };
-    Piece.getSizeRatio = function () {
+    }
+
+
+	static getSizeRatio(): number{
         return 1.5;
-    };
-    Piece.prototype.setColor = function (color) {
-        this.color = color;
-    };
-    Piece.prototype.getColor = function () {
-        return this.color;
-    };
-    Piece.prototype.toHTML = function () {
-        var builder = new HTMLBuilder();
-        builder.newDiv()
-            .addClass("piece")
-            .addStyle("position", "absolute")
-            .addStyle("left", this.getLeftPos() + "px")
-            .addStyle("top", this.getTopPos() + "px")
-            .addStyle("width", this.getWidth() + "px")
-            .addStyle("height", this.getHeight() + "px")
-            .addStyle("z-index", this.getZ() + "")
-            .addStyle("pointer-events", "none")
-            .setId(this.getId());
-        var contentImg;
-        if (this.getColor() == Color.WHITE) {
-            contentImg = this.getWhiteImg();
-        }
-        else if (this.getColor() == Color.BLACK) {
-            contentImg = this.getBlackImg();
-        }
-        builder.addStyle("content", "url(" + contentImg + ")");
-        return builder.toString();
-    };
-    Piece.prototype.getPos = function () {
-        return new Pos(this.getX(), this.getY());
-    };
-    return Piece;
-}(HTMLObject));
-var Square = /** @class */ (function (_super) {
-    __extends(Square, _super);
-    function Square(left, top, width, height) {
-        var _this = _super.call(this) || this;
-        _this.sqrType = SquareType.NORMAL;
-        _this.setTopPos(top);
-        _this.setLeftPos(left);
-        _this.setWidth(width);
-        _this.setHeight(height);
-        return _this;
     }
-    Square.prototype.setX = function (x) {
+	
+	setColor(color: Color){
+		this.color = color;
+	}
+	
+	getColor(): Color{
+		return this.color;
+	}
+	
+	toHTML():string {
+        var builder: HTMLBuilder = new HTMLBuilder();
+        builder.newDiv()
+                .addClass("piece")
+                .addStyle("position", "absolute")
+                .addStyle("left", this.getLeftPos() + "px")
+                .addStyle("top", this.getTopPos() + "px")
+                .addStyle("width", this.getWidth() + "px")
+                .addStyle("height", this.getHeight() + "px")
+				.addStyle("z-index", this.getZ() + "")
+				.addStyle("pointer-events", "none")
+                .setId(this.getId());
+
+				var contentImg: string;
+				if(this.getColor() == Color.WHITE){
+					contentImg = this.getWhiteImg();
+				}
+				else if(this.getColor() == Color.BLACK){
+					contentImg = this.getBlackImg();
+				}
+				
+				builder.addStyle("content", "url(" + contentImg + ")");
+				
+        return builder.toString();
+    }
+
+    getPos():Pos {
+        return new Pos(this.getX(), this.getY());
+    }
+}
+class Square extends HTMLObject{
+	col: Color;
+	x: number;
+    y: number;
+    hexColor: string;
+	sqrType: SquareType = SquareType.NORMAL;
+
+    constructor(left: number, top: number, width: number, height: number){
+        super();
+        this.setTopPos(top);
+        this.setLeftPos(left);
+        this.setWidth(width);
+        this.setHeight(height);
+    }
+
+    setX(x: number){
         this.x = x;
-    };
-    Square.prototype.setY = function (y) {
-        this.y = y;
-    };
-    Square.prototype.setHexColor = function (hex) {
-        this.hexColor = hex;
-    };
-    Square.prototype.setType = function (type) {
-        this.sqrType = type;
-    };
-    Square.prototype.getType = function () {
-        return this.sqrType;
-    };
-    Square.prototype.resetHexColor = function () {
-        var hexColor;
-        switch (this.col) {
-            case Color.WHITE:
-                hexColor = "#f0d9b5";
-                break;
-            case Color.BLACK:
-                hexColor = "#b58863";
-                break;
-        }
-        this.setHexColor(hexColor);
-    };
-    Square.prototype.getY = function () {
-        return this.y;
-    };
-    Square.prototype.getX = function () {
-        return this.x;
-    };
-    Square.prototype.setColor = function (newCol) {
-        this.col = newCol;
-        this.resetHexColor();
-    };
-    Square.prototype.getColor = function () {
-        return this.col;
-    };
-    Square.prototype.getPos = function () {
-        return new Pos(this.getX(), this.getY());
-    };
-    Square.prototype.toHTML = function () {
-        var builder = new HTMLBuilder();
-        builder.newDiv()
-            .addClass("square")
-            .addStyle("position", "absolute")
-            .addStyle("left", this.getLeftPos() + "px")
-            .addStyle("top", this.getTopPos() + "px")
-            .addStyle("width", this.getWidth() + "px")
-            .addStyle("height", this.getHeight() + "px");
-        builder.setId(this.getId());
-        if (!(this.getType() == SquareType.NON_EXISTENT)) {
-            builder.addStyle("border", "1px solid black");
-            builder.addStyle("background-color", this.hexColor);
-        }
-        return builder.toString();
-    };
-    return Square;
-}(HTMLObject));
-var Row = /** @class */ (function (_super) {
-    __extends(Row, _super);
-    function Row(left, top, width, height, sqrCount) {
-        var _this = _super.call(this) || this;
-        _this.squares = new Array();
-        _this.setTopPos(top);
-        _this.setLeftPos(left);
-        _this.setWidth(width);
-        _this.setHeight(height);
-        _this.setNumSquares(sqrCount);
-        return _this;
     }
-    Row.prototype.initialize = function () {
-        for (var i = 0; i < this.getNumSquares(); i++) {
-            var newSquare = new Square(this.getSquareLeftPos(i), 0, this.getSquareWidth(), this.getHeight());
-            newSquare.setX(i);
-            newSquare.setY(this.getY());
-            newSquare.setId("square_" + i + "_" + this.getY());
-            this.squares.push(newSquare);
-        }
-    };
-    Row.prototype.getSquares = function () {
-        return this.squares;
-    };
-    Row.prototype.setY = function (y) {
+
+    setY(y: number){
         this.y = y;
-    };
-    Row.prototype.getY = function () {
-        return this.y;
-    };
-    Row.prototype.setNumSquares = function (sqrCount) {
-        this.numSquares = sqrCount;
-    };
-    Row.prototype.getNumSquares = function () {
-        return this.numSquares;
-    };
-    Row.prototype.getSquareWidth = function () {
-        return Math.ceil(this.getWidth() / this.numSquares);
-    };
-    Row.prototype.getSquareLeftPos = function (index) {
-        return (index * this.getSquareWidth());
-    };
-    Row.prototype.setAlternating = function (starting) {
-        for (var each in this.squares) {
-            this.squares[each].setColor(starting);
-            if (starting == Color.WHITE) {
-                starting = Color.BLACK;
-            }
-            else if (starting == Color.BLACK) {
-                starting = Color.WHITE;
-            }
+    }
+
+    setHexColor(hex: string){
+        this.hexColor = hex;
+    }
+
+	setType(type: SquareType){
+		this.sqrType = type;
+	}
+	
+	getType(): SquareType{
+		return this.sqrType;
+	}
+	
+    resetHexColor(){
+       var hexColor: string;
+
+        switch(this.col){
+            case Color.WHITE: hexColor = "#f0d9b5"; break;
+            case Color.BLACK: hexColor = "#b58863"; break;
         }
-    };
-    Row.prototype.toHTML = function () {
-        var builder = new HTMLBuilder();
+
+        this.setHexColor(hexColor);
+    }
+
+    getY(): number{
+        return this.y;
+    }
+
+    getX(): number{
+        return this.x;
+    }
+
+	setColor(newCol: Color){
+		this.col = newCol;
+        this.resetHexColor();
+	}
+	
+	getColor(): Color{
+		return this.col;
+	}
+
+    getPos(): Pos{
+        return new Pos(this.getX(), this.getY());
+    }
+
+    toHTML():string {
+        var builder: HTMLBuilder = new HTMLBuilder();
         builder.newDiv()
-            .addClass("row")
-            .addStyle("position", "absolute")
-            .addStyle("left", this.getLeftPos() + "px")
-            .addStyle("top", this.getTopPos() + "px")
-            .addStyle("width", this.getWidth() + "px")
-            .addStyle("height", this.getHeight() + "px");
-        for (var each in this.squares) {
+                .addClass("square")
+                .addStyle("position", "absolute")
+                .addStyle("left", this.getLeftPos() + "px")
+                .addStyle("top", this.getTopPos() + "px")
+                .addStyle("width", this.getWidth() + "px")
+                .addStyle("height", this.getHeight() + "px");
+
+        builder.setId(this.getId());
+		
+		if(!(this.getType() == SquareType.NON_EXISTENT)){
+		    builder.addStyle("border", "1px solid black");
+			builder.addStyle("background-color", this.hexColor);
+		}
+
+        return builder.toString();
+    }
+
+} class Row extends HTMLObject{
+    squares: Square[] = new Array();
+	numSquares: number;
+	y: number;
+	
+    constructor(left: number, top: number, width: number, height: number, sqrCount: number){
+        super();
+        this.setTopPos(top);
+        this.setLeftPos(left);
+        this.setWidth(width);
+        this.setHeight(height);
+		this.setNumSquares(sqrCount);
+
+    }
+
+	initialize(){
+		for(var i: number = 0; i < this.getNumSquares(); i++){
+			var newSquare: Square = new Square(this.getSquareLeftPos(i), 0, this.getSquareWidth(), this.getHeight());
+			newSquare.setX(i);
+			newSquare.setY(this.getY());
+			newSquare.setId("square_" + i + "_" + this.getY());
+			this.squares.push(newSquare);
+		}
+	}
+	
+	getSquares(): Square[]{
+		return this.squares;
+	}
+	
+	setY(y: number){
+		this.y = y;
+	}
+
+	getY(): number{
+		return this.y;
+	}
+	
+	setNumSquares(sqrCount: number){
+		this.numSquares = sqrCount;
+	}
+	
+	getNumSquares(): number{
+		return this.numSquares;
+	}
+	
+	getSquareWidth(): number{
+		return Math.ceil(this.getWidth() / this.numSquares);
+	}
+	
+	getSquareLeftPos(index: number): number{
+		return (index * this.getSquareWidth());
+	}
+	
+	setAlternating(starting: Color){
+		for(var each in this.squares){
+			this.squares[each].setColor(starting);
+			
+			if(starting == Color.WHITE){
+				starting = Color.BLACK;
+			}
+			else if(starting == Color.BLACK){
+				starting = Color.WHITE;
+			}
+		}
+	}
+
+    toHTML():string {
+		var builder: HTMLBuilder = new HTMLBuilder();
+        builder.newDiv()
+                .addClass("row")
+                .addStyle("position", "absolute")
+                .addStyle("left", this.getLeftPos() + "px")
+                .addStyle("top", this.getTopPos() + "px")
+                .addStyle("width", this.getWidth() + "px")
+                .addStyle("height", this.getHeight() + "px");
+        for(var each in this.squares) {
             builder.addInnerDiv(this.squares[each].toHTML());
         }
         return builder.toString();
-    };
-    return Row;
-}(HTMLObject));
-var Board = /** @class */ (function (_super) {
-    __extends(Board, _super);
-    function Board(numCol, numRows, offsetTop, offsetLeft, squareWidth, squareHeight) {
-        var _this = _super.call(this) || this;
-        _this.squares = new Array();
-        _this.rows = new Array();
-        _this.pieces = new Array();
-        _this.locations = new Array();
+    }
+
+
+}class Board extends HTMLObject{
+    squares: Square[] = new Array();
+    rows: Row[] = new Array();
+    pieces: Piece[] = new Array();
+
+    locations: PieceLocation[] = new Array();
+
+    numRows: number;
+    numColumns: number;
+    offsetTop: number;
+    offsetLeft: number;
+
+    squareWidth: number;
+    squareHeight: number;
+
+
+
+    constructor(numCol: number, numRows: number, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number) {
+        super();
         if (offsetTop == null) {
             offsetTop = 25;
         }
@@ -517,76 +585,89 @@ var Board = /** @class */ (function (_super) {
         if (squareHeight == null) {
             squareHeight = 50;
         }
-        _this.squareHeight = squareHeight;
-        _this.squareWidth = squareWidth;
-        _this.initialize(numCol, numRows, offsetTop, offsetLeft);
-        return _this;
+        this.squareHeight = squareHeight;
+        this.squareWidth = squareWidth;
+        this.initialize(numCol, numRows, offsetTop, offsetLeft);
     }
-    Board.prototype.initialize = function (numCol, numRows, offsetTop, offsetLeft) {
+
+    initialize(numCol: number, numRows: number, offsetTop: number, offsetLeft: number){
         this.numRows = numRows;
         this.numColumns = numCol;
         this.offsetTop = offsetTop;
         this.offsetLeft = offsetLeft;
+
         this.rows = new Array();
-        var cornerColor = Color.WHITE;
-        for (var i = 0; i < this.numRows; i++) {
-            var row = new Row(this.offsetLeft, this.offsetTop + (i * this.squareHeight), this.squareWidth * this.numColumns, this.squareHeight, this.numColumns);
+        var cornerColor: Color = Color.WHITE;
+
+        for(var i: number = 0; i < this.numRows; i++){
+            var row: Row = new Row(this.offsetLeft, this.offsetTop + (i * this.squareHeight), this.squareWidth * this.numColumns, this.squareHeight, this.numColumns);
             row.setY(i);
             row.initialize();
             row.setAlternating(cornerColor);
             this.rows.push(row);
-            if (cornerColor == Color.WHITE) {
+
+            if(cornerColor == Color.WHITE){
                 cornerColor = Color.BLACK;
             }
-            else if (cornerColor == Color.BLACK) {
+            else if(cornerColor == Color.BLACK){
                 cornerColor = Color.WHITE;
             }
         }
-    };
-    Board.prototype.getPieces = function () {
+    }
+
+    getPieces(): Piece[]{
         return this.pieces;
-    };
-    Board.prototype.getSquares = function () {
-        var result = new Array();
-        for (var row in this.rows) {
-            var each = this.rows[row];
+    }
+	
+	getSquares(): Square[]{
+		var result: Square[] = new Array();
+		
+		for(var row in this.rows){
+			var each: Row = this.rows[row];
             var meSqrs = each.getSquares();
-            for (var square in each.getSquares()) {
+			for(var square in each.getSquares()){
                 var eachSqr = meSqrs[square];
-                result.push(eachSqr);
-            }
-        }
+				result.push(eachSqr);
+			}
+		}
+		
         return result;
-    };
-    Board.prototype.addPiece = function (piece, x, y, color) {
-        var newPiece;
-        /* switch(piece){
-             case PieceType.ROOK: newPiece = new Rook(this.calcPosFromLeft(x), this.calcPosFromTop(Rook.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Rook.getSizeRatio()), y, color); break;
-             case PieceType.QUEEN: newPiece = new Queen(this.calcPosFromLeft(x), this.calcPosFromTop(Queen.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Queen.getSizeRatio()), y, color); break;
-             case PieceType.BISHOP: newPiece = new Bishop(this.calcPosFromLeft(x), this.calcPosFromTop(Bishop.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Bishop.getSizeRatio()), y, color); break;
-             case PieceType.PAWN: newPiece = new Pawn(this.calcPosFromLeft(x), this.calcPosFromTop(Pawn.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Pawn.getSizeRatio()), y, color); break;
-             case PieceType.KNIGHT: newPiece = new Knight(this.calcPosFromLeft(x), this.calcPosFromTop(Knight.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Knight.getSizeRatio()), y, color); break;
-             case PieceType.KING: newPiece = new King(this.calcPosFromLeft(x), this.calcPosFromTop(King.getSizeRatio(), y), this.squareWidth, (this.squareHeight * King.getSizeRatio()), y, color); break;
-             case PieceType.GENERAL: newPiece = new General(this.calcPosFromLeft(x), this.calcPosFromTop(Knight.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Knight.getSizeRatio()), y, color); break;
-             case PieceType.MINISTER: newPiece = new Minister(this.calcPosFromLeft(x), this.calcPosFromTop(King.getSizeRatio(), y), this.squareWidth, (this.squareHeight * King.getSizeRatio()), y, color); break;
-         }*/
+    }
+
+    addPiece(piece: PieceType, x: number, y: number, color: Color){
+        var newPiece: Piece;
+       /* switch(piece){
+            case PieceType.ROOK: newPiece = new Rook(this.calcPosFromLeft(x), this.calcPosFromTop(Rook.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Rook.getSizeRatio()), y, color); break;
+            case PieceType.QUEEN: newPiece = new Queen(this.calcPosFromLeft(x), this.calcPosFromTop(Queen.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Queen.getSizeRatio()), y, color); break;
+            case PieceType.BISHOP: newPiece = new Bishop(this.calcPosFromLeft(x), this.calcPosFromTop(Bishop.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Bishop.getSizeRatio()), y, color); break;
+            case PieceType.PAWN: newPiece = new Pawn(this.calcPosFromLeft(x), this.calcPosFromTop(Pawn.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Pawn.getSizeRatio()), y, color); break;
+            case PieceType.KNIGHT: newPiece = new Knight(this.calcPosFromLeft(x), this.calcPosFromTop(Knight.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Knight.getSizeRatio()), y, color); break;
+            case PieceType.KING: newPiece = new King(this.calcPosFromLeft(x), this.calcPosFromTop(King.getSizeRatio(), y), this.squareWidth, (this.squareHeight * King.getSizeRatio()), y, color); break;
+            case PieceType.GENERAL: newPiece = new General(this.calcPosFromLeft(x), this.calcPosFromTop(Knight.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Knight.getSizeRatio()), y, color); break;
+            case PieceType.MINISTER: newPiece = new Minister(this.calcPosFromLeft(x), this.calcPosFromTop(King.getSizeRatio(), y), this.squareWidth, (this.squareHeight * King.getSizeRatio()), y, color); break;
+        }*/
         newPiece = new Piece(this.calcPosFromLeft(x), this.calcPosFromTop(Piece.getSizeRatio(), y), this.squareWidth, (this.squareHeight * Piece.getSizeRatio()), y, color, piece);
         newPiece.setX(x);
         newPiece.setY(y);
         this.pieces.push(newPiece);
         this.addLocation(x, y, piece, color);
-    };
-    Board.prototype.toHTML = function () {
-        var result = "";
+    }
+
+    toHTML():string {
+        var result: string = "";
+
         for (var row in this.rows) {
             result += this.rows[row].toHTML();
         }
+
         for (var piece in this.pieces) {
             result += this.pieces[piece].toHTML();
         }
+
         return result;
-    };
-    Board.prototype.setStandard = function () {
+    }
+
+    public setStandard(){
         this.addPiece(PieceType.ROOK, 0, 0, Color.BLACK);
         this.addPiece(PieceType.KNIGHT, 1, 0, Color.BLACK);
         this.addPiece(PieceType.BISHOP, 2, 0, Color.BLACK);
@@ -595,6 +676,7 @@ var Board = /** @class */ (function (_super) {
         this.addPiece(PieceType.BISHOP, 5, 0, Color.BLACK);
         this.addPiece(PieceType.KNIGHT, 6, 0, Color.BLACK);
         this.addPiece(PieceType.ROOK, 7, 0, Color.BLACK);
+
         this.addPiece(PieceType.PAWN, 0, 1, Color.BLACK);
         this.addPiece(PieceType.PAWN, 1, 1, Color.BLACK);
         this.addPiece(PieceType.PAWN, 2, 1, Color.BLACK);
@@ -603,6 +685,8 @@ var Board = /** @class */ (function (_super) {
         this.addPiece(PieceType.PAWN, 5, 1, Color.BLACK);
         this.addPiece(PieceType.PAWN, 6, 1, Color.BLACK);
         this.addPiece(PieceType.PAWN, 7, 1, Color.BLACK);
+
+
         this.addPiece(PieceType.ROOK, 0, 7, Color.WHITE);
         this.addPiece(PieceType.KNIGHT, 1, 7, Color.WHITE);
         this.addPiece(PieceType.BISHOP, 2, 7, Color.WHITE);
@@ -611,6 +695,7 @@ var Board = /** @class */ (function (_super) {
         this.addPiece(PieceType.BISHOP, 5, 7, Color.WHITE);
         this.addPiece(PieceType.KNIGHT, 6, 7, Color.WHITE);
         this.addPiece(PieceType.ROOK, 7, 7, Color.WHITE);
+
         this.addPiece(PieceType.PAWN, 0, 6, Color.WHITE);
         this.addPiece(PieceType.PAWN, 1, 6, Color.WHITE);
         this.addPiece(PieceType.PAWN, 2, 6, Color.WHITE);
@@ -619,100 +704,118 @@ var Board = /** @class */ (function (_super) {
         this.addPiece(PieceType.PAWN, 5, 6, Color.WHITE);
         this.addPiece(PieceType.PAWN, 6, 6, Color.WHITE);
         this.addPiece(PieceType.PAWN, 7, 6, Color.WHITE);
-    };
-    Board.prototype.addLocation = function (x, y, type, color) {
+    }
+
+    private addLocation(x: number, y: number, type: PieceType, color: Color){
         var newLocation = new PieceLocation(x, y, type, color);
         this.locations.push(newLocation);
-    };
-    Board.prototype.calcPosFromLeft = function (x) {
+    }
+
+    private calcPosFromLeft(x:number): number{
         return this.offsetLeft + (x * this.squareWidth);
-    };
-    Board.prototype.calcPosFromTop = function (ratio, y) {
-        return (this.offsetTop + (y * this.squareHeight)) + (this.squareHeight * (1 - ratio));
-    };
-    Board.prototype.getPieceById = function (id) {
-        for (var piece in this.pieces) {
+    }
+
+    private calcPosFromTop(ratio: number, y:number): number{
+        return (this.offsetTop + (y * this.squareHeight)) + (this.squareHeight * ( 1 - ratio));
+    }
+
+    public getPieceById(id: string): Piece{
+        for(var piece in this.pieces){
             var each = this.pieces[piece];
-            if (each.getId() == id) {
+            if(each.getId() == id){
                 return each;
             }
         }
-    };
-    Board.prototype.getSquareById = function (id) {
-        var locSquares = this.getSquares();
-        for (var square in locSquares) {
+    }
+
+	public getSquareById(id: string): Square{
+		var locSquares = this.getSquares();
+        for(var square in locSquares){
             var each = locSquares[square];
-            if (each.getId() == id) {
+            if(each.getId() == id){
                 return each;
             }
         }
-    };
-    Board.fromSerial = function (serial, offsetTop, offsetLeft, squareWidth, squareHeight) {
-        var result;
-        var locations = new Array();
-        var length;
-        var height;
-        var dataHalves = serial.split("-");
-        var rows = dataHalves[0].split("/");
-        var configRows = dataHalves[1].split("/");
+    }
+	
+    public static fromSerial(serial: string, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number): Board{
+        var result: Board;
+        var locations: PieceLocation[] = new Array();
+        var length: number;
+        var height: number;
+		var dataHalves: string[] = serial.split("-");
+        var rows: string[] = dataHalves[0].split("/");
+		var configRows: string[] = dataHalves[1].split("/");
         height = rows.length;
-        for (var y = 0; y < rows.length; y++) {
+
+        for(var y = 0; y < rows.length; y++){
             var row = rows[y];
-            var squares = row.split(",");
+            var squares: string[] = row.split(",");
             length = squares.length;
-            for (var x = 0; x < squares.length; x++) {
-                var sqrData = squares[x].substring(1, squares[x].length - 1);
-                if (sqrData.length != 0) {
+
+            for(var x = 0; x < squares.length; x++){
+                var sqrData:string = squares[x].substring(1, squares[x].length - 1);
+
+                if(sqrData.length != 0){
                     var sqrDataSplit = sqrData.split("_");
-                    var thisColor;
-                    if (sqrDataSplit[1] == "W") {
+                    var thisColor: Color;
+
+                    if(sqrDataSplit[1] == "W"){
                         thisColor = Color.WHITE;
                     }
-                    else {
+                    else{
                         thisColor = Color.BLACK;
                     }
-                    var newLoc = new PieceLocation(x, y, +sqrDataSplit[0], thisColor);
+                    var newLoc: PieceLocation = new PieceLocation(x, y, +sqrDataSplit[0], thisColor);
                     locations.push(newLoc);
                 }
             }
         }
+
         result = new Board(length, height, offsetTop, offsetLeft, squareWidth, squareHeight);
-        for (var eachLoc in locations) {
-            var location = locations[eachLoc];
+
+        for(var eachLoc in locations){
+            var location: PieceLocation = locations[eachLoc];
             result.addPiece(location.getType(), location.getX(), location.getY(), location.getColor());
         }
-        for (var y = 0; y < rows.length; y++) {
+		
+        for(var y = 0; y < rows.length; y++){
             var row = configRows[y];
-            var squares = row.split(",");
+            var squares: string[] = row.split(",");
             length = squares.length;
-            for (var x = 0; x < squares.length; x++) {
-                var eachSqr = result.getSquareAtPos(new Pos(x, y));
-                var sqrData = squares[x].substring(1, squares[x].length - 1);
-                eachSqr.setType(+sqrData);
+
+            for(var x = 0; x < squares.length; x++){
+                var eachSqr: Square = result.getSquareAtPos(new Pos(x,y));
+				var sqrData: string = squares[x].substring(1, squares[x].length - 1);
+				eachSqr.setType(+sqrData);
             }
         }
         return result;
-    };
-    Board.prototype.serialize = function () {
-        var serialization = "";
-        var pieceMap = [];
-        for (var r = 0; r < this.numRows; r++) {
+    }
+
+    public serialize(): string{
+        var serialization: string = "";
+        var pieceMap: string[][] = [];
+
+        for(var r: number = 0; r < this.numRows; r++ ){
             pieceMap[r] = [];
         }
+
         for (var location in this.locations) {
             var currLoc = this.locations[location];
             var strRep = "[" + currLoc.getType() + "_";
-            if (currLoc.getColor() == Color.WHITE) {
-                strRep += "W";
+            if(currLoc.getColor() == Color.WHITE){
+                strRep += "W"
             }
-            else if (currLoc.getColor() == Color.BLACK) {
-                strRep += "B";
+            else if(currLoc.getColor() == Color.BLACK){
+                strRep += "B"
             }
             strRep += "]";
             pieceMap[currLoc.getX()][currLoc.getY()] = strRep;
         }
-        for (var y = 0; y < this.numRows; y++) {
-            for (var x = 0; x < this.numColumns; x++) {
+
+        for(var y: number = 0; y < this.numRows; y++ ){
+            for (var x: number = 0; x < this.numColumns; x++){
                 if (pieceMap[x][y] == undefined) {
                     serialization += "[]";
                 }
@@ -725,248 +828,296 @@ var Board = /** @class */ (function (_super) {
             serialization += "/";
         }
         serialization = serialization.substring(0, serialization.length - 1);
-        serialization += "-";
-        for (var y = 0; y < this.numRows; y++) {
-            for (var x = 0; x < this.numColumns; x++) {
-                serialization += "[" + this.getSquareAtPos(new Pos(x, y)).getType() + "],";
+		
+		serialization += "-";
+		
+		for(var y: number = 0; y < this.numRows; y++ ){
+            for (var x: number = 0; x < this.numColumns; x++){
+                serialization += "[" + this.getSquareAtPos(new Pos(x,y)).getType() + "],";
             }
             serialization = serialization.substring(0, serialization.length - 1);
             serialization += "/";
         }
-        serialization = serialization.substring(0, serialization.length - 1);
+		serialization = serialization.substring(0, serialization.length - 1);
+		
         return serialization;
-    };
-    Board.prototype.unselectAllSquares = function () {
+    }
+
+    unselectAllSquares(){
         var locSquares = this.getSquares();
-        for (var square in locSquares) {
+        for(var square in locSquares){
             var each = locSquares[square];
             each.resetHexColor();
         }
-    };
-    Board.prototype.getSquareAtPos = function (pos) {
+    }
+
+    getSquareAtPos(pos: Pos): Square{
         var locSquares = this.getSquares();
-        for (var square in locSquares) {
+        for(var square in locSquares){
             var each = locSquares[square];
-            if (each.getPos().equals(pos)) {
+            if(each.getPos().equals(pos)){
                 return each;
             }
         }
-    };
-    return Board;
-}(HTMLObject));
-var Pos = /** @class */ (function () {
-    function Pos(x, y) {
+    }
+
+}class Pos{
+    private X: number;
+    private Y: number;
+
+    constructor(x: number, y: number){
         this.X = x;
         this.Y = y;
     }
-    Pos.prototype.getX = function () {
+
+    getX(): number{
         return this.X;
-    };
-    Pos.prototype.getY = function () {
+    }
+    getY(): number{
         return this.Y;
-    };
-    Pos.prototype.toString = function () {
+    }
+
+    toString(): string{
         return this.getX() + ", " + this.getY();
-    };
-    Pos.prototype.equals = function (pos) {
+    }
+
+    equals(pos: Pos): boolean{
         return (this.getX() == pos.getX()) && (this.getY() == pos.getY());
-    };
-    Pos.prototype.plus = function (addPos) {
+    }
+
+    plus(addPos: Pos): Pos{
         var newX = this.getX() + addPos.getX();
         var newY = this.getY() + addPos.getY();
         return new Pos(newX, newY);
-    };
-    return Pos;
-}());
-var Move = /** @class */ (function () {
-    function Move(origin, dest) {
+    }
+}
+class Move{
+    private dest: Pos;
+    private origin: Pos;
+
+    constructor(origin: Pos, dest: Pos){
         this.dest = dest;
         this.origin = origin;
     }
-    Move.prototype.getDest = function () {
+
+    getDest(): Pos{
         return this.dest;
-    };
-    Move.prototype.getOrigin = function () {
+    }
+
+    getOrigin(): Pos{
         return this.origin;
-    };
-    Move.prototype.equals = function (move) {
+    }
+
+    equals(move: Move): boolean{
         return this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin());
-    };
-    return Move;
-}());
-var MoveCollection = /** @class */ (function () {
-    function MoveCollection(moves) {
-        this.moves = new Array();
-        if (moves != null && moves != undefined) {
+    }
+
+}class MoveCollection{
+
+    private moves: Move[] = new Array();
+
+    constructor(moves?: Move[]){
+        if(moves != null && moves != undefined){
             this.moves = moves;
         }
     }
-    MoveCollection.prototype.add = function (move) {
+
+    public add(move: Move){
         this.moves.push(move);
-    };
-    MoveCollection.prototype.getMoves = function () {
+    }
+
+    public getMoves(): Move[]{
         return this.moves;
-    };
-    MoveCollection.prototype.contains = function (move) {
+    }
+
+    public contains(move: Move): boolean{
         var result = false;
-        this.moves.forEach(function (e, i, me) {
-            if (move.equals(e)) {
+        this.moves.forEach((e, i, me) => {
+            if(move.equals(e)){
                 result = true;
             }
         });
         return result;
-    };
-    MoveCollection.prototype.addAll = function (movesArg) {
-        var _this = this;
-        var moveArray = movesArg.getMoves();
-        moveArray.forEach(function (e, i, me) {
-            _this.moves.push(e);
+    }
+
+    public addAll(movesArg: MoveCollection): MoveCollection{
+        var moveArray: Move[] = movesArg.getMoves();
+        moveArray.forEach((e, i, me) => {
+            this.moves.push(e);
         });
+
         return this;
-    };
-    MoveCollection.prototype.minus = function (movesArg) {
-        var result = new Array();
-        var moveArray = movesArg.getMoves();
-        var length = this.moves.length;
-        for (var i = 0; i < moveArray.length; i++) {
-            var eachArgMove = moveArray[i];
-            for (var j = 0; j < this.moves.length; j++) {
-                var eachThisMove = this.moves[j];
-                if (eachArgMove.equals(eachThisMove)) {
-                    this.moves.splice(j, 1);
-                }
-            }
-        }
-        return this;
-    };
-    MoveCollection.prototype.containsDestination = function (pos) {
-        for (var moveIdx in this.getMoves()) {
+    }
+
+    public minus(movesArg: MoveCollection): MoveCollection{
+        var result: Move[] = new Array();
+		
+        var moveArray: Move[] = movesArg.getMoves();
+		var length = this.moves.length;
+		for(var i = 0; i < moveArray.length; i++){
+			var eachArgMove = moveArray[i];
+			for(var j = 0; j < this.moves.length; j++){
+				var eachThisMove = this.moves[j];
+				if(eachArgMove.equals(eachThisMove)){
+					this.moves.splice(j, 1);
+				}
+			}
+		}
+		
+		return this;
+	}
+
+    public containsDestination(pos: Pos){
+        for(var moveIdx in this.getMoves()){
             var eachMove = this.moves[moveIdx];
-            if (eachMove.getDest().equals(pos)) {
+            if(eachMove.getDest().equals(pos)){
                 return true;
             }
         }
         return false;
-    };
-    MoveCollection.prototype.shuffle = function () {
-        Algorithms.shuffle(this.moves);
-    };
-    return MoveCollection;
-}());
-var MoveFactory = /** @class */ (function () {
-    function MoveFactory() {
     }
-    MoveFactory.getAllUpwards = function (piece) {
-        var board = piece.getBoardModel();
-        var result = new Array();
+
+    public shuffle(){
+        Algorithms.shuffle(this.moves);
+    }
+}class MoveFactory{
+
+    static getAllUpwards(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
         var x = piece.getPos().getX();
         var y = piece.getPos().getY() - 1;
-        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-            if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
                     result.push(new Move(piece.getPos(), new Pos(x, y)));
                     break;
                 }
-                else {
+                else{
                     break;
                 }
             }
             result.push(new Move(piece.getPos(), new Pos(x, y)));
             y -= 1;
         }
+
         return new MoveCollection(result);
-    };
-    MoveFactory.getAllDownwards = function (piece) {
-        var board = piece.getBoardModel();
-        var result = new Array();
+    }
+
+    static getAllDownwards(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
         var x = piece.getPos().getX();
         var y = piece.getPos().getY() + 1;
-        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-            if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
                     result.push(new Move(piece.getPos(), new Pos(x, y)));
                     break;
                 }
-                else {
+                else{
                     break;
                 }
             }
             result.push(new Move(piece.getPos(), new Pos(x, y)));
             y += 1;
         }
+
         return new MoveCollection(result);
-    };
-    MoveFactory.getAllLeft = function (piece) {
-        var board = piece.getBoardModel();
-        var result = new Array();
+    }
+
+    static getAllLeft(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
         var x = piece.getPos().getX() - 1;
         var y = piece.getPos().getY();
-        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-            if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
                     result.push(new Move(piece.getPos(), new Pos(x, y)));
                     break;
                 }
-                else {
+                else{
                     break;
                 }
             }
             result.push(new Move(piece.getPos(), new Pos(x, y)));
             x -= 1;
         }
+
         return new MoveCollection(result);
-    };
-    MoveFactory.getAllRight = function (piece) {
-        var board = piece.getBoardModel();
-        var result = new Array();
+    }
+
+    static getAllRight(piece: PieceModel): MoveCollection{
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
         var x = piece.getPos().getX() + 1;
         var y = piece.getPos().getY();
-        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-            if (piece.getBoardModel().isFree(new Pos(x, y)) == false) {
-                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(piece.getBoardModel().isFree(new Pos(x, y)) == false){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
                     result.push(new Move(piece.getPos(), new Pos(x, y)));
                     break;
                 }
-                else {
+                else{
                     break;
                 }
             }
             result.push(new Move(piece.getPos(), new Pos(x, y)));
             x += 1;
         }
+
         return new MoveCollection(result);
-    };
-    MoveFactory.getGiraffeMovement = function (piece) {
-        var board = piece.getBoardModel();
-        var result = new MoveCollection();
-        var x = piece.getPos().getX();
+    }
+
+	static getGiraffeMovement(piece: PieceModel){
+		var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+		
+		var x = piece.getPos().getX();
         var y = piece.getPos().getY();
-        result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x + 1, y - 1)));
-        result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x - 1, y - 1)));
-        result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x + 1, y + 1)));
-        result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x - 1, y + 1)));
-        return result;
-    };
-    MoveFactory.getGiraffeMovementQuarter = function (piece, pos) {
-        var board = piece.getBoardModel();
-        var result = new MoveCollection();
-        var x = pos.getX();
+		
+		result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x + 1, y - 1))); 
+		result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x - 1, y - 1)));
+		result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x + 1, y + 1)));
+		result.addAll(MoveFactory.getGiraffeMovementQuarter(piece, new Pos(x - 1, y + 1)));
+		
+		return result;
+	}
+	
+
+	
+	static getGiraffeMovementQuarter(piece: PieceModel, pos: Pos): MoveCollection{
+		var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+		
+		var x = pos.getX();
         var y = pos.getY();
-        var positionsThatMustBeClear = new Array();
-        positionsThatMustBeClear.push(new Pos(x, y));
+		
+		var positionsThatMustBeClear: Pos[] = new Array();
+        positionsThatMustBeClear.push(new Pos(x,y));
         y = y - 1;
-        positionsThatMustBeClear.push(new Pos(x, y));
+        positionsThatMustBeClear.push(new Pos(x,y));
         y = y - 1;
-        positionsThatMustBeClear.push(new Pos(x, y));
+        positionsThatMustBeClear.push(new Pos(x,y));
         y = y - 1;
-        if (piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
-            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-                if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                    if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+
+        if(piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
+            while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+                if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                    if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
                         result.add(new Move(piece.getPos(), new Pos(x, y)));
                         break;
                     }
-                    else {
+                    else{
                         break;
                     }
                 }
@@ -974,23 +1125,26 @@ var MoveFactory = /** @class */ (function () {
                 y -= 1;
             }
         }
+
         x = pos.getX();
         y = pos.getY();
+
         positionsThatMustBeClear = new Array();
-        positionsThatMustBeClear.push(new Pos(x, y));
+        positionsThatMustBeClear.push(new Pos(x,y));
         x = x + 1;
-        positionsThatMustBeClear.push(new Pos(x, y));
+        positionsThatMustBeClear.push(new Pos(x,y));
         x = x + 1;
-        positionsThatMustBeClear.push(new Pos(x, y));
+        positionsThatMustBeClear.push(new Pos(x,y));
         x = x + 1;
-        if (piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
-            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-                if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                    if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+
+        if(piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
+            while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+                if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                    if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
                         result.add(new Move(piece.getPos(), new Pos(x, y)));
                         break;
                     }
-                    else {
+                    else{
                         break;
                     }
                 }
@@ -998,16 +1152,160 @@ var MoveFactory = /** @class */ (function () {
                 x += 1;
             }
         }
+
         x = pos.getX();
         y = pos.getY();
+
         positionsThatMustBeClear = new Array();
-        positionsThatMustBeClear.push(new Pos(x, y));
+        positionsThatMustBeClear.push(new Pos(x,y));
         x = x - 1;
-        positionsThatMustBeClear.push(new Pos(x, y));
+        positionsThatMustBeClear.push(new Pos(x,y));
         x = x - 1;
-        positionsThatMustBeClear.push(new Pos(x, y));
+        positionsThatMustBeClear.push(new Pos(x,y));
         x = x - 1;
-        if (piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
+
+        if(piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
+            while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+                if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                    if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        break;
+                    }
+                    else{
+                        break;
+                    }
+                }
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                x -= 1;
+            }
+        }
+
+        x = pos.getX();
+        y = pos.getY();
+
+        positionsThatMustBeClear = new Array();
+        positionsThatMustBeClear.push(new Pos(x,y));
+        y = y + 1;
+        positionsThatMustBeClear.push(new Pos(x,y));
+        y = y + 1;
+        positionsThatMustBeClear.push(new Pos(x,y));
+        y = y + 1;
+
+        if(piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
+            while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+                if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                    if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        break;
+                    }
+                    else{
+                        break;
+                    }
+                }
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                y += 1;
+            }
+        }
+
+        return result;
+	}
+	
+
+    static getAllCardinal(piece: PieceModel){
+        var result: MoveCollection = new MoveCollection();
+
+        result.addAll(MoveFactory.getAllRight(piece));
+        result.addAll(MoveFactory.getAllLeft(piece));
+        result.addAll(MoveFactory.getAllUpwards(piece));
+        result.addAll(MoveFactory.getAllDownwards(piece));
+
+        return result;
+    }
+
+    static getAllLeftUpDiagonal(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() - 1;
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            if (!piece.getBoardModel().isFree(new Pos(x, y))) {
+                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
+                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    break;
+                }
+                else {
+                    break;
+                }
+            }
+            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            x -= 1;
+            y -= 1;
+        }
+
+
+        return result;
+    }
+
+    static getAllRightUpDiagonal(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() - 1;
+
+    while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+        if(!piece.getBoardModel().isFree(new Pos(x, y))){
+            if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                break;
+            }
+            else{
+                break;
+            }
+            }
+            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            x += 1;
+            y -= 1;
+        }
+
+        return result;
+    }
+
+    static getAllRightDownDiagonal(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() + 1;
+
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+            if(!piece.getBoardModel().isFree(new Pos(x, y))){
+                if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
+                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            x += 1;
+            y += 1;
+        }
+
+        return result;
+    }
+
+    static getAllLeftDownDiagonal(piece: PieceModel){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() + 1;
+
             while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
                 if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                     if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
@@ -1020,184 +1318,87 @@ var MoveFactory = /** @class */ (function () {
                 }
                 result.add(new Move(piece.getPos(), new Pos(x, y)));
                 x -= 1;
-            }
-        }
-        x = pos.getX();
-        y = pos.getY();
-        positionsThatMustBeClear = new Array();
-        positionsThatMustBeClear.push(new Pos(x, y));
-        y = y + 1;
-        positionsThatMustBeClear.push(new Pos(x, y));
-        y = y + 1;
-        positionsThatMustBeClear.push(new Pos(x, y));
-        y = y + 1;
-        if (piece.getBoardModel().isAllFree(positionsThatMustBeClear)) {
-            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-                if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                    if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
-                        break;
-                    }
-                    else {
-                        break;
-                    }
-                }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
                 y += 1;
             }
-        }
+
+
         return result;
-    };
-    MoveFactory.getAllCardinal = function (piece) {
-        var result = new MoveCollection();
-        result.addAll(MoveFactory.getAllRight(piece));
-        result.addAll(MoveFactory.getAllLeft(piece));
-        result.addAll(MoveFactory.getAllUpwards(piece));
-        result.addAll(MoveFactory.getAllDownwards(piece));
-        return result;
-    };
-    MoveFactory.getAllLeftUpDiagonal = function (piece) {
-        var board = piece.getBoardModel();
-        var result = new MoveCollection();
-        var x = piece.getPos().getX() - 1;
-        var y = piece.getPos().getY() - 1;
-        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-            if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
-                    break;
-                }
-                else {
-                    break;
-                }
-            }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
-            x -= 1;
-            y -= 1;
-        }
-        return result;
-    };
-    MoveFactory.getAllRightUpDiagonal = function (piece) {
-        var board = piece.getBoardModel();
-        var result = new MoveCollection();
-        var x = piece.getPos().getX() + 1;
-        var y = piece.getPos().getY() - 1;
-        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-            if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
-                    break;
-                }
-                else {
-                    break;
-                }
-            }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
-            x += 1;
-            y -= 1;
-        }
-        return result;
-    };
-    MoveFactory.getAllRightDownDiagonal = function (piece) {
-        var board = piece.getBoardModel();
-        var result = new MoveCollection();
-        var x = piece.getPos().getX() + 1;
-        var y = piece.getPos().getY() + 1;
-        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-            if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
-                    break;
-                }
-                else {
-                    break;
-                }
-            }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
-            x += 1;
-            y += 1;
-        }
-        return result;
-    };
-    MoveFactory.getAllLeftDownDiagonal = function (piece) {
-        var board = piece.getBoardModel();
-        var result = new MoveCollection();
-        var x = piece.getPos().getX() - 1;
-        var y = piece.getPos().getY() + 1;
-        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
-            if (!piece.getBoardModel().isFree(new Pos(x, y))) {
-                if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
-                    break;
-                }
-                else {
-                    break;
-                }
-            }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
-            x -= 1;
-            y += 1;
-        }
-        return result;
-    };
-    MoveFactory.getAllDiagonal = function (piece) {
-        var result = new MoveCollection();
+    }
+
+    static getAllDiagonal(piece: PieceModel){
+        var result: MoveCollection = new MoveCollection();
+
         result.addAll(MoveFactory.getAllLeftDownDiagonal(piece));
         result.addAll(MoveFactory.getAllRightDownDiagonal(piece));
         result.addAll(MoveFactory.getAllRightUpDiagonal(piece));
         result.addAll(MoveFactory.getAllLeftUpDiagonal(piece));
+
         return result;
-    };
-    MoveFactory.getRelativeToPiece = function (piece, x, y) {
-        var result = new MoveCollection();
-        var newX = piece.getPos().getX() + x;
-        var newY = piece.getPos().getY() + y;
-        if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+    }
+
+    static getRelativeToPiece(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
                     result.add(new Move(piece.getPos(), new Pos(newX, newY)));
                 }
             }
-            else {
+            else{
                 result.add(new Move(piece.getPos(), new Pos(newX, newY)));
             }
         }
+
         return result;
-    };
-    MoveFactory.getRelativeToPieceNonCapturing = function (piece, x, y) {
-        var result = new MoveCollection();
-        var newX = piece.getPos().getX() + x;
-        var newY = piece.getPos().getY() + y;
-        if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+    }
+
+    static getRelativeToPieceNonCapturing(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
             }
-            else {
+            else{
                 result.add(new Move(piece.getPos(), new Pos(newX, newY)));
             }
         }
+
         return result;
-    };
-    MoveFactory.getRelativeToPieceOnlyIfCapturable = function (piece, x, y) {
-        var result = new MoveCollection();
-        var newX = piece.getPos().getX() + x;
-        var newY = piece.getPos().getY() + y;
-        if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+    }
+
+    static getRelativeToPieceOnlyIfCapturable(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
                     result.add(new Move(piece.getPos(), new Pos(newX, newY)));
                 }
             }
         }
+
         return result;
-    };
-    MoveFactory.getLineForward = function (piece, length, direction) {
-        var result = new MoveCollection();
-        if (direction > 0) {
+    }
+
+    static getLineForward(piece: PieceModel, length: number, direction: number){
+        var result: MoveCollection = new MoveCollection();
+
+        if(direction > 0){
             var count = length;
-            var newX = piece.getPos().getX();
-            var newY = piece.getPos().getY() - 1;
-            while (count > 0) {
-                if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() - 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
                     if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                         if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
                             result.add(new Move(piece.getPos(), new Pos(newX, newY)));
@@ -1205,7 +1406,7 @@ var MoveFactory = /** @class */ (function () {
                             newY--;
                         }
                     }
-                    else {
+                    else{
                         result.add(new Move(piece.getPos(), new Pos(newX, newY)));
                         count--;
                         newY--;
@@ -1213,12 +1414,13 @@ var MoveFactory = /** @class */ (function () {
                 }
             }
         }
-        if (direction < 0) {
+        if(direction < 0){
             var count = length;
-            var newX = piece.getPos().getX();
-            var newY = piece.getPos().getY() + 1;
-            while (count > 0) {
-                if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() + 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
                     if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                         if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
                             result.add(new Move(piece.getPos(), new Pos(newX, newY)));
@@ -1226,7 +1428,7 @@ var MoveFactory = /** @class */ (function () {
                             newY++;
                         }
                     }
-                    else {
+                    else{
                         result.add(new Move(piece.getPos(), new Pos(newX, newY)));
                         count--;
                         newY++;
@@ -1234,20 +1436,24 @@ var MoveFactory = /** @class */ (function () {
                 }
             }
         }
+
         return result;
-    };
-    MoveFactory.getLineForwardNoncapturing = function (piece, length, direction) {
-        var result = new MoveCollection();
-        if (direction > 0) {
+    }
+
+    static getLineForwardNoncapturing(piece: PieceModel, length: number, direction: number){
+        var result: MoveCollection = new MoveCollection();
+
+        if(direction > 0){
             var count = length;
-            var newX = piece.getPos().getX();
-            var newY = piece.getPos().getY() - 1;
-            while (count > 0) {
-                if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() - 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
                     if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                         break;
                     }
-                    else {
+                    else{
                         result.add(new Move(piece.getPos(), new Pos(newX, newY)));
                         count--;
                         newY--;
@@ -1255,399 +1461,428 @@ var MoveFactory = /** @class */ (function () {
                 }
             }
         }
-        if (direction < 0) {
+        if(direction < 0){
             var count = length;
-            var newX = piece.getPos().getX();
-            var newY = piece.getPos().getY() + 1;
-            while (count > 0) {
-                if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+            var newX: number = piece.getPos().getX();
+            var newY: number = piece.getPos().getY() + 1;
+
+            while(count > 0){
+                if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
                     if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                         break;
                     }
-                    else {
+                    else{
                         result.add(new Move(piece.getPos(), new Pos(newX, newY)));
                         count--;
                         newY++;
-                    }
+                }
                 }
             }
         }
+
         return result;
-    };
-    return MoveFactory;
-}());
-var PieceModel = /** @class */ (function () {
-    function PieceModel(board, pos, color, type) {
+    }
+}abstract class PieceModel{
+    private pos: Pos;
+    private color: Color;
+    private boardModel: BoardModel;
+    private type: PieceType;
+
+    constructor(board: BoardModel, pos: Pos, color: Color, type: PieceType){
         this.pos = pos;
         this.color = color;
         this.boardModel = board;
         this.type = type;
     }
-    PieceModel.prototype.getPos = function () {
+
+    getPos(): Pos{
         return this.pos;
-    };
-    PieceModel.prototype.getColor = function () {
+    }
+
+    getColor(): Color{
         return this.color;
-    };
-    PieceModel.prototype.getBoardModel = function () {
+    }
+
+    getBoardModel(): BoardModel{
         return this.boardModel;
-    };
-    PieceModel.prototype.getType = function () {
+    }
+
+    getType(): PieceType{
         return this.type;
-    };
-    PieceModel.prototype.getPossibleMoves = function () {
+    }
+
+    getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllUpwards(this);
-    };
-    return PieceModel;
-}());
-var RookModel = /** @class */ (function (_super) {
-    __extends(RookModel, _super);
-    function RookModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.ROOK) || this;
     }
-    RookModel.prototype.onMove = function () { };
-    RookModel.prototype.giveInternalAttributes = function (piece) { };
-    RookModel.prototype.getPossibleMoves = function () {
+	
+	transformInto(type: PieceType){
+		this.getBoardModel().removePiece(this.getPos());
+		this.getBoardModel().addPiece(type, this.getPos().getX(), this.getPos().getY(), this.getColor;
+	}
+	
+    abstract onMove(move: Move);
+    abstract giveInternalAttributes(piece: PieceModel);
+}class RookModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.ROOK);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllCardinal(this);
-    };
-    return RookModel;
-}(PieceModel));
-var PawnModel = /** @class */ (function (_super) {
-    __extends(PawnModel, _super);
-    function PawnModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.PAWN) || this;
     }
-    PawnModel.prototype.onMove = function () {
-        this.hasMoved = true;
-        if (this.getBoardModel().isOnOppositeBackRank(this.getPos(), this.getColor())) {
-            //this.promoteTo(PieceType.HERO);
-            alert("I'm promoting!");
-        }
-    };
-    PawnModel.prototype.giveInternalAttributes = function (piece) {
-        var currPiece = piece;
+}class PawnModel extends PieceModel{
+    hasMoved: boolean;
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.PAWN);
+    }
+
+    onMove(){
+       this.hasMoved = true;
+	   if(this.isOnOppositeBackRank()){
+			this.transformInto(PieceType.QUEEN);
+			//alert("I'm promoting!");
+			//this.getBoardModel().addPiece();
+	   }
+    }
+
+    giveInternalAttributes(piece: PieceModel) {
+        var currPiece = piece as PawnModel;
         currPiece.hasMoved = this.hasMoved;
-    };
-    PawnModel.prototype.getDirection = function () {
+
+    }
+
+    getDirection(): number{
         return this.getBoardModel().getDirection(this.getColor());
-    };
-    PawnModel.prototype.getPossibleMoves = function () {
-        if (this.hasMoved) {
+    }
+
+    getPossibleMoves(): MoveCollection{
+
+        if(this.hasMoved){
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
-                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
+                    .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()));
         }
-        else {
+        else{
             //alert(MoveFactory.getLineForward(this, 2, this.getDirection()).getMoves.length);
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                 .addAll(MoveFactory.getLineForwardNoncapturing(this, 2, this.getDirection())
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())));
         }
-    };
-    return PawnModel;
-}(PieceModel));
-var GiraffeRiderModel = /** @class */ (function (_super) {
-    __extends(GiraffeRiderModel, _super);
-    function GiraffeRiderModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.GIRAFFE_RIDER) || this;
+
     }
-    GiraffeRiderModel.prototype.onMove = function () { };
-    GiraffeRiderModel.prototype.giveInternalAttributes = function (piece) { };
-    GiraffeRiderModel.prototype.getPossibleMoves = function () {
-        return MoveFactory.getGiraffeMovement(this);
-    };
-    return GiraffeRiderModel;
-}(PieceModel));
-var KnightModel = /** @class */ (function (_super) {
-    __extends(KnightModel, _super);
-    function KnightModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.KNIGHT) || this;
+}class GiraffeRiderModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.GIRAFFE_RIDER);
     }
-    KnightModel.prototype.onMove = function () { };
-    KnightModel.prototype.giveInternalAttributes = function (piece) { };
-    KnightModel.prototype.getPossibleMoves = function () {
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
+		return MoveFactory.getGiraffeMovement(this);
+    }
+}class KnightModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.KNIGHT);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
         return MoveFactory.getRelativeToPiece(this, -2, -1)
-            .addAll(MoveFactory.getRelativeToPiece(this, 2, -1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -2, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 2, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, -2))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, 2))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, 2))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -2));
-    };
-    return KnightModel;
-}(PieceModel));
-var BishopModel = /** @class */ (function (_super) {
-    __extends(BishopModel, _super);
-    function BishopModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.BISHOP) || this;
+        .addAll(MoveFactory.getRelativeToPiece(this, 2, -1))
+        .addAll(MoveFactory.getRelativeToPiece(this, -2, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 2, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, -2))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, 2))
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, 2))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -2));
     }
-    BishopModel.prototype.onMove = function () { };
-    BishopModel.prototype.giveInternalAttributes = function (piece) { };
-    BishopModel.prototype.getPossibleMoves = function () {
+}class BishopModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.BISHOP);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllDiagonal(this);
-    };
-    return BishopModel;
-}(PieceModel));
-var KingModel = /** @class */ (function (_super) {
-    __extends(KingModel, _super);
-    function KingModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.KING) || this;
     }
-    KingModel.prototype.onMove = function () { };
-    KingModel.prototype.giveInternalAttributes = function (piece) { };
-    KingModel.prototype.getPossibleMoves = function () {
+}class KingModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.KING);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
         return MoveFactory.getRelativeToPiece(this, 1, 1)
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, -1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 0, -1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 0, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, 0))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, 0));
-    };
-    return KingModel;
-}(PieceModel));
-var QueenModel = /** @class */ (function (_super) {
-    __extends(QueenModel, _super);
-    function QueenModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.QUEEN) || this;
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, -1))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 0, -1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 0, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, 0))
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, 0));
     }
-    QueenModel.prototype.onMove = function () { };
-    QueenModel.prototype.giveInternalAttributes = function (piece) { };
-    QueenModel.prototype.getPossibleMoves = function () {
+}class QueenModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.QUEEN);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllCardinal(this)
             .addAll(MoveFactory.getAllDiagonal(this));
-    };
-    return QueenModel;
-}(PieceModel));
-var GeneralModel = /** @class */ (function (_super) {
-    __extends(GeneralModel, _super);
-    function GeneralModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.GENERAL) || this;
     }
-    GeneralModel.prototype.onMove = function () { };
-    GeneralModel.prototype.giveInternalAttributes = function (piece) { };
-    GeneralModel.prototype.getPossibleMoves = function () {
+}class GeneralModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.GENERAL);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
         return MoveFactory.getRelativeToPiece(this, 0, -1)
             .addAll(MoveFactory.getRelativeToPiece(this, 0, 1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 0))
             .addAll(MoveFactory.getRelativeToPiece(this, 1, 0));
-    };
-    return GeneralModel;
-}(PieceModel));
-var MinisterModel = /** @class */ (function (_super) {
-    __extends(MinisterModel, _super);
-    function MinisterModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.MINISTER) || this;
     }
-    MinisterModel.prototype.onMove = function () { };
-    MinisterModel.prototype.giveInternalAttributes = function (piece) { };
-    MinisterModel.prototype.getPossibleMoves = function () {
+}class MinisterModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.MINISTER);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
         return MoveFactory.getRelativeToPiece(this, 1, 1)
             .addAll(MoveFactory.getRelativeToPiece(this, 1, -1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, -1));
-    };
-    return MinisterModel;
-}(PieceModel));
-var PieceFactory = /** @class */ (function () {
-    function PieceFactory() {
     }
-    PieceFactory.createPiece = function (board, pos, color, type) {
-        var newPiece;
-        switch (type) {
-            case PieceType.ROOK:
-                newPiece = new RookModel(board, pos, color);
-                break;
-            case PieceType.BISHOP:
-                newPiece = new BishopModel(board, pos, color);
-                break;
-            case PieceType.PAWN:
-                newPiece = new PawnModel(board, pos, color);
-                break;
-            case PieceType.KING:
-                newPiece = new KingModel(board, pos, color);
-                break;
-            case PieceType.KNIGHT:
-                newPiece = new KnightModel(board, pos, color);
-                break;
-            case PieceType.QUEEN:
-                newPiece = new QueenModel(board, pos, color);
-                break;
-            case PieceType.GENERAL:
-                newPiece = new GeneralModel(board, pos, color);
-                break;
-            case PieceType.MINISTER:
-                newPiece = new MinisterModel(board, pos, color);
-                break;
-            case PieceType.GIRAFFE_RIDER:
-                newPiece = new GiraffeRiderModel(board, pos, color);
-                break;
-            case PieceType.WAR_ENGINE:
-                newPiece = new MinisterModel(board, pos, color);
-                break;
-            case PieceType.CAMEL_RIDER:
-                newPiece = new MinisterModel(board, pos, color);
-                break;
+}class PieceFactory{
+
+    static createPiece(board: BoardModel, pos: Pos, color: Color, type: PieceType): PieceModel{
+        var newPiece: PieceModel;
+        switch(type){
+            case PieceType.ROOK: newPiece = new RookModel(board, pos, color); break;
+            case PieceType.BISHOP: newPiece = new BishopModel(board, pos, color); break;
+            case PieceType.PAWN: newPiece = new PawnModel(board, pos, color); break;
+            case PieceType.KING: newPiece = new KingModel(board, pos, color); break;
+            case PieceType.KNIGHT: newPiece = new KnightModel(board, pos, color); break;
+            case PieceType.QUEEN: newPiece = new QueenModel(board, pos, color); break;
+            case PieceType.GENERAL: newPiece = new GeneralModel(board, pos, color); break;
+            case PieceType.MINISTER: newPiece = new MinisterModel(board, pos, color); break;
+            case PieceType.GIRAFFE_RIDER: newPiece = new GiraffeRiderModel(board, pos, color); break;
+            case PieceType.WAR_ENGINE: newPiece = new MinisterModel(board, pos, color); break;
+            case PieceType.CAMEL_RIDER: newPiece = new MinisterModel(board, pos, color); break;
         }
         return newPiece;
-    };
-    PieceFactory.createPieceByTransposition = function (pos, piece) {
-        var newPiece = PieceFactory.createPiece(piece.getBoardModel(), pos, piece.getColor(), piece.getType());
+    }
+
+    static createPieceByTransposition(pos: Pos, piece: PieceModel): PieceModel{
+        var newPiece: PieceModel = PieceFactory.createPiece(piece.getBoardModel(), pos, piece.getColor(), piece.getType());
         piece.giveInternalAttributes(newPiece);
         return newPiece;
-    };
-    return PieceFactory;
-}());
-var BoardModel = /** @class */ (function () {
-    function BoardModel(argWidth, argHeight) {
-        this.pos2PieceMap = new Map();
-        this.pos2SquareType = new Map();
+    }
+}class BoardModel{
+    HEIGHT: number;
+    WIDTH: number;
+
+    pos2PieceMap: Map<Pos, PieceModel> = new Map();
+	pos2SquareType: Map<Pos, SquareType> = new Map();
+	
+    constructor(argWidth:number, argHeight:number){
         this.HEIGHT = argHeight;
         this.WIDTH = argWidth;
-        for (var y = 0; y < argHeight; y++) {
-            for (var x = 0; x < argWidth; x++) {
+
+        for(var y:number = 0; y < argHeight; y++){
+            for(var x:number = 0; x < argWidth; x++){
                 this.pos2PieceMap.set(new Pos(x, y), null);
-                this.pos2SquareType.set(new Pos(x, y), SquareType.NORMAL);
+				this.pos2SquareType.set(new Pos(x, y), SquareType.NORMAL);
             }
         }
     }
-    BoardModel.prototype.addPiece = function (type, x, y, color) {
+
+    addPiece(type: PieceType, x: number, y: number, color: Color){
         this.placePiece(PieceFactory.createPiece(this, new Pos(x, y), color, type));
-    };
-    BoardModel.prototype.placePiece = function (piece) {
+    }
+
+    placePiece(piece: PieceModel){
         this.pos2PieceMap.set(piece.getPos(), piece);
-    };
-    BoardModel.prototype.setSquareTypeAtPos = function (pos, type) {
-        var _this = this;
-        this.pos2SquareType.forEach(function (value, key, map) {
+    }
+	
+	setSquareTypeAtPos(pos: Pos, type: SquareType){
+        this.pos2SquareType.forEach((value, key, map) => {
             if (pos.equals(key)) {
-                _this.pos2SquareType.set(key, type);
+                this.pos2SquareType.set(key, type);
             }
         });
-    };
-    BoardModel.prototype.getDirection = function (color) {
-        if (Color.WHITE == color) {
+	}
+	
+    getDirection(color: Color): number{
+        if(Color.WHITE == color){
             return 1;
         }
-        else if (Color.BLACK == color) {
+        else if(Color.BLACK == color){
             return -1;
         }
-    };
-    BoardModel.prototype.getBackRank = function (color) {
-        var result = new Array();
-        if (this.getDirection(color) > 0) {
-            for (var i = 0; i < this.getWidth(); i++) {
-                result.push(new Pos(i, 0));
-            }
-        }
-        else {
-            for (var i = 0; i < this.getWidth(); i++) {
-                result.push(new Pos(i, this.getHeight() - 1));
-            }
-        }
-        return result;
-    };
-    BoardModel.prototype.isOnOppositeBackRank = function (pos, color) {
-        var backRank = this.getBackRank(color);
-        for (var eachIdx in backRank) {
-            var eachPos = backRank[eachIdx];
-            if (eachPos.equals(pos)) {
-                return true;
-            }
-        }
-        return false;
-    };
-    BoardModel.prototype.isFree = function (pos) {
-        var result;
-        this.pos2PieceMap.forEach(function (value, key, map) {
+    }
+	
+	getBackRank(color: Color): Pos[]{
+		var result: Pos[] = new Array();
+		
+		if(this.getDirection(color) > 0){
+			for(var i = 0; i < this.getWidth(); i++){
+				result.push(new Pos(i, 0));
+			}
+		}
+		else{
+			for(var i = 0; i < this.getWidth(); i++){
+				result.push(new Pos(i, this.getHeight() - 1));
+			}
+		}
+		
+		return result;
+	}
+	
+	isOnOppositeBackRank(pos: Pos, color: Color): boolean{
+		var backRank: Pos[] = this.boardModel.getBackRank(color);
+		
+		for(var eachIdx in backRank){
+			var eachPos = backRank[eachIdx];
+			if(eachPos.equals(pos)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+    isFree(pos: Pos): boolean{
+        var result: boolean;
+        this.pos2PieceMap.forEach((value, key, map) => {
             if (pos.equals(key)) {
                 result = (value == null || value == undefined);
             }
         });
+
         return result;
-    };
-    BoardModel.prototype.isAllFree = function (positions) {
-        for (var posIdx in positions) {
+    }
+
+    isAllFree(positions: Pos[]):boolean{
+        for(var posIdx in positions){
             var eachPosition = positions[posIdx];
-            if (!(this.isFree(eachPosition))) {
+            if(!(this.isFree(eachPosition))){
                 return false;
             }
         }
+
         return true;
-    };
-    BoardModel.prototype.isCapturable = function (pos, color) {
-        return this.isFree(pos);
-    };
-    BoardModel.prototype.getHeight = function () {
+    }
+
+    isCapturable(pos: Pos, color: Color): boolean{
+        return this.isFree(pos)
+    }
+
+    getHeight(): number{
         return this.HEIGHT;
-    };
-    BoardModel.prototype.getWidth = function () {
+    }
+
+    getWidth(): number{
         return this.WIDTH;
-    };
-    BoardModel.prototype.getAllPieces = function () {
-        var result = new Array();
-        this.pos2PieceMap.forEach(function (value, key, map) {
-            if (value != null) {
+    }
+
+    getAllPieces(): PieceModel[]{
+        var result: PieceModel[] = new Array();
+        this.pos2PieceMap.forEach((value, key, map) => {
+            if(value != null){
                 result.push(value);
             }
         });
         return result;
-    };
-    BoardModel.prototype.getAllPiecesOfColor = function (color) {
-        var result = new Array();
-        this.pos2PieceMap.forEach(function (value, key, map) {
-            if (value != null && value != undefined) {
-                if (value.getColor() == color) {
+    }
+
+    getAllPiecesOfColor(color: Color): PieceModel[]{
+        var result: PieceModel[] = new Array();
+        this.pos2PieceMap.forEach((value, key, map) => {
+            if(value != null && value != undefined ){
+                if(value.getColor() == color){
                     result.push(value);
                 }
             }
         });
         return result;
-    };
-    BoardModel.prototype.removePiece = function (pos) {
-        var _this = this;
-        this.pos2PieceMap.forEach(function (value, key, map) {
-            if (key.equals(pos)) {
-                _this.pos2PieceMap.delete(key);
+    }
+
+    removePiece(pos: Pos){
+        this.pos2PieceMap.forEach((value, key, map) => {
+            if(key.equals(pos)){
+                this.pos2PieceMap.delete(key);
             }
         });
         this.pos2PieceMap.set(pos, null);
-    };
-    BoardModel.prototype.executeMove = function (move) {
-        var originalPiece = this.getPieceFromPosition(move.getOrigin());
+    }
+
+    executeMove(move: Move){
+        var originalPiece: PieceModel = this.getPieceFromPosition(move.getOrigin());
         originalPiece.onMove(move);
         this.movePiece(originalPiece, move.getDest());
-    };
-    BoardModel.prototype.movePiece = function (piece, dest) {
+    }
+
+    movePiece(piece: PieceModel, dest: Pos){
         this.removePiece(piece.getPos());
         this.removePiece(dest);
         var transposedPiece = PieceFactory.createPieceByTransposition(dest, piece);
         this.placePiece(transposedPiece);
-    };
-    BoardModel.prototype.isValidPosition = function (pos) {
+    }
+
+    isValidPosition(pos: Pos): boolean{
         var result = false;
-        this.pos2PieceMap.forEach(function (value, key, map) {
+        this.pos2PieceMap.forEach((value, key, map) => {
             if (pos.equals(key)) {
                 result = true;
             }
         });
+
         return result;
-    };
-    BoardModel.prototype.serialize = function () {
+    }
+
+    serialize(): string{
         var result = "";
-        for (var y = 0; y < this.getHeight(); y++) {
-            for (var x = 0; x < this.getWidth(); x++) {
+        for(var y: number = 0; y < this.getHeight(); y++){
+            for (var x: number = 0; x < this.getWidth(); x++){
                 var thisPiece = this.getPieceFromPosition(new Pos(x, y));
+
                 result += "[";
-                if (thisPiece != null) {
+                if(thisPiece != null){
                     result += thisPiece.getType() + "_";
-                    if (thisPiece.getColor() == Color.BLACK) {
+
+                    if(thisPiece.getColor() == Color.BLACK){
                         result += "B";
                     }
-                    else {
+                    else{
                         result += "W";
                     }
                 }
@@ -1657,49 +1892,56 @@ var BoardModel = /** @class */ (function () {
             result += "/";
         }
         result = result.substring(0, result.length - 1);
-        result += "-";
-        for (var y = 0; y < this.getHeight(); y++) {
-            for (var x = 0; x < this.getWidth(); x++) {
-                result += "[" + this.getSquareTypeFromPosition(new Pos(x, y)) + "],";
+		
+		result += "-";
+		
+		for(var y: number = 0; y < this.getHeight(); y++){
+            for (var x: number = 0; x < this.getWidth(); x++){
+                result += "[" + this.getSquareTypeFromPosition(new Pos(x,y)) + "],";
             }
             result = result.substring(0, result.length - 1);
             result += "/";
         }
-        result = result.substring(0, result.length - 1);
+		result = result.substring(0, result.length - 1);
         return result;
-    };
-    BoardModel.prototype.reset = function () {
+    }
+
+    reset(){
         this.pos2PieceMap.clear();
-        for (var y = 0; y < this.getHeight(); y++) {
-            for (var x = 0; x < this.getWidth(); x++) {
+        for(var y:number = 0; y < this.getHeight(); y++){
+            for(var x:number = 0; x < this.getWidth(); x++){
                 this.pos2PieceMap.set(new Pos(x, y), null);
-                this.pos2SquareType.set(new Pos(x, y), SquareType.NORMAL);
+				this.pos2SquareType.set(new Pos(x, y), SquareType.NORMAL);
             }
         }
-    };
-    BoardModel.prototype.getAllMovesForColor = function (color) {
-        var pieces = this.getAllPiecesOfColor(color);
-        var resultArr = new MoveCollection();
-        for (var pieceIdx in pieces) {
-            var eachPiece = pieces[pieceIdx];
+    }
+
+    getAllMovesForColor(color: Color): MoveCollection{
+        var pieces: PieceModel[] = this.getAllPiecesOfColor(color);
+        var resultArr: MoveCollection = new MoveCollection();
+        for(var pieceIdx in pieces){
+            var eachPiece: PieceModel = pieces[pieceIdx];
             resultArr.addAll(eachPiece.getPossibleMoves());
         }
         return resultArr;
-    };
-    BoardModel.prototype.populateFromSerial = function (serial) {
+    }
+
+    populateFromSerial(serial: string) {
         this.reset();
-        var halvedData = serial.split("-");
-        var configRows = halvedData[1].split("/");
-        var rows = halvedData[0].split("/");
+		var halvedData:string[] = serial.split("-");
+		var configRows:string[] = halvedData[1].split("/");
+        var rows:string[] = halvedData[0].split("/");
         for (var y = 0; y < rows.length; y++) {
             var row = rows[y];
-            var squares = row.split(",");
+            var squares:string[] = row.split(",");
             var length = squares.length;
             for (var x = 0; x < squares.length; x++) {
-                var sqrData = squares[x].substring(1, squares[x].length - 1);
+                var sqrData:string = squares[x].substring(1, squares[x].length - 1);
+
                 if (sqrData.length != 0) {
                     var sqrDataSplit = sqrData.split("_");
-                    var thisColor;
+                    var thisColor:Color;
+
                     if (sqrDataSplit[1] == "W") {
                         thisColor = Color.WHITE;
                     }
@@ -1710,297 +1952,309 @@ var BoardModel = /** @class */ (function () {
                 }
             }
         }
-        for (var y = 0; y < configRows.length; y++) {
+	    for (var y = 0; y < configRows.length; y++) {
             var row = configRows[y];
-            var squares = row.split(",");
+            var squares:string[] = row.split(",");
             var length = squares.length;
             for (var x = 0; x < squares.length; x++) {
-                var sqrData = squares[x].substring(1, squares[x].length - 1);
-                this.pos2SquareType.set(new Pos(x, y), +sqrData);
+                var sqrData:string = squares[x].substring(1, squares[x].length - 1);
+				this.pos2SquareType.set(new Pos(x,y), +sqrData);
             }
         }
-    };
-    BoardModel.prototype.getPieceFromPosition = function (pos) {
-        var _this = this;
-        var result;
-        this.pos2PieceMap.forEach(function (value, key, map) {
-            if (pos.equals(key)) {
-                result = _this.pos2PieceMap.get(key);
-            }
-        });
-        return result;
-    };
-    BoardModel.prototype.getSquareTypeFromPosition = function (pos) {
-        var _this = this;
-        var result;
-        this.pos2SquareType.forEach(function (value, key, map) {
-            if (pos.equals(key)) {
-                result = _this.pos2SquareType.get(key);
-            }
-        });
-        return result;
-    };
-    return BoardModel;
-}());
-var BoardFactory = /** @class */ (function () {
-    function BoardFactory() {
     }
-    BoardFactory.getStandardBoard = function () {
-        var board = new BoardModel(8, 8);
+
+    getPieceFromPosition(pos: Pos): any{
+        var result;
+        this.pos2PieceMap.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                result = this.pos2PieceMap.get(key);
+            }
+        });
+
+        return result;
+    }
+	
+	 getSquareTypeFromPosition(pos: Pos): any{
+        var result;
+        this.pos2SquareType.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                result = this.pos2SquareType.get(key);
+            }
+        });
+
+        return result;
+    }
+}class BoardFactory{
+    static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
+
+    static getStandardBoard(): BoardModel{
+        var board: BoardModel = new BoardModel(8,8);
         board.populateFromSerial(BoardFactory.STANDARD_BOARD);
         return board;
-    };
-    BoardFactory.STANDARD_BOARD = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
-    return BoardFactory;
-}());
-var Player = /** @class */ (function () {
-    function Player(color) {
-        this.color = color;
     }
-    Player.prototype.getColor = function () {
-        return this.color;
-    };
-    Player.prototype.readyForMove = function () { };
-    Player.prototype.afterMove = function (board) { };
-    Player.prototype.beforeMove = function (board) { };
-    return Player;
-}());
-var MiniMaxPlayer = /** @class */ (function (_super) {
-    __extends(MiniMaxPlayer, _super);
-    function MiniMaxPlayer() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    MiniMaxPlayer.prototype.getNextMove = function (board) {
-        var moves = board.getAllMovesForColor(this.getColor());
-        moves.shuffle();
-        var bestValuation = Number.MAX_SAFE_INTEGER * -1;
-        var bestMove = this.rootMiniMax(board, 2, this.getColor());
-        return bestMove;
-    };
-    MiniMaxPlayer.prototype.rootMiniMax = function (board, depth, color) {
-        var bestMove;
-        var bestValuation = Number.MAX_SAFE_INTEGER * -1;
-        var alpha = Number.MAX_SAFE_INTEGER * -1;
-        var beta = Number.MAX_SAFE_INTEGER;
-        var maxMoves = board.getAllMovesForColor(color);
-        maxMoves.shuffle();
-        for (var maxMoveIdx in maxMoves.getMoves()) {
-            var eachMaxMove = maxMoves.getMoves()[maxMoveIdx];
-            var currentValuation = this.minimax(eachMaxMove, board, depth - 1, this.swapColor(color), alpha, beta, false);
-            if (currentValuation >= bestValuation) {
-                bestValuation = currentValuation;
-                bestMove = eachMaxMove;
-            }
-        }
-        return bestMove;
-    };
-    MiniMaxPlayer.prototype.minimax = function (move, board, depth, color, alpha, beta, maximize) {
-        var newBoard = this.applyMove(move, board);
-        if (depth == 0) {
-            return this.evaluate(newBoard, color);
-        }
-        var bestValuation;
-        if (maximize) {
-            bestValuation = Number.MAX_SAFE_INTEGER * -1;
-            var maxMoves = newBoard.getAllMovesForColor(color);
-            maxMoves.shuffle();
-            for (var maxMoveIdx in maxMoves.getMoves()) {
-                var eachMaxMove = maxMoves.getMoves()[maxMoveIdx];
-                bestValuation = Math.max(bestValuation, this.minimax(eachMaxMove, newBoard, depth - 1, this.swapColor(color), alpha, beta, false));
-                alpha = Math.max(alpha, bestValuation);
-                if (beta <= alpha) {
-                    break;
-                }
-            }
-        }
-        else if (!maximize) {
-            bestValuation = Number.MAX_SAFE_INTEGER;
-            var minMoves = newBoard.getAllMovesForColor(color);
-            minMoves.shuffle();
-            for (var minMoveIdx in minMoves.getMoves()) {
-                var eachMinMove = minMoves.getMoves()[minMoveIdx];
-                bestValuation = Math.min(bestValuation, this.minimax(eachMinMove, newBoard, depth - 1, this.swapColor(color), alpha, beta, true));
-                beta = Math.min(beta, bestValuation);
-                if (beta <= alpha) {
-                    break;
-                }
-            }
-        }
-        return bestValuation;
-    };
-    MiniMaxPlayer.prototype.swapColor = function (color) {
-        if (color == Color.BLACK) {
-            return Color.WHITE;
-        }
-        else {
-            return Color.BLACK;
-        }
-    };
-    MiniMaxPlayer.prototype.applyMove = function (move, board) {
-        var newBoard = new BoardModel(board.getHeight(), board.getWidth());
-        newBoard.populateFromSerial(board.serialize());
-        newBoard.executeMove(move);
-        return newBoard;
-    };
-    MiniMaxPlayer.prototype.evaluate = function (board, color) {
-        var result = 0;
-        /*result += board.getAllPiecesOfColor(color).length;
-        result -= board.getAllPiecesOfColor(this.swapColor(color)).length;*/
-        result += this.getMaterial(board, color);
-        result += (this.getMobility(board, color) * 0.01);
-        return result;
-    };
-    MiniMaxPlayer.prototype.getMaterial = function (board, color) {
-        var pieces = board.getAllPieces();
-        var value = 0;
-        for (var pieceIdx in pieces) {
-            var eachPiece = pieces[pieceIdx];
-            var thisValue = 0;
-            switch (eachPiece.getType()) {
-                case PieceType.ROOK:
-                    thisValue += 5;
-                    break;
-                case PieceType.PAWN:
-                    thisValue += 1;
-                    break;
-                case PieceType.QUEEN:
-                    thisValue += 9;
-                    break;
-                case PieceType.KNIGHT:
-                    thisValue += 3;
-                    break;
-                case PieceType.BISHOP:
-                    thisValue += 3;
-                    break;
-                case PieceType.KING:
-                    thisValue += 1000;
-                    break;
-            }
-            if (eachPiece.getColor() == color) {
-                value += thisValue;
-            }
-            else {
-                value -= thisValue;
-            }
-        }
-        return value;
-    };
-    MiniMaxPlayer.prototype.getMobility = function (board, color) {
-        var myMoves = board.getAllMovesForColor(color);
-        var oppMoves = board.getAllMovesForColor(this.swapColor(color));
-        return myMoves.getMoves().length - oppMoves.getMoves().length;
-    };
-    MiniMaxPlayer.prototype.isAutoExecute = function () {
-        return true;
-    };
-    return MiniMaxPlayer;
-}(Player));
-var ChessGame = /** @class */ (function () {
-    function ChessGame(board, white, black) {
+
+}abstract class Player{
+	color: Color;
+	autoExecute: boolean
+
+	constructor(color: Color){
+		this.color = color;
+	}
+
+	getColor(): Color{
+		return this.color;
+	}
+
+	readyForMove(){}
+	afterMove(board: BoardModel){}
+	beforeMove(board: BoardModel){}
+
+	abstract getNextMove(board: BoardModel): Move;
+	abstract isAutoExecute(): boolean;
+
+}class MiniMaxPlayer extends Player{
+
+	getNextMove(board: BoardModel):Move{
+		var moves: MoveCollection = board.getAllMovesForColor(this.getColor());
+		moves.shuffle();
+		var bestValuation: number = Number.MAX_SAFE_INTEGER * -1;
+		var bestMove: Move = this.rootMiniMax(board, 2, this.getColor());
+		return bestMove;
+	}
+	
+	rootMiniMax(board: BoardModel, depth: number, color: Color): Move{
+		var bestMove: Move;
+		var bestValuation: number = Number.MAX_SAFE_INTEGER * -1;
+		var alpha = Number.MAX_SAFE_INTEGER * -1;
+		var beta = Number.MAX_SAFE_INTEGER;
+			var maxMoves: MoveCollection = board.getAllMovesForColor(color);
+			maxMoves.shuffle();
+			for(var maxMoveIdx in maxMoves.getMoves()) {
+				var eachMaxMove:Move = maxMoves.getMoves()[maxMoveIdx];
+				var currentValuation = this.minimax(eachMaxMove, board, depth - 1, this.swapColor(color), alpha, beta, false);
+				if(currentValuation >= bestValuation){
+					bestValuation = currentValuation;
+					bestMove = eachMaxMove;
+				}
+			}
+
+		return bestMove;
+	}
+	
+	minimax(move: Move, board: BoardModel, depth: number, color: Color, alpha: number, beta: number, maximize: boolean): number{
+		var newBoard: BoardModel = this.applyMove(move, board);
+		if(depth == 0){
+			return this.evaluate(newBoard, color);
+		}
+		var bestValuation: number;
+		if(maximize){
+			bestValuation = Number.MAX_SAFE_INTEGER * -1;
+			var maxMoves: MoveCollection = newBoard.getAllMovesForColor(color);
+			maxMoves.shuffle();
+			for(var maxMoveIdx in maxMoves.getMoves()) {
+				var eachMaxMove:Move = maxMoves.getMoves()[maxMoveIdx];
+				bestValuation = Math.max(bestValuation, this.minimax(eachMaxMove, newBoard, depth - 1, this.swapColor(color), alpha, beta, false));
+				alpha = Math.max(alpha, bestValuation);
+				if(beta <= alpha){
+					break;
+				}
+			}
+		}
+		else if(!maximize){
+			bestValuation = Number.MAX_SAFE_INTEGER;
+			var minMoves: MoveCollection = newBoard.getAllMovesForColor(color);
+			minMoves.shuffle();
+			for(var minMoveIdx in minMoves.getMoves()) {
+				var eachMinMove:Move = minMoves.getMoves()[minMoveIdx];
+				bestValuation = Math.min(bestValuation, this.minimax(eachMinMove, newBoard, depth - 1, this.swapColor(color), alpha, beta, true));
+				beta = Math.min(beta, bestValuation);
+				if(beta <= alpha){
+					break;
+				}
+			}
+		}
+		return bestValuation;
+	}
+
+	swapColor(color: Color): Color{
+		if(color == Color.BLACK){
+			return Color.WHITE;
+		}
+		else{
+			return Color.BLACK;
+		}
+	}
+
+	applyMove(move: Move, board: BoardModel): BoardModel{
+		var newBoard = new BoardModel(board.getHeight(), board.getWidth());
+		newBoard.populateFromSerial(board.serialize());
+		newBoard.executeMove(move);
+		return newBoard;
+	}
+
+
+	evaluate(board: BoardModel, color: Color): number{
+		var result = 0;
+		/*result += board.getAllPiecesOfColor(color).length;
+		result -= board.getAllPiecesOfColor(this.swapColor(color)).length;*/
+		result += this.getMaterial(board, color);
+		result += (this.getMobility(board, color) * 0.01);
+		return result;
+	}
+
+	getMaterial(board: BoardModel, color: Color){
+		var pieces = board.getAllPieces();
+		var value = 0;
+		for(var pieceIdx in pieces){
+			var eachPiece =  pieces[pieceIdx];
+			var thisValue = 0;
+			switch(eachPiece.getType()){
+				case PieceType.ROOK: thisValue += 5; break;
+				case PieceType.PAWN: thisValue += 1; break;
+				case PieceType.QUEEN: thisValue += 9; break;
+				case PieceType.KNIGHT: thisValue += 3; break;
+				case PieceType.BISHOP: thisValue += 3; break;
+				case PieceType.KING: thisValue += 1000; break;
+			}
+			if(eachPiece.getColor() == color){
+				value += thisValue;
+			}
+			else{
+				value -= thisValue;
+			}
+		}
+		return value;
+	}
+
+	getMobility(board: BoardModel, color: Color){
+		var myMoves = board.getAllMovesForColor(color);
+		var oppMoves = board.getAllMovesForColor(this.swapColor(color));
+		return myMoves.getMoves().length - oppMoves.getMoves().length;
+	}
+
+	isAutoExecute(){
+		return true;
+	}
+}class ChessGame{
+    board: BoardModel;
+    white: Player;
+    black: Player;
+    currentTurn: Color;
+    hasFinished: boolean;
+
+    constructor(board: BoardModel, white: Player, black: Player){
         this.white = white;
         this.black = black;
         this.board = board;
     }
-    ChessGame.prototype.start = function () {
+
+    start(){
         this.currentTurn = Color.WHITE;
         this.getCurrentPlayer().readyForMove();
-    };
-    ChessGame.prototype.executeNextMove = function () {
-        var _this = this;
-        if (!this.isFinished()) {
-            var move = this.getCurrentPlayer().getNextMove(this.board);
+    }
+
+    executeNextMove(){
+        if(!this.isFinished()){
+            var move: Move = this.getCurrentPlayer().getNextMove(this.board);
             this.getCurrentPlayer().beforeMove(this.board);
             this.board.executeMove(move);
             this.getCurrentPlayer().afterMove(this.board);
-            if (this.hasLost(this.swapColor(this.currentTurn))) {
+            if(this.hasLost(this.swapColor(this.currentTurn))){
                 this.hasFinished = true;
             }
             this.swapPlayers();
         }
-        setTimeout(function () {
-            if (!_this.isFinished()) {
-                if (_this.getCurrentPlayer().isAutoExecute()) {
-                    _this.executeNextMove();
+        setTimeout(() => {
+            if(!this.isFinished()){
+                if(this.getCurrentPlayer().isAutoExecute()){
+                    this.executeNextMove();
                 }
-                else {
-                    _this.getCurrentPlayer().readyForMove();
+                else{
+                    this.getCurrentPlayer().readyForMove();
                 }
             }
-            else {
-                _this.getCurrentPlayer().afterMove(_this.board);
+            else{
+                this.getCurrentPlayer().afterMove(this.board);
             }
         }, 10);
-    };
-    ChessGame.prototype.swapPlayers = function () {
-        if (this.currentTurn == Color.WHITE) {
+    }
+
+    swapPlayers(){
+        if(this.currentTurn == Color.WHITE){
             return this.currentTurn = Color.BLACK;
         }
-        else {
+        else{
             return this.currentTurn = Color.WHITE;
         }
-    };
-    ChessGame.prototype.getCurrentPlayer = function () {
-        if (this.currentTurn == Color.WHITE) {
+    }
+
+    getCurrentPlayer(): Player{
+        if(this.currentTurn == Color.WHITE){
             return this.white;
         }
-        else {
+        else{
             return this.black;
         }
-    };
-    ChessGame.prototype.isFinished = function () {
+    }
+
+    isFinished(): boolean{
         return this.hasFinished;
-    };
-    ChessGame.prototype.hasLost = function (color) {
-        var pieces = this.board.getAllPiecesOfColor(color);
-        for (var pieceIdx in pieces) {
+    }
+
+    hasLost(color: Color): boolean{
+        var pieces: PieceModel[] = this.board.getAllPiecesOfColor(color);
+        for(var pieceIdx in pieces){
             var eachPiece = pieces[pieceIdx];
-            if (eachPiece.getType() == PieceType.KING) {
+            if(eachPiece.getType() == PieceType.KING){
                 return false;
             }
         }
         return true;
-    };
-    ChessGame.prototype.isInCheck = function (color) {
-        var pieces = this.board.getAllPiecesOfColor(color);
-        for (var pieceIdx in pieces) {
+    }
+
+    isInCheck(color: Color): boolean{
+        var pieces: PieceModel[] = this.board.getAllPiecesOfColor(color);
+        for(var pieceIdx in pieces){
             var eachPiece = pieces[pieceIdx];
-            if (eachPiece.getType() == PieceType.KING) {
-                if (this.board.getAllMovesForColor(this.swapColor(color)).containsDestination(eachPiece.getPos())) {
+            if(eachPiece.getType() == PieceType.KING){
+                if(this.board.getAllMovesForColor(this.swapColor(color)).containsDestination(eachPiece.getPos())){
                     return true;
                 }
             }
         }
         return false;
-    };
-    ChessGame.prototype.swapColor = function (color) {
-        if (color == Color.BLACK) {
+    }
+
+    swapColor(color: Color): Color{
+        if(color == Color.BLACK){
             return Color.WHITE;
         }
-        else {
+        else{
             return Color.BLACK;
         }
-    };
-    return ChessGame;
-}());
-var ConsoleEntry = /** @class */ (function (_super) {
-    __extends(ConsoleEntry, _super);
-    function ConsoleEntry(left, top, width, height, text) {
-        var _this = _super.call(this) || this;
-        _this.setTopPos(top);
-        _this.setLeftPos(left);
-        _this.setWidth(width);
-        _this.setHeight(height);
-        _this.setText(text);
-        return _this;
     }
-    ConsoleEntry.prototype.setText = function (text) {
+}class ConsoleEntry extends HTMLObject{
+    text: string;
+
+    constructor(left: number, top: number, width: number, height: number, text: string){
+        super();
+        this.setTopPos(top);
+        this.setLeftPos(left);
+        this.setWidth(width);
+        this.setHeight(height);
+        this.setText(text);
+    }
+
+    setText(text: string){
         this.text = text;
-    };
-    ConsoleEntry.prototype.getText = function () {
+    }
+
+    getText(): string{
         return this.text;
-    };
-    ConsoleEntry.prototype.toHTML = function () {
-        var innerDiv = "{msg}";
+    }
+
+    toHTML(): string{
+        var innerDiv: string = "{msg}";
         var builder = new HTMLBuilder();
         builder.newDiv()
             .addStyle("position", "absolute")
@@ -2010,35 +2264,41 @@ var ConsoleEntry = /** @class */ (function (_super) {
             .addStyle("height", this.getHeight() + "px")
             .addStyle("font-size", this.getHeight() + "px")
             .addStyle("border", "1px solid black");
+
         builder.addInnerDiv(innerDiv.replace("{msg}", this.getText()));
+
         return builder.toString();
-    };
-    return ConsoleEntry;
-}(HTMLObject));
-var MyConsole = /** @class */ (function (_super) {
-    __extends(MyConsole, _super);
-    function MyConsole(leftPos, upPos, consoleWidth, consoleHeight, entryHeight) {
-        var _this = _super.call(this) || this;
-        _this.lines = new Array();
-        _this.consoleHeight = consoleHeight;
-        _this.consoleWidth = consoleWidth;
-        _this.entryHeight = entryHeight;
-        _this.setHeight(_this.consoleHeight);
-        _this.setWidth(_this.consoleWidth);
-        _this.setLeftPos(leftPos);
-        _this.setTopPos(upPos);
-        _this.setId("my-console");
-        return _this;
     }
-    MyConsole.prototype.addEntry = function (text) {
-        var newEntry = new ConsoleEntry(0, (this.entryHeight * (this.lines.length)) - 1, this.getWidth() - 20, this.entryHeight, text);
+}class MyConsole extends HTMLObject{
+    lines: ConsoleEntry[] = new Array();
+    entryHeight: number;
+    consoleWidth: number;
+    consoleHeight: number;
+
+    constructor(leftPos: number, upPos: number, consoleWidth: number, consoleHeight: number, entryHeight:number){
+        super();
+        this.consoleHeight = consoleHeight;
+        this.consoleWidth = consoleWidth;
+        this.entryHeight = entryHeight;
+        this.setHeight(this.consoleHeight);
+        this.setWidth(this.consoleWidth);
+        this.setLeftPos(leftPos);
+        this.setTopPos(upPos);
+        this.setId("my-console");
+    }
+
+    addEntry(text: string){
+        var newEntry: ConsoleEntry = new ConsoleEntry(0, (this.entryHeight * (this.lines.length)) - 1, this.getWidth() - 20, this.entryHeight, text);
         this.lines.push(newEntry);
-    };
-    MyConsole.prototype.toHTML = function () {
-        var text = "";
-        for (var lineIdx in this.lines) {
+    }
+
+    toHTML(): string{
+        var text: string = "";
+
+        for(var lineIdx in this.lines){
             text += this.lines[lineIdx].toHTML();
         }
+
         var builder = new HTMLBuilder();
         builder.newDiv()
             .addStyle("overflow-y", "scroll")
@@ -2049,147 +2309,172 @@ var MyConsole = /** @class */ (function (_super) {
             .addStyle("width", this.getWidth() + "px")
             .addStyle("height", this.getHeight() + "px")
             .setId(this.getId());
+
         builder.addInnerDiv(text);
         return builder.toString();
-    };
-    return MyConsole;
-}(HTMLObject));
-var ConsoleController = /** @class */ (function () {
-    function ConsoleController(leftOffset, topOffset, width, height, entrySize) {
+    }
+}class ConsoleController{
+    console: MyConsole;
+
+    constructor(leftOffset: number, topOffset: number, width: number, height: number, entrySize:number){
         this.console = new MyConsole(leftOffset, topOffset, width, height, entrySize);
     }
-    ConsoleController.prototype.run = function () {
+
+    run(){
         this.update();
-    };
-    ConsoleController.prototype.log = function (txt) {
+    }
+    log(txt: string){
         this.console.addEntry(txt);
         this.update();
-    };
-    ConsoleController.prototype.update = function () {
+    }
+    update(){
         document.body.innerHTML += this.console.toHTML();
         var element = document.getElementById("my-console");
         element.scrollTop = element.scrollHeight - element.clientHeight;
-    };
-    return ConsoleController;
-}());
-var GameController = /** @class */ (function (_super) {
-    __extends(GameController, _super);
-    function GameController(baseElement, offsetTop, offsetLeft, squareWidth, squareHeight) {
-        var _this = _super.call(this, Color.WHITE) || this;
-        _this.myColor = Color.WHITE;
-        _this.baseElement = baseElement;
-        _this.offsetTop = offsetTop;
-        _this.offsetLeft = offsetLeft;
-        _this.squareWidth = squareWidth;
-        _this.squareHeight = squareHeight;
-        _this.consoleCtrl = new ConsoleController(offsetLeft, offsetTop + (squareWidth * 8), squareWidth * 8, squareWidth * 2, 50);
-        return _this;
     }
-    GameController.prototype.start = function () {
-        var board = BoardFactory.getStandardBoard();
+}
+class GameController extends Player{
+    baseElement: HTMLElement;
+    chessGame: ChessGame;
+    myColor: Color = Color.WHITE;
+    boardView: Board;
+    consoleCtrl: ConsoleController;
+    //temp storage
+    SELECTED_PIECE: PieceModel;
+    CHOSEN_MOVE: Move;
+	
+	SHOW_SPINNER: boolean;
+
+    offsetTop: number;
+    offsetLeft: number;
+    squareWidth: number;
+    squareHeight: number;
+
+    constructor(baseElement: HTMLElement, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number){
+        super(Color.WHITE);
+        this.baseElement = baseElement;
+        this.offsetTop = offsetTop;
+        this.offsetLeft = offsetLeft;
+        this.squareWidth = squareWidth;
+        this.squareHeight = squareHeight;
+        this.consoleCtrl = new ConsoleController(offsetLeft, offsetTop + (squareWidth * 8), squareWidth * 8, squareWidth * 2, 50);
+    }
+
+
+    start(){
+        var board: BoardModel = BoardFactory.getStandardBoard();
         //alert(this.offsetTop + " " + this.offsetLeft + " " + this.squareWidth + " " + this.squareHeight);
         this.boardView = Board.fromSerial(board.serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         var miniMaxAI = new MiniMaxPlayer(Color.BLACK);
         this.chessGame = new ChessGame(board, this, miniMaxAI);
         this.update();
         this.chessGame.start();
-    };
-    GameController.prototype.update = function () {
-        if (this.SHOW_SPINNER) {
-            this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML() + "<div class=\"spin sqr\"></div>";
-        }
-        else {
-            this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML();
-        }
+    }
+
+    update(){
+		if(this.SHOW_SPINNER){
+			this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML() + "<div class=\"spin sqr\"></div>";
+		}
+        else{
+			this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML();
+		}
         if (this.chessGame.currentTurn == this.getColor()) {
             this.addClickListeners();
         }
-        else {
+        else{
             this.turnOffClickListeners();
         }
-        //  this.consoleCtrl.update();
-    };
-    GameController.prototype.turnOffClickListeners = function () {
-        var squares = this.boardView.getSquares();
+      //  this.consoleCtrl.update();
+    }
+
+    turnOffClickListeners():void {
+        var squares: Square[] = this.boardView.getSquares();
         for (var square in squares) {
             var each = squares[square];
-            this.setElementOnClick(each.getId(), function () { });
+            this.setElementOnClick(each.getId(), () => {});
         }
-    };
-    GameController.prototype.addClickListeners = function () {
+    }
+
+    addClickListeners(){
         this.addMyPieceClickListeners();
         this.addOppPieceClickListeners();
         this.addSquareClickListeners();
-    };
-    GameController.prototype.addMyPieceClickListeners = function () {
-        var pieces = this.boardView.getPieces();
+    }
+
+    addMyPieceClickListeners():void {
+        var pieces: Piece[] = this.boardView.getPieces();
         for (var piece in pieces) {
             var each = pieces[piece];
             if (each.getColor() == this.getColor()) {
                 var coSqr = this.boardView.getSquareAtPos(each.getPos());
                 //document.getElementById(coSqr.getId()).onclick = this.getMyPieceClickListenerFunction(coSqr.getId());
-                this.setElementOnClick(coSqr.getId(), this.getMyPieceClickListenerFunction(coSqr.getId(), this));
+                this.setElementOnClick(coSqr.getId(),this.getMyPieceClickListenerFunction(coSqr.getId(), this));
+
             }
         }
-    };
-    GameController.prototype.log = function (txt) {
-        if (this.consoleCtrl) {
+    }
+
+    log(txt: string){
+        if(this.consoleCtrl){
             this.consoleCtrl.log(txt);
         }
-    };
-    GameController.prototype.getMyPieceClickListenerFunction = function (id, control) {
+    }
+
+    getMyPieceClickListenerFunction(id: string, control: GameController){
         return function () {
-            if (!control.myPieceIsSelected()) {
+            if(!control.myPieceIsSelected()){
                 control.unselectPiece();
                 control.resetSquareColors();
-                var thisPiece = control.getPieceAtSquareId(id);
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
                 control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
             }
-            else if (control.myPieceIsSelected() && control.selectedPieceIsAtSquareId(id)) {
+            else if(control.myPieceIsSelected() && control.selectedPieceIsAtSquareId(id)){
                 control.unselectPiece();
                 control.resetSquareColors();
                 control.update();
             }
-            else if (control.myPieceIsSelected() && !control.selectedPieceIsAtSquareId(id)) {
+            else if(control.myPieceIsSelected() && !control.selectedPieceIsAtSquareId(id)){
                 control.unselectPiece();
                 control.resetSquareColors();
-                var thisPiece = control.getPieceAtSquareId(id);
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
                 control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
             }
-            else if (control.myPieceIsSelected() && !(control.representsMovableSpace(id))) {
+            else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
                 control.resetSquareColors();
                 control.update();
             }
-            else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
-                var sqr = control.getSquareAtId(id);
+            else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
+                var sqr: Square = control.getSquareAtId(id);
                 control.moveSelectedPieceToSquare(sqr);
                 control.signalOpponentsMove();
             }
         };
-    };
-    GameController.prototype.addOppPieceClickListeners = function () {
-        var pieces = this.boardView.getPieces();
+    }
+
+    addOppPieceClickListeners(){
+        var pieces: Piece[] = this.boardView.getPieces();
         for (var piece in pieces) {
             var each = pieces[piece];
             if (each.getColor() == this.swapColor(this.getColor())) {
                 var coSqr = this.boardView.getSquareAtPos(each.getPos());
-                this.setElementOnClick(coSqr.getId(), this.getOppPieceClickListenerFunction(coSqr.getId(), this));
+                this.setElementOnClick(coSqr.getId(),this.getOppPieceClickListenerFunction(coSqr.getId(), this));
             }
         }
-    };
-    GameController.prototype.getOppPieceClickListenerFunction = function (id, control) {
+    }
+
+    getOppPieceClickListenerFunction(id: string, control: GameController){
         return function () {
             if (!control.oppPieceIsSelected() && !control.myPieceIsSelected()) {
                 control.unselectPiece();
                 control.resetSquareColors();
-                var thisPiece = control.getPieceAtSquareId(id);
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
                 control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_RED);
             }
             else if (control.oppPieceIsSelected() && !control.selectedPieceIsAtSquareId(id)) {
                 control.unselectPiece();
                 control.resetSquareColors();
-                var thisPiece = control.getPieceAtSquareId(id);
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
                 control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_RED);
             }
             else if (control.oppPieceIsSelected() && control.selectedPieceIsAtSquareId(id)) {
@@ -2197,251 +2482,288 @@ var GameController = /** @class */ (function (_super) {
                 control.resetSquareColors();
                 control.update();
             }
-            else if (control.myPieceIsSelected() && !(control.representsMovableSpace(id))) {
+            else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
                 control.resetSquareColors();
-                var thisPiece = control.getPieceAtSquareId(id);
+                var thisPiece: PieceModel = control.getPieceAtSquareId(id);
                 control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_RED);
             }
-            else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
-                var sqr = control.getSquareAtId(id);
+            else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
+                var sqr: Square = control.getSquareAtId(id);
                 control.moveSelectedPieceToSquare(sqr);
             }
         };
-    };
-    GameController.prototype.addSquareClickListeners = function () {
-        var squares = this.boardView.getSquares();
+    }
+
+    addSquareClickListeners(){
+        var squares: Square[] = this.boardView.getSquares();
         for (var square in squares) {
             var each = squares[square];
             if (this.hasNoClickListener(each.getId())) {
-                this.setElementOnClick(each.getId(), this.getSquareClickListenerFunction(each.getId(), this));
+                this.setElementOnClick(each.getId(),this.getSquareClickListenerFunction(each.getId(), this));
             }
         }
-    };
-    GameController.prototype.getSquareClickListenerFunction = function (id, control) {
+    }
+
+    getSquareClickListenerFunction(id: string, control: GameController){
         return function () {
-            if (control.oppPieceIsSelected()) {
+            if(control.oppPieceIsSelected()){
                 control.unselectPiece();
                 control.resetSquareColors();
             }
-            else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
-                var sqr = control.getSquareAtId(id);
+            else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
+                var sqr: Square = control.getSquareAtId(id);
                 control.moveSelectedPieceToSquare(sqr);
             }
-            else if (control.myPieceIsSelected() && !(control.representsMovableSpace(id))) {
+            else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
                 control.resetSquareColors();
                 control.update();
             }
         };
-    };
-    GameController.prototype.hasNoClickListener = function (id) {
+    }
+
+    hasNoClickListener(id: string) {
         return document.getElementById(id).onclick == null || document.getElementById(id).onclick == undefined;
-    };
-    GameController.prototype.getBoardModel = function () {
+    }
+
+    getBoardModel(): BoardModel{
         return this.chessGame.board;
-    };
-    GameController.prototype.swapColor = function (color) {
-        if (color == Color.BLACK) {
+    }
+
+    swapColor(color: Color): Color{
+        if(color == Color.BLACK){
             return Color.WHITE;
         }
-        else {
+        else{
             return Color.BLACK;
         }
-    };
-    GameController.prototype.setElementOnClick = function (id, func) {
+    }
+
+    setElementOnClick(id: string, func: () => void ):void {
         document.getElementById(id).onclick = func;
-    };
-    GameController.prototype.setSelectedPiece = function (piece) {
+    }
+
+    setSelectedPiece(piece: PieceModel){
         this.SELECTED_PIECE = piece;
-    };
-    GameController.prototype.myPieceIsSelected = function () {
+    }
+
+    myPieceIsSelected():boolean {
         return ((this.SELECTED_PIECE != null && this.SELECTED_PIECE != undefined) && this.SELECTED_PIECE.getColor() == this.getColor());
-    };
-    GameController.prototype.representsMovableSpace = function (id) {
-        var moves = this.SELECTED_PIECE.getPossibleMoves();
-        var sqr = this.boardView.getSquareById(id);
+    }
+
+    representsMovableSpace(id: string): boolean {
+        var moves: MoveCollection = this.SELECTED_PIECE.getPossibleMoves();
+        var sqr: Square = this.boardView.getSquareById(id);
         var thisMove = new Move(this.SELECTED_PIECE.getPos(), new Pos(sqr.getX(), sqr.getY()));
         return moves.contains(thisMove);
-    };
-    GameController.prototype.oppPieceIsSelected = function () {
+    }
+
+    oppPieceIsSelected():boolean {
         return ((this.SELECTED_PIECE != null && this.SELECTED_PIECE != undefined) && this.SELECTED_PIECE.getColor() == this.swapColor(this.getColor()));
-    };
-    GameController.prototype.getSquareAtId = function (id) {
+    }
+
+    getSquareAtId(id: string): Square{
         return this.boardView.getSquareById(id);
-    };
-    GameController.prototype.tracePieceMoves = function (piece, hex) {
-        var moves = piece.getPossibleMoves();
+    }
+
+    tracePieceMoves(piece: PieceModel, hex: string):void {
+        var moves: MoveCollection = piece.getPossibleMoves();
         this.setSquaresToColor(moves, hex);
         this.setSquareToColor(piece.getPos(), hex);
         this.setSelectedPiece(piece);
         this.update();
-    };
-    GameController.prototype.moveSelectedPieceToSquare = function (sqr) {
+    }
+
+    moveSelectedPieceToSquare(sqr:Square):void {
         this.turnOffClickListeners();
-        var move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos());
+        var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos());
         this.setChosenMove(move);
         this.unselectPiece();
         this.resetSquareColors();
         this.signalOpponentsMove();
-    };
-    GameController.prototype.getPieceAtSquareId = function (id) {
+    }
+
+    getPieceAtSquareId(id: string): PieceModel{
         var sqr = this.getSquareAtId(id);
-        var result = this.getBoardModel().getPieceFromPosition(sqr.getPos());
+        var result: PieceModel = this.getBoardModel().getPieceFromPosition(sqr.getPos());
         return result;
-    };
-    GameController.prototype.unselectPiece = function () {
+    }
+
+    unselectPiece():void {
         this.SELECTED_PIECE = null;
-    };
-    GameController.prototype.resetSquareColors = function () {
+    }
+
+    resetSquareColors():void {
         this.boardView.unselectAllSquares();
-    };
-    GameController.prototype.signalOpponentsMove = function () {
+    }
+
+    signalOpponentsMove():void {
         this.turnOffClickListeners();
         this.chessGame.executeNextMove();
-    };
-    GameController.prototype.getNextMove = function (board) {
+    }
+
+    getNextMove(board): Move{
         return this.getChosenMove();
-    };
-    GameController.prototype.getChosenMove = function () {
+    }
+
+    getChosenMove():Move {
         return this.CHOSEN_MOVE;
-    };
-    GameController.prototype.setChosenMove = function (move) {
+    }
+
+    setChosenMove(move: Move){
         this.CHOSEN_MOVE = move;
-    };
-    GameController.prototype.isAutoExecute = function () {
+    }
+
+    isAutoExecute(): boolean{
         return false;
-    };
-    GameController.prototype.afterMove = function (board) {
+    }
+
+    afterMove(board: BoardModel) {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.doCheckLogging();
-        this.SHOW_SPINNER = true;
+		this.SHOW_SPINNER = true;
         this.update();
         this.turnOffClickListeners();
-    };
-    GameController.prototype.beforeMove = function (board) {
+    }
+
+
+    beforeMove(board: BoardModel) {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.doCheckLogging();
         this.update();
         this.turnOffClickListeners();
-    };
-    GameController.prototype.setSquareToColor = function (pos, hex) {
-        var eachSqr = this.boardView.getSquareAtPos(pos);
+    }
+
+    setSquareToColor(pos: Pos, hex: string):void {
+        var eachSqr: Square = this.boardView.getSquareAtPos(pos);
         eachSqr.setHexColor(hex);
-    };
-    GameController.prototype.selectedPieceIsAtSquareId = function (id) {
-        var sqr = this.getSquareAtId(id);
-        if (this.SELECTED_PIECE.getPos().equals(sqr.getPos())) {
+    }
+
+    selectedPieceIsAtSquareId(id:string):Boolean {
+        var sqr: Square = this.getSquareAtId(id);
+        if(this.SELECTED_PIECE.getPos().equals(sqr.getPos())){
             return true;
         }
         return false;
-    };
-    GameController.prototype.setSquaresToColor = function (moves, hex) {
-        for (var moveIdx in moves.getMoves()) {
-            var eachMove = moves.getMoves()[moveIdx];
-            var eachSqr = this.boardView.getSquareAtPos(eachMove.getDest());
+    }
+
+    setSquaresToColor(moves: MoveCollection, hex: string):void {
+        for(var moveIdx in moves.getMoves()){
+            var eachMove: Move = moves.getMoves()[moveIdx];
+            var eachSqr: Square = this.boardView.getSquareAtPos(eachMove.getDest());
             eachSqr.setHexColor(hex);
         }
-    };
-    GameController.prototype.doCheckLogging = function () {
-        if (this.chessGame.isInCheck(this.getColor())) {
-            this.log("You are in check");
+    }
+
+    doCheckLogging(){
+        if(this.chessGame.isInCheck(this.getColor())){
+            this.log("You are in check")
         }
-        if (this.chessGame.isInCheck(this.swapColor(this.getColor()))) {
-            this.log("Opponent is in check");
+        if(this.chessGame.isInCheck(this.swapColor(this.getColor()))){
+            this.log("Opponent is in check")
         }
-        if (this.chessGame.hasLost(this.getColor())) {
-            this.log("You lose.");
+        if(this.chessGame.hasLost(this.getColor())){
+            this.log("You lose.")
         }
-        if (this.chessGame.hasLost(this.swapColor(this.getColor()))) {
-            this.log("You win.");
+        if(this.chessGame.hasLost(this.swapColor(this.getColor()))){
+            this.log("You win.")
         }
-    };
-    GameController.prototype.readyForMove = function () {
+    }
+
+    readyForMove(){
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.doCheckLogging();
-        this.SHOW_SPINNER = false;
+		this.SHOW_SPINNER = false;
         this.update();
         this.addClickListeners();
-    };
-    return GameController;
-}(Player));
-var Preloader = /** @class */ (function () {
-    function Preloader() {
     }
-    Preloader.preload = function () {
-        for (var i = 0; i < Preloader.imageLinks.length; i++) {
-            var newImage = new Image();
-            newImage.src = Preloader.imageLinks[i];
-            Preloader.images.push(newImage);
-        }
-    };
-    Preloader.imageLinks = new Array("http://v3.preloaders.net/preloaders/5/colored/5.png");
-    Preloader.images = new Array();
-    return Preloader;
-}());
-var CSSClass = /** @class */ (function () {
-    function CSSClass(name) {
-        this.styles = {};
-        this.name = name;
-    }
-    CSSClass.prototype.addStyle = function (type, value) {
-        this.styles[type] = value;
-    };
-    CSSClass.prototype.toString = function () {
-        var result = "";
-        result += "." + this.name + "{";
+
+
+}class Preloader{
+    static imageLinks: string[] = new Array("http://v3.preloaders.net/preloaders/5/colored/5.png");
+	static images = new Array();
+	
+	static preload(){
+		for (var i = 0; i < Preloader.imageLinks.length; i++) {
+			var newImage = new Image();
+			newImage.src = Preloader.imageLinks[i];
+			Preloader.images.push(newImage);
+		}
+	}
+
+}
+class CSSClass{
+	name: string;
+    styles = {};
+	
+	constructor(name: string){
+		this.name = name;
+	}
+	
+	addStyle(type: string, value: string){
+		this.styles[type] = value;
+	}
+	
+	toString(): string{
+		var result: string = "";
+		result += "." + this.name +"{";
+		
         for (var each in this.styles) {
             result += each + ": " + this.styles[each] + "; ";
         }
-        result += "}";
+		result += "}";
         return result;
-    };
-    return CSSClass;
-}());
-var CSSManager = /** @class */ (function () {
-    function CSSManager() {
-    }
-    CSSManager.initAndApply = function () {
+	}
+}class CSSManager{
+	static classes: CSSClass[] = new Array();
+	static raw: string[] = new Array();
+	
+	public static initAndApply(){
         CSSManager.addSpinning();
         CSSManager.addSqr();
-        CSSManager.apply();
-    };
-    CSSManager.apply = function () {
-        var style = document.createElement("style");
-        var styleString = "";
-        for (var classIdx in CSSManager.classes) {
-            var eachClass = CSSManager.classes[classIdx];
-            styleString += eachClass.toString();
-        }
-        for (var rawIdx in CSSManager.raw) {
-            var eachRaw = CSSManager.raw[rawIdx];
-            styleString += eachRaw.toString();
-        }
-        style.innerHTML += styleString;
-        document.getElementsByTagName('head')[0].appendChild(style);
-    };
-    CSSManager.addSpinning = function () {
-        var spinClass = new CSSClass("spin");
-        spinClass.addStyle("animation", "3s rotate linear infinite");
-        CSSManager.addClass(spinClass);
-        CSSManager.addRaw("@keyframes rotate {from {transform: rotate(0deg);} to {transform: rotate(360deg);}}");
-    };
-    CSSManager.addSqr = function () {
-        var sqrClass = new CSSClass("sqr");
-        sqrClass.addStyle("height", "30px");
-        sqrClass.addStyle("width", "30px");
+		CSSManager.apply();
+	}
+	
+    public static apply() {
+        
+		var style = document.createElement("style"); 
+		var styleString: string = "";
+		
+		for(var classIdx in CSSManager.classes){
+			var eachClass = CSSManager.classes[classIdx];
+			styleString += eachClass.toString();
+		}
+		for(var rawIdx in CSSManager.raw){
+			var eachRaw = CSSManager.raw[rawIdx];
+			styleString += eachRaw.toString();
+		}
+		style.innerHTML += styleString;
+	    document.getElementsByTagName('head')[0].appendChild(style);
+	}
+	
+	private static addSpinning(){
+		var spinClass: CSSClass = new CSSClass("spin");
+		spinClass.addStyle("animation", "3s rotate linear infinite");
+		
+		CSSManager.addClass(spinClass);
+		CSSManager.addRaw("@keyframes rotate {from {transform: rotate(0deg);} to {transform: rotate(360deg);}}");
+	}
+	
+	private static addSqr(){
+		var sqrClass: CSSClass = new CSSClass("sqr");
+		sqrClass.addStyle("height", "30px");
+		sqrClass.addStyle("width", "30px");
         sqrClass.addStyle("background", "red");
-        CSSManager.addClass(sqrClass);
-    };
-    CSSManager.addClass = function (clazz) {
-        CSSManager.classes.push(clazz);
-    };
-    CSSManager.addRaw = function (raw) {
-        CSSManager.raw.push(raw);
-    };
-    CSSManager.classes = new Array();
-    CSSManager.raw = new Array();
-    return CSSManager;
-}());
-new GameController(document.body, 100, 100, 50, 50).start();
+		
+		CSSManager.addClass(sqrClass);
+	}
+	
+	private static addClass(clazz: CSSClass){
+		CSSManager.classes.push(clazz);
+	}
+	
+	private static addRaw(raw: string){
+		CSSManager.raw.push(raw);
+	}
+}

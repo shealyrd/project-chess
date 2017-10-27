@@ -30,7 +30,11 @@ abstract class PieceModel{
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllUpwards(this);
     }
-
+	
+	transformInto(type: PieceType){
+		this.getBoardModel().removePiece(this.getPos());
+		this.getBoardModel().addPiece(type, this.getPos().getX(), this.getPos().getY(), this.getColor);
+	}
 	
     abstract onMove(move: Move);
     abstract giveInternalAttributes(piece: PieceModel);
