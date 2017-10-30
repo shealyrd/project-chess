@@ -1,2 +1,3 @@
 call concat.bat
-call tsc @out.txt --out project_chess_compiled.js
+call tsc out.ts
+type %~dp0\out.js > C:\Users\Evan\WebstormProjects\ProjectChess\typescript\ProjectChess\project_chess.js

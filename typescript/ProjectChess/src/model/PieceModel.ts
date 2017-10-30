@@ -33,7 +33,7 @@ abstract class PieceModel{
 	
 	transformInto(type: PieceType){
 		this.getBoardModel().removePiece(this.getPos());
-		this.getBoardModel().addPiece(type, this.getPos().getX(), this.getPos().getY(), this.getColor);
+		this.getBoardModel().addPiece(type, this.getPos().getX(), this.getPos().getY(), this.getColor());
 	}
 	
     abstract onMove(move: Move);

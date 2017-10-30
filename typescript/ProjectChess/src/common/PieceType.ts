@@ -6,7 +6,7 @@ enum PieceType{
     ROOK = 4,
     QUEEN = 5,
     KING = 6,
-	WAR_ENGINE = 7,
+	WAR_MACHINE = 7,
 	MINISTER = 8,
 	GENERAL = 9,
 	GIRAFFE_RIDER = 10,

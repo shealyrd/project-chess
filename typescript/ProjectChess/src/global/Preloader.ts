@@ -1,5 +1,6 @@
 class Preloader{
-    static imageLinks: string[] = new Array("http://v3.preloaders.net/preloaders/5/colored/5.png");
+    static imageLinks: string[] = new Array("http://v3.preloaders.net/preloaders/5/colored/5.png",
+											"https://loading.io/spinners/coolors/lg.palette-rotating-ring-loader.gif");
 	static images = new Array();
 	
 	static preload(){

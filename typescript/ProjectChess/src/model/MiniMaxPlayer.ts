@@ -72,7 +72,7 @@ class MiniMaxPlayer extends Player{
 	}
 
 	applyMove(move: Move, board: BoardModel): BoardModel{
-		var newBoard = new BoardModel(board.getHeight(), board.getWidth());
+		var newBoard = new BoardModel(board.getWidth(), board.getHeight());
 		newBoard.populateFromSerial(board.serialize());
 		newBoard.executeMove(move);
 		return newBoard;
@@ -100,6 +100,13 @@ class MiniMaxPlayer extends Player{
 				case PieceType.QUEEN: thisValue += 9; break;
 				case PieceType.KNIGHT: thisValue += 3; break;
 				case PieceType.BISHOP: thisValue += 3; break;
+				case PieceType.GIRAFFE_RIDER: thisValue += 4; break;
+				case PieceType.GENERAL: thisValue += 1; break;
+				case PieceType.MINISTER: thisValue += 1; break;
+				case PieceType.CAMEL_RIDER: thisValue += 3; break;
+				case PieceType.ELEPHANT_RIDER: thisValue += 3; break;
+				case PieceType.WAR_MACHINE: thisValue += 2; break;
+				case PieceType.PICKET: thisValue += 2; break;
 				case PieceType.KING: thisValue += 1000; break;
 			}
 			if(eachPiece.getColor() == color){

@@ -7,7 +7,7 @@ class PawnModel extends PieceModel{
 
     onMove(move: Move){
        this.hasMoved = true;
-	   if(this.isOnOppositeBackRank(move.getDest(), this.getColor())){
+	   if(this.getBoardModel().isOnOppositeBackRank(move.getDest(), this.getColor())){
 			this.transformInto(PieceType.QUEEN);
 			//alert("I'm promoting!");
 			//this.getBoardModel().addPiece();

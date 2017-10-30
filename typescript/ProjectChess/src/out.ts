@@ -181,7 +181,7 @@ enum State{
     ROOK = 4,
     QUEEN = 5,
     KING = 6,
-	WAR_ENGINE = 7,
+	WAR_MACHINE = 7,
 	MINISTER = 8,
 	GENERAL = 9,
 	GIRAFFE_RIDER = 10,
@@ -264,7 +264,7 @@ class PieceImageDatabase{
         whiteImages.set(PieceType.CAMEL_RIDER, 'imgs//pieces//Camel_W.png');
         whiteImages.set(PieceType.ELEPHANT_RIDER, 'imgs//pieces//Elephant_W.png');
         whiteImages.set(PieceType.PICKET, 'imgs//pieces//Picket_W.png');
-        whiteImages.set(PieceType.WAR_ENGINE, 'imgs//pieces//War_Machine_W.png');
+        whiteImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_W.png');
         return whiteImages;
     }
 
@@ -282,7 +282,7 @@ class PieceImageDatabase{
         blackImages.set(PieceType.CAMEL_RIDER, 'imgs//pieces//Camel_B.png');
         blackImages.set(PieceType.ELEPHANT_RIDER, 'imgs//pieces//Elephant_B.png');
         blackImages.set(PieceType.PICKET, 'imgs//pieces//Picket_B.png');
-        blackImages.set(PieceType.WAR_ENGINE, 'imgs//pieces//War_Machine_B.png');
+        blackImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_B.png');
         return blackImages;
     }
 }class Piece extends HTMLObject{
@@ -861,7 +861,94 @@ class Square extends HTMLObject{
         }
     }
 
-}class Pos{
+}class Throbber extends HTMLObject{
+    contentImg: string = "http://v3.preloaders.net/preloaders/5/colored/5.png";
+    z: number;
+
+    constructor(width: number, height: number, z: number){
+        super();
+        this.setWidth(width);
+        this.setHeight(height);
+        this.z = z;
+    }
+
+    centerInSquare(sqrOffsetLeft: number, sqrOffsetTop: number, sqrWidth: number, sqrHeight: number){
+        this.setLeftPos(sqrOffsetLeft + (sqrWidth/2 - this.getWidth()/2));
+        this.setTopPos(sqrOffsetTop + (sqrHeight/2 - this.getHeight()/2));
+    }
+
+    setZ(z: number) {
+        this.z = z;
+    }
+
+    getZ(): number {
+        return this.z;
+    }
+
+    toHTML():string {
+        var builder: HTMLBuilder = new HTMLBuilder();
+        builder.newDiv()
+            .addClass("throbber spin")
+            .addStyle("position", "absolute")
+            .addStyle("left", this.getLeftPos() + "px")
+            .addStyle("top", this.getTopPos() + "px")
+            .addStyle("width", this.getWidth() + "px")
+            .addStyle("z-index", this.getZ() + "")
+            .addStyle("height", this.getHeight() + "px");
+
+        builder.addStyle("content", "url(" + this.contentImg + ")");
+
+        return builder.toString();
+    }
+
+
+}class AlertText extends HTMLObject{
+    z: number;
+    contentStr: string;
+
+    constructor(width: number, height: number, z: number){
+        super();
+        this.setWidth(width);
+        this.setHeight(height);
+        this.z = z;
+    }
+
+    centerInSquare(sqrOffsetLeft: number, sqrOffsetTop: number, sqrWidth: number, sqrHeight: number){
+        this.setLeftPos(sqrOffsetLeft + (sqrWidth/2 - this.getWidth()/2));
+        this.setTopPos(sqrOffsetTop + (sqrHeight/2 - this.getHeight()/2));
+    }
+
+    setContent(str: string){
+        this.contentStr = str;
+    }
+
+    setZ(z: number) {
+        this.z = z;
+    }
+
+    getZ(): number {
+        return this.z;
+    }
+
+    toHTML():string {
+        var builder: HTMLBuilder = new HTMLBuilder();
+        builder.newDiv()
+            .addStyle("position", "absolute")
+            .addStyle("left", this.getLeftPos() + "px")
+            .addStyle("top", this.getTopPos() + "px")
+            .addStyle("width", this.getWidth() + "px")
+            .addStyle("z-index", this.getZ() + "")
+            .addStyle("height", this.getHeight() + "px")
+            .addStyle("font-size", this.getHeight() / 2 + "px")
+            .addStyle("pointer-events", "none")
+            .addStyle("line-height", this.getHeight() + "px");
+
+        builder.addInnerDiv(this.contentStr);
+
+        return builder.toString();
+    }
+}
+class Pos{
     private X: number;
     private Y: number;
 
@@ -1459,6 +1546,9 @@ class Move{
                         newY--;
                     }
                 }
+                else{
+                    break;
+                }
             }
         }
         if(direction < 0){
@@ -1475,7 +1565,10 @@ class Move{
                         result.add(new Move(piece.getPos(), new Pos(newX, newY)));
                         count--;
                         newY++;
+                    }
                 }
+                else{
+                    break;
                 }
             }
         }
@@ -1517,7 +1610,7 @@ class Move{
 	
 	transformInto(type: PieceType){
 		this.getBoardModel().removePiece(this.getPos());
-		this.getBoardModel().addPiece(type, this.getPos().getX(), this.getPos().getY(), this.getColor);
+		this.getBoardModel().addPiece(type, this.getPos().getX(), this.getPos().getY(), this.getColor());
 	}
 	
     abstract onMove(move: Move);
@@ -1543,7 +1636,7 @@ class Move{
 
     onMove(move: Move){
        this.hasMoved = true;
-	   if(this.isOnOppositeBackRank(move.getDest(), this.getColor())){
+	   if(this.getBoardModel().isOnOppositeBackRank(move.getDest(), this.getColor())){
 			this.transformInto(PieceType.QUEEN);
 			//alert("I'm promoting!");
 			//this.getBoardModel().addPiece();
@@ -1681,6 +1774,81 @@ class Move{
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, -1));
     }
+}class WarMachineModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.WAR_MACHINE);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getRelativeToPiece(this, -2, 0)
+        .addAll(MoveFactory.getRelativeToPiece(this, 2, 0))
+        .addAll(MoveFactory.getRelativeToPiece(this, 0, 2))
+        .addAll(MoveFactory.getRelativeToPiece(this, 0, -2));
+    }
+}class PicketModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.PICKET);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
+	
+		var x = this.getPos().getX();
+		var y = this.getPos().getY();
+	
+		var invalidMoves = new MoveCollection();
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2)));
+		
+		return MoveFactory.getAllDiagonal(this).minus(invalidMoves);
+    }
+}class ElephantRiderModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.ELEPHANT_RIDER);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
+		 return MoveFactory.getRelativeToPiece(this, -2, -2)
+        .addAll(MoveFactory.getRelativeToPiece(this, 2, -2))
+        .addAll(MoveFactory.getRelativeToPiece(this, -2, 2))
+        .addAll(MoveFactory.getRelativeToPiece(this, 2, 2));
+    }
+}class CamelRiderModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.CAMEL_RIDER);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getRelativeToPiece(this, -3, -1)
+        .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
+        .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+    }
 }class PieceFactory{
 
     static createPiece(board: BoardModel, pos: Pos, color: Color, type: PieceType): PieceModel{
@@ -1695,8 +1863,10 @@ class Move{
             case PieceType.GENERAL: newPiece = new GeneralModel(board, pos, color); break;
             case PieceType.MINISTER: newPiece = new MinisterModel(board, pos, color); break;
             case PieceType.GIRAFFE_RIDER: newPiece = new GiraffeRiderModel(board, pos, color); break;
-            case PieceType.WAR_ENGINE: newPiece = new MinisterModel(board, pos, color); break;
-            case PieceType.CAMEL_RIDER: newPiece = new MinisterModel(board, pos, color); break;
+            case PieceType.WAR_MACHINE: newPiece = new WarMachineModel(board, pos, color); break;
+            case PieceType.CAMEL_RIDER: newPiece = new CamelRiderModel(board, pos, color); break;
+            case PieceType.ELEPHANT_RIDER: newPiece = new ElephantRiderModel(board, pos, color); break;
+            case PieceType.PICKET: newPiece = new PicketModel(board, pos, color); break;
         }
         return newPiece;
     }
@@ -1861,12 +2031,14 @@ class Move{
 
     isValidPosition(pos: Pos): boolean{
         var result = false;
-        this.pos2PieceMap.forEach((value, key, map) => {
+        this.pos2SquareType.forEach((value, key, map) => {
             if (pos.equals(key)) {
-                result = true;
+                if(value != SquareType.NON_EXISTENT){
+                    result = true;
+                }
+
             }
         });
-
         return result;
     }
 
@@ -1909,6 +2081,7 @@ class Move{
 
     reset(){
         this.pos2PieceMap.clear();
+        this.pos2SquareType.clear();
         for(var y:number = 0; y < this.getHeight(); y++){
             for(var x:number = 0; x < this.getWidth(); x++){
                 this.pos2PieceMap.set(new Pos(x, y), null);
@@ -1959,286 +2132,7 @@ class Move{
             var length = squares.length;
             for (var x = 0; x < squares.length; x++) {
                 var sqrData:string = squares[x].substring(1, squares[x].length - 1);
-				this.pos2SquareType.set(new Pos(x,y), +sqrData);
-            }
-        }
-    }
-
-    getPieceFromPosition(pos: Pos): any{
-        var result;
-        this.pos2PieceMap.forEach((value, key, map) => {
-            if (pos.equals(key)) {
-                result = this.pos2PieceMap.get(key);
-            }
-        });
-
-        return result;
-    }
-	
-	 getSquareTypeFromPosition(pos: Pos): any{
-        var result;
-        this.pos2SquareType.forEach((value, key, map) => {
-            if (pos.equals(key)) {
-                result = this.pos2SquareType.get(key);
-            }
-        });
-
-        return result;
-    }
-}class BoardModel{
-    HEIGHT: number;
-    WIDTH: number;
-
-    pos2PieceMap: Map<Pos, PieceModel> = new Map();
-	pos2SquareType: Map<Pos, SquareType> = new Map();
-	
-    constructor(argWidth:number, argHeight:number){
-        this.HEIGHT = argHeight;
-        this.WIDTH = argWidth;
-
-        for(var y:number = 0; y < argHeight; y++){
-            for(var x:number = 0; x < argWidth; x++){
-                this.pos2PieceMap.set(new Pos(x, y), null);
-				this.pos2SquareType.set(new Pos(x, y), SquareType.NORMAL);
-            }
-        }
-    }
-
-    addPiece(type: PieceType, x: number, y: number, color: Color){
-        this.placePiece(PieceFactory.createPiece(this, new Pos(x, y), color, type));
-    }
-
-    placePiece(piece: PieceModel){
-        this.pos2PieceMap.set(piece.getPos(), piece);
-    }
-	
-	setSquareTypeAtPos(pos: Pos, type: SquareType){
-        this.pos2SquareType.forEach((value, key, map) => {
-            if (pos.equals(key)) {
-                this.pos2SquareType.set(key, type);
-            }
-        });
-	}
-	
-    getDirection(color: Color): number{
-        if(Color.WHITE == color){
-            return 1;
-        }
-        else if(Color.BLACK == color){
-            return -1;
-        }
-    }
-	
-	getBackRank(color: Color): Pos[]{
-		var result: Pos[] = new Array();
-		
-		if(this.getDirection(color) > 0){
-			for(var i = 0; i < this.getWidth(); i++){
-				result.push(new Pos(i, 0));
-			}
-		}
-		else{
-			for(var i = 0; i < this.getWidth(); i++){
-				result.push(new Pos(i, this.getHeight() - 1));
-			}
-		}
-		
-		return result;
-	}
-	
-	isOnOppositeBackRank(pos: Pos, color: Color): boolean{
-		var backRank: Pos[] = this.getBackRank(color);
-		
-		for(var eachIdx in backRank){
-			var eachPos = backRank[eachIdx];
-			if(eachPos.equals(pos)){
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-    isFree(pos: Pos): boolean{
-        var result: boolean;
-        this.pos2PieceMap.forEach((value, key, map) => {
-            if (pos.equals(key)) {
-                result = (value == null || value == undefined);
-            }
-        });
-
-        return result;
-    }
-
-    isAllFree(positions: Pos[]):boolean{
-        for(var posIdx in positions){
-            var eachPosition = positions[posIdx];
-            if(!(this.isFree(eachPosition))){
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    isCapturable(pos: Pos, color: Color): boolean{
-        return this.isFree(pos)
-    }
-
-    getHeight(): number{
-        return this.HEIGHT;
-    }
-
-    getWidth(): number{
-        return this.WIDTH;
-    }
-
-    getAllPieces(): PieceModel[]{
-        var result: PieceModel[] = new Array();
-        this.pos2PieceMap.forEach((value, key, map) => {
-            if(value != null){
-                result.push(value);
-            }
-        });
-        return result;
-    }
-
-    getAllPiecesOfColor(color: Color): PieceModel[]{
-        var result: PieceModel[] = new Array();
-        this.pos2PieceMap.forEach((value, key, map) => {
-            if(value != null && value != undefined ){
-                if(value.getColor() == color){
-                    result.push(value);
-                }
-            }
-        });
-        return result;
-    }
-
-    removePiece(pos: Pos){
-        this.pos2PieceMap.forEach((value, key, map) => {
-            if(key.equals(pos)){
-                this.pos2PieceMap.delete(key);
-            }
-        });
-        this.pos2PieceMap.set(pos, null);
-    }
-
-    executeMove(move: Move){
-        var originalPiece: PieceModel = this.getPieceFromPosition(move.getOrigin());
-        originalPiece.onMove(move);
-        this.movePiece(originalPiece.getPos(), move.getDest());
-    }
-
-    movePiece(origin: Pos, dest: Pos) {
-        var piece = this.getPieceFromPosition(origin);
-        this.removePiece(piece.getPos());
-        this.removePiece(dest);
-        var transposedPiece = PieceFactory.createPieceByTransposition(dest, piece);
-        this.placePiece(transposedPiece);
-    }
-
-    isValidPosition(pos: Pos): boolean{
-        var result = false;
-        this.pos2PieceMap.forEach((value, key, map) => {
-            if (pos.equals(key)) {
-                result = true;
-            }
-        });
-
-        return result;
-    }
-
-    serialize(): string{
-        var result = "";
-        for(var y: number = 0; y < this.getHeight(); y++){
-            for (var x: number = 0; x < this.getWidth(); x++){
-                var thisPiece = this.getPieceFromPosition(new Pos(x, y));
-
-                result += "[";
-                if(thisPiece != null){
-                    result += thisPiece.getType() + "_";
-
-                    if(thisPiece.getColor() == Color.BLACK){
-                        result += "B";
-                    }
-                    else{
-                        result += "W";
-                    }
-                }
-                result += "],";
-            }
-            result = result.substring(0, result.length - 1);
-            result += "/";
-        }
-        result = result.substring(0, result.length - 1);
-		
-		result += "-";
-		
-		for(var y: number = 0; y < this.getHeight(); y++){
-            for (var x: number = 0; x < this.getWidth(); x++){
-                result += "[" + this.getSquareTypeFromPosition(new Pos(x,y)) + "],";
-            }
-            result = result.substring(0, result.length - 1);
-            result += "/";
-        }
-		result = result.substring(0, result.length - 1);
-        return result;
-    }
-
-    reset(){
-        this.pos2PieceMap.clear();
-        for(var y:number = 0; y < this.getHeight(); y++){
-            for(var x:number = 0; x < this.getWidth(); x++){
-                this.pos2PieceMap.set(new Pos(x, y), null);
-				this.pos2SquareType.set(new Pos(x, y), SquareType.NORMAL);
-            }
-        }
-    }
-
-    getAllMovesForColor(color: Color): MoveCollection{
-        var pieces: PieceModel[] = this.getAllPiecesOfColor(color);
-        var resultArr: MoveCollection = new MoveCollection();
-        for(var pieceIdx in pieces){
-            var eachPiece: PieceModel = pieces[pieceIdx];
-            resultArr.addAll(eachPiece.getPossibleMoves());
-        }
-        return resultArr;
-    }
-
-    populateFromSerial(serial: string) {
-        this.reset();
-		var halvedData:string[] = serial.split("-");
-		var configRows:string[] = halvedData[1].split("/");
-        var rows:string[] = halvedData[0].split("/");
-        for (var y = 0; y < rows.length; y++) {
-            var row = rows[y];
-            var squares:string[] = row.split(",");
-            var length = squares.length;
-            for (var x = 0; x < squares.length; x++) {
-                var sqrData:string = squares[x].substring(1, squares[x].length - 1);
-
-                if (sqrData.length != 0) {
-                    var sqrDataSplit = sqrData.split("_");
-                    var thisColor:Color;
-
-                    if (sqrDataSplit[1] == "W") {
-                        thisColor = Color.WHITE;
-                    }
-                    else {
-                        thisColor = Color.BLACK;
-                    }
-                    this.addPiece(+sqrDataSplit[0], x, y, thisColor);
-                }
-            }
-        }
-	    for (var y = 0; y < configRows.length; y++) {
-            var row = configRows[y];
-            var squares:string[] = row.split(",");
-            var length = squares.length;
-            for (var x = 0; x < squares.length; x++) {
-                var sqrData:string = squares[x].substring(1, squares[x].length - 1);
-				this.pos2SquareType.set(new Pos(x,y), +sqrData);
+				this.setSquareTypeAtPos(new Pos(x,y), +sqrData);
             }
         }
     }
@@ -2266,13 +2160,18 @@ class Move{
     }
 }class BoardFactory{
     static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
+    static TAMERLANE_BOARD: string = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
 
     static getStandardBoard(): BoardModel{
         var board: BoardModel = new BoardModel(8,8);
         board.populateFromSerial(BoardFactory.STANDARD_BOARD);
         return board;
     }
-
+    static getTamerlaneBoard(): BoardModel{
+        var board: BoardModel = new BoardModel(13,10);
+        board.populateFromSerial(BoardFactory.TAMERLANE_BOARD);
+        return board;
+    }
 }abstract class Player{
 	color: Color;
 	autoExecute: boolean
@@ -2366,7 +2265,7 @@ class Move{
 	}
 
 	applyMove(move: Move, board: BoardModel): BoardModel{
-		var newBoard = new BoardModel(board.getHeight(), board.getWidth());
+		var newBoard = new BoardModel(board.getWidth(), board.getHeight());
 		newBoard.populateFromSerial(board.serialize());
 		newBoard.executeMove(move);
 		return newBoard;
@@ -2394,6 +2293,13 @@ class Move{
 				case PieceType.QUEEN: thisValue += 9; break;
 				case PieceType.KNIGHT: thisValue += 3; break;
 				case PieceType.BISHOP: thisValue += 3; break;
+				case PieceType.GIRAFFE_RIDER: thisValue += 4; break;
+				case PieceType.GENERAL: thisValue += 1; break;
+				case PieceType.MINISTER: thisValue += 1; break;
+				case PieceType.CAMEL_RIDER: thisValue += 3; break;
+				case PieceType.ELEPHANT_RIDER: thisValue += 3; break;
+				case PieceType.WAR_MACHINE: thisValue += 2; break;
+				case PieceType.PICKET: thisValue += 2; break;
 				case PieceType.KING: thisValue += 1000; break;
 			}
 			if(eachPiece.getColor() == color){
@@ -2415,6 +2321,57 @@ class Move{
 	isAutoExecute(){
 		return true;
 	}
+}class GameHTMLContainer{
+    parentElement: HTMLElement;
+    boardElement: string;
+    alertTextElement: string;
+    throbberElement: string;
+
+    alertTextOn: boolean;
+    throbberOn: boolean;
+
+    constructor(parentElement: HTMLElement){
+        this.parentElement = parentElement;
+    }
+
+    setBoardHTML(html: string){
+        this.boardElement = html;
+    }
+
+    setAlertTextHTML(html: string){
+        this.alertTextElement = html;
+    }
+
+    setThrobberHTML(html: string){
+        this.throbberElement = html;
+    }
+
+    turnOnAlertText(){
+        this.alertTextOn = true;
+    }
+
+    turnOffAlertText(){
+        this.alertTextOn = false;
+    }
+
+    turnOnThrobber(){
+        this.throbberOn = true;
+    }
+
+    turnOffThrobber(){
+        this.throbberOn = false;
+    }
+
+    update(){
+        var newHTML: string = this.boardElement;
+        if(this.alertTextOn){
+           newHTML += this.alertTextElement;
+        }
+        if(this.throbberOn){
+            newHTML += this.throbberElement;
+        }
+        this.parentElement.innerHTML = newHTML;
+    }
 }class ChessGame{
     board: BoardModel;
     white: Player;
@@ -2614,7 +2571,7 @@ class Move{
     }
 }
 class GameController extends Player{
-    baseElement: HTMLElement;
+    htmlContainer: GameHTMLContainer;
     chessGame: ChessGame;
     myColor: Color = Color.WHITE;
     boardView: Board;
@@ -2622,28 +2579,33 @@ class GameController extends Player{
     //temp storage
     SELECTED_PIECE: PieceModel;
     CHOSEN_MOVE: Move;
-	
-	SHOW_SPINNER: boolean;
 
     offsetTop: number;
     offsetLeft: number;
     squareWidth: number;
     squareHeight: number;
 
-    constructor(baseElement: HTMLElement, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number){
+    throbber: Throbber;
+    alertText: AlertText;
+
+    constructor(htmlContainer: GameHTMLContainer, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number){
         super(Color.WHITE);
-        this.baseElement = baseElement;
+        this.htmlContainer = htmlContainer;
         this.offsetTop = offsetTop;
         this.offsetLeft = offsetLeft;
         this.squareWidth = squareWidth;
         this.squareHeight = squareHeight;
-        this.consoleCtrl = new ConsoleController(offsetLeft, offsetTop + (squareWidth * 8), squareWidth * 8, squareWidth * 2, 50);
     }
 
 
     start(){
-        var board: BoardModel = BoardFactory.getStandardBoard();
-        //alert(this.offsetTop + " " + this.offsetLeft + " " + this.squareWidth + " " + this.squareHeight);
+        var board: BoardModel = BoardFactory.getTamerlaneBoard();
+        this.throbber = new Throbber(this.squareWidth * 2, this.squareHeight * 2, 100);
+        this.throbber.centerInSquare(this.offsetLeft, this.offsetTop, this.squareWidth * board.getWidth(), this.squareHeight * board.getHeight());
+        this.htmlContainer.setThrobberHTML(this.throbber.toHTML());
+        this.alertText = new AlertText(this.squareWidth * 2, this.squareHeight * 2, 100);
+        this.alertText.centerInSquare(this.offsetLeft, this.offsetTop, this.squareWidth * board.getWidth(), this.squareHeight * board.getHeight());
+        this.consoleCtrl = new ConsoleController(this.offsetLeft, this.offsetTop + (this.squareWidth * board.getWidth()), this.squareWidth * 8, this.squareWidth * 2, 50);
         this.boardView = Board.fromSerial(board.serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         var miniMaxAI = new MiniMaxPlayer(Color.BLACK);
         this.chessGame = new ChessGame(board, this, miniMaxAI);
@@ -2652,19 +2614,15 @@ class GameController extends Player{
     }
 
     update(){
-		if(this.SHOW_SPINNER){
-			this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML() + "<div class=\"spin sqr\"></div>";
-		}
-        else{
-			this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML();
-		}
+        this.htmlContainer.setBoardHTML(this.boardView.toHTML());
+        this.htmlContainer.update();
+
         if (this.chessGame.currentTurn == this.getColor()) {
             this.addClickListeners();
         }
         else{
             this.turnOffClickListeners();
         }
-      //  this.consoleCtrl.update();
     }
 
     turnOffClickListeners():void {
@@ -2698,6 +2656,11 @@ class GameController extends Player{
         if(this.consoleCtrl){
             this.consoleCtrl.log(txt);
         }
+    }
+
+
+    turnOnThrobber(){
+        this.htmlContainer.turnOnThrobber();
     }
 
     getMyPieceClickListenerFunction(id: string, control: GameController){
@@ -2902,7 +2865,7 @@ class GameController extends Player{
     afterMove(board: BoardModel) {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.doCheckLogging();
-		this.SHOW_SPINNER = true;
+		this.turnOnThrobber();
         this.update();
         this.turnOffClickListeners();
     }
@@ -2938,30 +2901,57 @@ class GameController extends Player{
 
     doCheckLogging(){
         if(this.chessGame.isInCheck(this.getColor())){
-            this.log("You are in check")
+            //this.log("You are in check")
+            this.showAlertText("Check!");
         }
-        if(this.chessGame.isInCheck(this.swapColor(this.getColor()))){
-            this.log("Opponent is in check")
+        else if(this.chessGame.isInCheck(this.swapColor(this.getColor()))){
+            //this.log("Opponent is in check")
         }
-        if(this.chessGame.hasLost(this.getColor())){
-            this.log("You lose.")
+        else if(this.chessGame.hasLost(this.getColor())){
+            //this.log("You lose.")
         }
-        if(this.chessGame.hasLost(this.swapColor(this.getColor()))){
-            this.log("You win.")
+        else if(this.chessGame.hasLost(this.swapColor(this.getColor()))){
+            //this.log("You win.")
         }
+    }
+
+    showAlertText(txtToShow: string){
+        setTimeout(() => {
+            this.alertText.setContent(txtToShow);
+            this.htmlContainer.setAlertTextHTML(this.alertText.toHTML());
+            this.htmlContainer.turnOnAlertText();
+            this.htmlContainer.update();
+            setTimeout(() => {
+                this.wait(3000);
+            }, 10);
+            this.htmlContainer.turnOffAlertText();
+            this.htmlContainer.update();
+        }, 10);
+
     }
 
     readyForMove(){
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
-        this.doCheckLogging();
-		this.SHOW_SPINNER = false;
+		this.turnOffThrobber();
         this.update();
+        this.doCheckLogging();
         this.addClickListeners();
     }
 
+    turnOffThrobber():void {
+        this.htmlContainer.turnOffThrobber();
+    }
 
+    wait(ms){
+        var start = new Date().getTime();
+        var end = start;
+        while(end < start + ms) {
+        end = new Date().getTime();
+    }
+}
 }class Preloader{
-    static imageLinks: string[] = new Array("http://v3.preloaders.net/preloaders/5/colored/5.png");
+    static imageLinks: string[] = new Array("http://v3.preloaders.net/preloaders/5/colored/5.png",
+											"https://loading.io/spinners/coolors/lg.palette-rotating-ring-loader.gif");
 	static images = new Array();
 	
 	static preload(){
@@ -3046,4 +3036,15 @@ class CSSClass{
 	private static addRaw(raw: string){
 		CSSManager.raw.push(raw);
 	}
+}class GameBox{
+
+    public static start(){
+        Preloader.preload();
+        CSSManager.initAndApply();
+        var container: GameHTMLContainer = new GameHTMLContainer(document.body);
+        var game = new GameController(container, 100, 100, 50, 50);
+        game.start();
+    }
 }
+
+GameBox.start();

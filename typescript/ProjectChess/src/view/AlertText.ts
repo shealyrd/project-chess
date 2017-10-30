@@ -1,6 +1,6 @@
-class Throbber extends HTMLObject{
-    contentImg: string = "http://v3.preloaders.net/preloaders/5/colored/5.png";
+class AlertText extends HTMLObject{
     z: number;
+    contentStr: string;
 
     constructor(width: number, height: number, z: number){
         super();
@@ -14,6 +14,10 @@ class Throbber extends HTMLObject{
         this.setTopPos(sqrOffsetTop + (sqrHeight/2 - this.getHeight()/2));
     }
 
+    setContent(str: string){
+        this.contentStr = str;
+    }
+
     setZ(z: number) {
         this.z = z;
     }
@@ -25,18 +29,18 @@ class Throbber extends HTMLObject{
     toHTML():string {
         var builder: HTMLBuilder = new HTMLBuilder();
         builder.newDiv()
-            .addClass("throbber spin")
             .addStyle("position", "absolute")
             .addStyle("left", this.getLeftPos() + "px")
             .addStyle("top", this.getTopPos() + "px")
             .addStyle("width", this.getWidth() + "px")
             .addStyle("z-index", this.getZ() + "")
-            .addStyle("height", this.getHeight() + "px");
+            .addStyle("height", this.getHeight() + "px")
+            .addStyle("font-size", this.getHeight() / 2 + "px")
+            .addStyle("pointer-events", "none")
+            .addStyle("line-height", this.getHeight() + "px");
 
-        builder.addStyle("content", "url(" + this.contentImg + ")");
+        builder.addInnerDiv(this.contentStr);
 
         return builder.toString();
     }
-
-
 }

@@ -11,6 +11,6 @@ class WarMachineModel extends PieceModel{
         return MoveFactory.getRelativeToPiece(this, -2, 0)
         .addAll(MoveFactory.getRelativeToPiece(this, 2, 0))
         .addAll(MoveFactory.getRelativeToPiece(this, 0, 2))
-        .addAll(MoveFactory.getRelativeToPiece(this, 0, 2));
+        .addAll(MoveFactory.getRelativeToPiece(this, 0, -2));
     }
 }

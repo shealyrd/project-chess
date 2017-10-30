@@ -9,8 +9,8 @@ class PicketModel extends PieceModel{
 
     getPossibleMoves(): MoveCollection{
 	
-		var x = piece.getX();
-		var y = piece.getY();
+		var x = this.getPos().getX();
+		var y = this.getPos().getY();
 	
 		var invalidMoves = new MoveCollection();
 		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1)));

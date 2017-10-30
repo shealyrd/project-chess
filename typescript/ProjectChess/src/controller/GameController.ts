@@ -1,5 +1,5 @@
 class GameController extends Player{
-    baseElement: HTMLElement;
+    htmlContainer: GameHTMLContainer;
     chessGame: ChessGame;
     myColor: Color = Color.WHITE;
     boardView: Board;
@@ -7,28 +7,33 @@ class GameController extends Player{
     //temp storage
     SELECTED_PIECE: PieceModel;
     CHOSEN_MOVE: Move;
-	
-	SHOW_SPINNER: boolean;
 
     offsetTop: number;
     offsetLeft: number;
     squareWidth: number;
     squareHeight: number;
 
-    constructor(baseElement: HTMLElement, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number){
+    throbber: Throbber;
+    alertText: AlertText;
+
+    constructor(htmlContainer: GameHTMLContainer, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number){
         super(Color.WHITE);
-        this.baseElement = baseElement;
+        this.htmlContainer = htmlContainer;
         this.offsetTop = offsetTop;
         this.offsetLeft = offsetLeft;
         this.squareWidth = squareWidth;
         this.squareHeight = squareHeight;
-        this.consoleCtrl = new ConsoleController(offsetLeft, offsetTop + (squareWidth * 8), squareWidth * 8, squareWidth * 2, 50);
     }
 
 
     start(){
-        var board: BoardModel = BoardFactory.getStandardBoard();
-        //alert(this.offsetTop + " " + this.offsetLeft + " " + this.squareWidth + " " + this.squareHeight);
+        var board: BoardModel = BoardFactory.getTamerlaneBoard();
+        this.throbber = new Throbber(this.squareWidth * 2, this.squareHeight * 2, 100);
+        this.throbber.centerInSquare(this.offsetLeft, this.offsetTop, this.squareWidth * board.getWidth(), this.squareHeight * board.getHeight());
+        this.htmlContainer.setThrobberHTML(this.throbber.toHTML());
+        this.alertText = new AlertText(this.squareWidth * 2, this.squareHeight * 2, 100);
+        this.alertText.centerInSquare(this.offsetLeft, this.offsetTop, this.squareWidth * board.getWidth(), this.squareHeight * board.getHeight());
+        this.consoleCtrl = new ConsoleController(this.offsetLeft, this.offsetTop + (this.squareWidth * board.getWidth()), this.squareWidth * 8, this.squareWidth * 2, 50);
         this.boardView = Board.fromSerial(board.serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         var miniMaxAI = new MiniMaxPlayer(Color.BLACK);
         this.chessGame = new ChessGame(board, this, miniMaxAI);
@@ -37,19 +42,15 @@ class GameController extends Player{
     }
 
     update(){
-		if(this.SHOW_SPINNER){
-			this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML() + "<div class=\"spin sqr\"></div>";
-		}
-        else{
-			this.baseElement.innerHTML = this.boardView.toHTML() + this.consoleCtrl.console.toHTML();
-		}
+        this.htmlContainer.setBoardHTML(this.boardView.toHTML());
+        this.htmlContainer.update();
+
         if (this.chessGame.currentTurn == this.getColor()) {
             this.addClickListeners();
         }
         else{
             this.turnOffClickListeners();
         }
-      //  this.consoleCtrl.update();
     }
 
     turnOffClickListeners():void {
@@ -83,6 +84,11 @@ class GameController extends Player{
         if(this.consoleCtrl){
             this.consoleCtrl.log(txt);
         }
+    }
+
+
+    turnOnThrobber(){
+        this.htmlContainer.turnOnThrobber();
     }
 
     getMyPieceClickListenerFunction(id: string, control: GameController){
@@ -287,7 +293,7 @@ class GameController extends Player{
     afterMove(board: BoardModel) {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.doCheckLogging();
-		this.SHOW_SPINNER = true;
+		this.turnOnThrobber();
         this.update();
         this.turnOffClickListeners();
     }
@@ -323,26 +329,52 @@ class GameController extends Player{
 
     doCheckLogging(){
         if(this.chessGame.isInCheck(this.getColor())){
-            this.log("You are in check")
+            //this.log("You are in check")
+            this.showAlertText("Check!");
         }
-        if(this.chessGame.isInCheck(this.swapColor(this.getColor()))){
-            this.log("Opponent is in check")
+        else if(this.chessGame.isInCheck(this.swapColor(this.getColor()))){
+            //this.log("Opponent is in check")
         }
-        if(this.chessGame.hasLost(this.getColor())){
-            this.log("You lose.")
+        else if(this.chessGame.hasLost(this.getColor())){
+            //this.log("You lose.")
         }
-        if(this.chessGame.hasLost(this.swapColor(this.getColor()))){
-            this.log("You win.")
+        else if(this.chessGame.hasLost(this.swapColor(this.getColor()))){
+            //this.log("You win.")
         }
+    }
+
+    showAlertText(txtToShow: string){
+        setTimeout(() => {
+            this.alertText.setContent(txtToShow);
+            this.htmlContainer.setAlertTextHTML(this.alertText.toHTML());
+            this.htmlContainer.turnOnAlertText();
+            this.htmlContainer.update();
+            setTimeout(() => {
+                this.wait(3000);
+            }, 10);
+            this.htmlContainer.turnOffAlertText();
+            this.htmlContainer.update();
+        }, 10);
+
     }
 
     readyForMove(){
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
-        this.doCheckLogging();
-		this.SHOW_SPINNER = false;
+		this.turnOffThrobber();
         this.update();
+        this.doCheckLogging();
         this.addClickListeners();
     }
 
+    turnOffThrobber():void {
+        this.htmlContainer.turnOffThrobber();
+    }
 
+    wait(ms){
+        var start = new Date().getTime();
+        var end = start;
+        while(end < start + ms) {
+        end = new Date().getTime();
+    }
+}
 }

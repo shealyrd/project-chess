@@ -477,6 +477,9 @@ class MoveFactory{
                         newY--;
                     }
                 }
+                else{
+                    break;
+                }
             }
         }
         if(direction < 0){
@@ -493,7 +496,10 @@ class MoveFactory{
                         result.add(new Move(piece.getPos(), new Pos(newX, newY)));
                         count--;
                         newY++;
+                    }
                 }
+                else{
+                    break;
                 }
             }
         }
