@@ -128,4 +128,5 @@ class MiniMaxPlayer extends Player{
 	isAutoExecute(){
 		return true;
 	}
+
 }

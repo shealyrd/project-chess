@@ -27,6 +27,10 @@ class ChessGame{
             }
             this.swapPlayers();
         }
+        else{
+            this.white.onGameEnd();
+            this.black.onGameEnd();
+        }
         setTimeout(() => {
             if(!this.isFinished()){
                 if(this.getCurrentPlayer().isAutoExecute()){
@@ -37,7 +41,9 @@ class ChessGame{
                 }
             }
             else{
-                this.getCurrentPlayer().afterMove(this.board);
+                //this.getCurrentPlayer().afterMove(this.board);
+                this.white.onGameEnd();
+                this.black.onGameEnd();
             }
         }, 10);
     }

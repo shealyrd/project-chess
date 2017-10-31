@@ -13,6 +13,7 @@ abstract class Player{
 	readyForMove(){}
 	afterMove(board: BoardModel){}
 	beforeMove(board: BoardModel){}
+	onGameEnd(){}
 
 	abstract getNextMove(board: BoardModel): Move;
 	abstract isAutoExecute(): boolean;

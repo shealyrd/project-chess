@@ -28,7 +28,7 @@ class GameController extends Player{
 
     start(){
         var board: BoardModel = BoardFactory.getTamerlaneBoard();
-        this.throbber = new Throbber(this.squareWidth * 2, this.squareHeight * 2, 100);
+        this.throbber = new Throbber(this.squareWidth * 2, this.squareHeight * 2, 99);
         this.throbber.centerInSquare(this.offsetLeft, this.offsetTop, this.squareWidth * board.getWidth(), this.squareHeight * board.getHeight());
         this.htmlContainer.setThrobberHTML(this.throbber.toHTML());
         this.alertText = new AlertText(this.squareWidth * 2, this.squareHeight * 2, 100);
@@ -301,7 +301,6 @@ class GameController extends Player{
 
     beforeMove(board: BoardModel) {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
-        this.doCheckLogging();
         this.update();
         this.turnOffClickListeners();
     }
@@ -327,54 +326,54 @@ class GameController extends Player{
         }
     }
 
-    doCheckLogging(){
+    doCheckLogging(): boolean{
         if(this.chessGame.isInCheck(this.getColor())){
-            //this.log("You are in check")
             this.showAlertText("Check!");
+            return true;
         }
         else if(this.chessGame.isInCheck(this.swapColor(this.getColor()))){
-            //this.log("Opponent is in check")
+             this.showAlertText("Check!");
+            return true;
         }
         else if(this.chessGame.hasLost(this.getColor())){
-            //this.log("You lose.")
+            this.showAlertText("You Lose!");
+            return true;
         }
         else if(this.chessGame.hasLost(this.swapColor(this.getColor()))){
-            //this.log("You win.")
+            this.showAlertText("You Win!");
+            return true;
         }
+        return false;
     }
 
     showAlertText(txtToShow: string){
-        setTimeout(() => {
+            var lock: boolean = true;
             this.alertText.setContent(txtToShow);
             this.htmlContainer.setAlertTextHTML(this.alertText.toHTML());
             this.htmlContainer.turnOnAlertText();
             this.htmlContainer.update();
             setTimeout(() => {
-                this.wait(3000);
-            }, 10);
-            this.htmlContainer.turnOffAlertText();
-            this.htmlContainer.update();
-        }, 10);
-
+                this.htmlContainer.turnOffAlertText();
+                this.htmlContainer.update();
+                this.addClickListeners();
+            }, 3000);
     }
 
     readyForMove(){
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
 		this.turnOffThrobber();
         this.update();
-        this.doCheckLogging();
-        this.addClickListeners();
+        if(!this.doCheckLogging()){
+            this.addClickListeners();
+        }
     }
 
     turnOffThrobber():void {
         this.htmlContainer.turnOffThrobber();
     }
 
-    wait(ms){
-        var start = new Date().getTime();
-        var end = start;
-        while(end < start + ms) {
-        end = new Date().getTime();
+    onGameEnd(){
+        this.turnOffThrobber();
+        this.doCheckLogging();
     }
-}
 }

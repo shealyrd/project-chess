@@ -1936,6 +1936,7 @@ var Player = /** @class */ (function () {
     Player.prototype.readyForMove = function () { };
     Player.prototype.afterMove = function (board) { };
     Player.prototype.beforeMove = function (board) { };
+    Player.prototype.onGameEnd = function () { };
     return Player;
 }());
 var MiniMaxPlayer = /** @class */ (function (_super) {
@@ -2148,6 +2149,10 @@ var ChessGame = /** @class */ (function () {
             }
             this.swapPlayers();
         }
+        else {
+            this.white.onGameEnd();
+            this.black.onGameEnd();
+        }
         setTimeout(function () {
             if (!_this.isFinished()) {
                 if (_this.getCurrentPlayer().isAutoExecute()) {
@@ -2158,7 +2163,9 @@ var ChessGame = /** @class */ (function () {
                 }
             }
             else {
-                _this.getCurrentPlayer().afterMove(_this.board);
+                //this.getCurrentPlayer().afterMove(this.board);
+                _this.white.onGameEnd();
+                _this.black.onGameEnd();
             }
         }, 10);
     };
@@ -2317,7 +2324,7 @@ var GameController = /** @class */ (function (_super) {
     }
     GameController.prototype.start = function () {
         var board = BoardFactory.getTamerlaneBoard();
-        this.throbber = new Throbber(this.squareWidth * 2, this.squareHeight * 2, 100);
+        this.throbber = new Throbber(this.squareWidth * 2, this.squareHeight * 2, 99);
         this.throbber.centerInSquare(this.offsetLeft, this.offsetTop, this.squareWidth * board.getWidth(), this.squareHeight * board.getHeight());
         this.htmlContainer.setThrobberHTML(this.throbber.toHTML());
         this.alertText = new AlertText(this.squareWidth * 2, this.squareHeight * 2, 100);
@@ -2554,7 +2561,6 @@ var GameController = /** @class */ (function (_super) {
     };
     GameController.prototype.beforeMove = function (board) {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
-        this.doCheckLogging();
         this.update();
         this.turnOffClickListeners();
     };
@@ -2578,49 +2584,50 @@ var GameController = /** @class */ (function (_super) {
     };
     GameController.prototype.doCheckLogging = function () {
         if (this.chessGame.isInCheck(this.getColor())) {
-            //this.log("You are in check")
             this.showAlertText("Check!");
+            return true;
         }
         else if (this.chessGame.isInCheck(this.swapColor(this.getColor()))) {
-            //this.log("Opponent is in check")
+            this.showAlertText("Check!");
+            return true;
         }
         else if (this.chessGame.hasLost(this.getColor())) {
-            //this.log("You lose.")
+            this.showAlertText("You Lose!");
+            return true;
         }
         else if (this.chessGame.hasLost(this.swapColor(this.getColor()))) {
-            //this.log("You win.")
+            this.showAlertText("You Win!");
+            return true;
         }
+        return false;
     };
     GameController.prototype.showAlertText = function (txtToShow) {
         var _this = this;
+        var lock = true;
+        this.alertText.setContent(txtToShow);
+        this.htmlContainer.setAlertTextHTML(this.alertText.toHTML());
+        this.htmlContainer.turnOnAlertText();
+        this.htmlContainer.update();
         setTimeout(function () {
-            _this.alertText.setContent(txtToShow);
-            _this.htmlContainer.setAlertTextHTML(_this.alertText.toHTML());
-            _this.htmlContainer.turnOnAlertText();
-            _this.htmlContainer.update();
-            setTimeout(function () {
-                _this.wait(3000);
-            }, 10);
             _this.htmlContainer.turnOffAlertText();
             _this.htmlContainer.update();
-        }, 10);
+            _this.addClickListeners();
+        }, 3000);
     };
     GameController.prototype.readyForMove = function () {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.turnOffThrobber();
         this.update();
-        this.doCheckLogging();
-        this.addClickListeners();
+        if (!this.doCheckLogging()) {
+            this.addClickListeners();
+        }
     };
     GameController.prototype.turnOffThrobber = function () {
         this.htmlContainer.turnOffThrobber();
     };
-    GameController.prototype.wait = function (ms) {
-        var start = new Date().getTime();
-        var end = start;
-        while (end < start + ms) {
-            end = new Date().getTime();
-        }
+    GameController.prototype.onGameEnd = function () {
+        this.turnOffThrobber();
+        this.doCheckLogging();
     };
     return GameController;
 }(Player));
