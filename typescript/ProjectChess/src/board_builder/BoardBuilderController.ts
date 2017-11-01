@@ -30,7 +30,7 @@ class BoardBuilderController{
 		var sqrs = this.getContainer().getBoardSquares();
 		for(var sqrIdx in sqrs){
 			var eachSqr = sqrs[sqrIdx];
-
+			this.setElementOnClick(eachSqr.getId(), this.getBoardSquareOnClickFunction(eachSqr.getId(), this));
 		}
 	}
 	
