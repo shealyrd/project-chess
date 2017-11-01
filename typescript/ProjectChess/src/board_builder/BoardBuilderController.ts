@@ -1,5 +1,6 @@
 class BoardBuilderController{
 	container: BoardBuilderHTMLContainter;
+	selectedSquareType: SquareType;
 	
 	start(){
 		
@@ -14,6 +15,33 @@ class BoardBuilderController{
 		this.setAllClickListeners();
 	}
 	
+	setAllClickListeners(){
+		this.setAllBoardSquareListerners();
+		this.setAllSquareTypeListerners();
+		this.setNewBoardButtonListener();
+	}
+	
+	setNewBoardButtonListener(){
+		var newBoardButton = this.getContainer().getNewBoardButton();
+		newBoardButton.onclick = this.getNewBoardButtonOnClickFunction(this);
+	}
+	
+	setAllBoardSquareListerners(){
+		var sqrs = this.getContainer().getBoardSquares();
+		for(var sqrIdx in sqrs){
+			var eachSqr = sqrs[sqrIdx];
+
+		}
+	}
+	
+	setAllSquareTypeListerners(){
+		var sqrs = this.getContainer().getTypeSquares();
+		for(var sqrIdx in sqrs){
+			var eachSqr = sqrs[sqrIdx];
+			this.setElementOnClick(eachSqr.getId(), this.getSquareTypeOnClickFunction(eachSqr.getId(), this));
+		}
+	}
+	
 	getContainer(): BoardBuilderHTMLContainter{
 		return this.container;
 	}
@@ -24,15 +52,24 @@ class BoardBuilderController{
 		    var currentX = document.getElementById("xInput").value;
 			var currentY = document.getElementById("yInput").value;
 			Board newBoard = new Board(currentX, currentY);
-			controller.getContainer().setBoardHTML += newBoard.toHTML();
+			controller.getContainer().setBoardHTML(newBoard.toHTML());
+			controller.update();
+		}
+	
+	
+	getSquareTypeOnClickFunction(id: string, controller: BoardBuilderController){
+		return new function () 
+		{
+			this.selectedSquareType = controller.getContainer().getTypeSquareFromId(id).getType();
+		}
+	}
+	
+	getBoardSquareOnClickFunction(id: string, controller: BoardBuilderController){
+		return new function () 
+		{
+			var sqr = controller.getContainer().getBoardSquareFromId(id);
+			sqr.setSquareType(this.selectedSquareType);
 			controller.update();
 		}
 	}
-}
-
-function newBoardButtonOnClick() {
-    currentX = document.getElementById("xInput").value;
-	currentY = document.getElementById("yInput").value;
-    boardView = new Board(currentX, currentY);
-	document.body,innerHTML = boardView.toHTML();
 }
