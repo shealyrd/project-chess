@@ -52,7 +52,7 @@ class BoardBuilderController{
 		    var currentX = document.getElementById("xInput").value;
 			var currentY = document.getElementById("yInput").value;
 			Board newBoard = new Board(currentX, currentY);
-			controller.getContainer().setBoardHTML(newBoard.toHTML());
+			controller.getContainer().setBoard(newBoard);
 			controller.update();
 		}
 	
