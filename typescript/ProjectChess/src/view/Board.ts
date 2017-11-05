@@ -78,6 +78,7 @@ class Board extends HTMLObject{
         return result;
     }
 
+
     addPiece(piece: PieceType, x: number, y: number, color: Color){
         var newPiece: Piece;
        /* switch(piece){
@@ -305,4 +306,11 @@ class Board extends HTMLObject{
         }
     }
 
+    getPixelHeight(): number{
+        return this.numRows * this.squareHeight + this.offsetTop;
+    }
+
+    getPixelWidth(): number{
+        return this.numColumns * this.squareWidth + this.offsetLeft;
+    }
 }

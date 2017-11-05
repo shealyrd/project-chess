@@ -49,3 +49,6 @@ type %~dp0\global\Preloader.ts  >> out.ts
 type %~dp0\global\CSSClass.ts  >> out.ts 
 type %~dp0\global\CSSManager.ts  >> out.ts 
 type %~dp0\global\GameBox.ts  >> out.ts 
+type %~dp0\board_builder\BoardBuilderHTMLContainer.ts  >> out.ts 
+type %~dp0\board_builder\BoardBuilderController.ts  >> out.ts 
+type %~dp0\board_builder\BoardBuilder.ts  >> out.ts 

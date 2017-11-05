@@ -8,5 +8,3 @@ class GameBox{
         game.start();
     }
 }
-
-GameBox.start();

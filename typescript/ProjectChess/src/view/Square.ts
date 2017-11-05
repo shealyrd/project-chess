@@ -76,7 +76,7 @@ class Square extends HTMLObject{
                 .addStyle("height", this.getHeight() + "px");
 
         builder.setId(this.getId());
-		
+
 		if(!(this.getType() == SquareType.NON_EXISTENT)){
 		    builder.addStyle("border", "1px solid black");
 			builder.addStyle("background-color", this.hexColor);

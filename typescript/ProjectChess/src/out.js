@@ -752,6 +752,12 @@ var Board = /** @class */ (function (_super) {
             }
         }
     };
+    Board.prototype.getPixelHeight = function () {
+        return this.numRows * this.squareHeight + this.offsetTop;
+    };
+    Board.prototype.getPixelWidth = function () {
+        return this.numColumns * this.squareWidth + this.offsetLeft;
+    };
     return Board;
 }(HTMLObject));
 var Throbber = /** @class */ (function (_super) {
@@ -2721,4 +2727,149 @@ var GameBox = /** @class */ (function () {
     };
     return GameBox;
 }());
-GameBox.start();
+var BoardBuilderHTMLContainer = /** @class */ (function () {
+    function BoardBuilderHTMLContainer(parentElement) {
+        this.parentElement = parentElement;
+    }
+    BoardBuilderHTMLContainer.prototype.init = function () {
+        this.xInput = this.createXInput();
+        this.yInput = this.createYInput();
+        this.newBoardButton = this.createNewBoardButton();
+        var xInputContainer = document.createElement('div');
+        xInputContainer.id = "xInputContainer";
+        xInputContainer.innerHTML += "Width: ";
+        xInputContainer.appendChild(this.xInput);
+        var yInputContainer = document.createElement('div');
+        yInputContainer.id = "yInputContainer";
+        yInputContainer.innerHTML += "Height: ";
+        yInputContainer.appendChild(this.yInput);
+        var board_div = document.createElement('iframe');
+        board_div.id = "board-div";
+        board_div.scrolling = "no";
+        board_div.frameBorder = "0";
+        board_div.style["seamless"] = "seamless";
+        board_div.style.overflow = "hidden";
+        this.boardDiv = board_div;
+        var breakDiv = document.createElement('br');
+        this.parentElement.appendChild(xInputContainer);
+        this.parentElement.appendChild(yInputContainer);
+        this.parentElement.appendChild(this.newBoardButton);
+        this.parentElement.appendChild(breakDiv);
+        this.parentElement.appendChild(board_div);
+        board_div.insertAdjacentHTML("beforeBegin", " ");
+    };
+    BoardBuilderHTMLContainer.prototype.update = function () {
+        this.updateBoardHTML();
+    };
+    BoardBuilderHTMLContainer.prototype.updateBoardHTML = function () {
+        this.boardDiv.contentDocument.body.innerHTML = this.boardView.toHTML();
+        this.boardDiv.height = this.boardView.getPixelHeight() + 5 + "px";
+        this.boardDiv.width = this.boardView.getPixelWidth() + 5 + "px";
+    };
+    BoardBuilderHTMLContainer.prototype.getBoardView = function () {
+        return this.boardView;
+    };
+    BoardBuilderHTMLContainer.prototype.getTypeSquares = function () {
+        return this.typeSquares;
+    };
+    BoardBuilderHTMLContainer.prototype.getXInput = function () {
+        return this.xInput;
+    };
+    BoardBuilderHTMLContainer.prototype.getYInput = function () {
+        return this.yInput;
+    };
+    BoardBuilderHTMLContainer.prototype.getNewBoardButton = function () {
+        return this.newBoardButton;
+    };
+    BoardBuilderHTMLContainer.prototype.setBoardView = function (board) {
+        this.boardView = board;
+    };
+    BoardBuilderHTMLContainer.prototype.setXInput = function (element) {
+        this.xInput = element;
+    };
+    BoardBuilderHTMLContainer.prototype.setYInput = function (element) {
+        this.yInput = element;
+    };
+    BoardBuilderHTMLContainer.prototype.setNewBoardButton = function (element) {
+        this.newBoardButton = element;
+    };
+    BoardBuilderHTMLContainer.prototype.createXInput = function () {
+        var xInput = document.createElement('input');
+        xInput.id = "xInput";
+        return xInput;
+    };
+    BoardBuilderHTMLContainer.prototype.createYInput = function () {
+        var yInput = document.createElement('input');
+        yInput.id = "yInput";
+        return yInput;
+    };
+    BoardBuilderHTMLContainer.prototype.createNewBoardButton = function () {
+        var newBoardButton = document.createElement('button');
+        newBoardButton.id = "newBoardButton";
+        newBoardButton.innerHTML = "Create New Board";
+        return newBoardButton;
+    };
+    return BoardBuilderHTMLContainer;
+}());
+var BoardBuilderController = /** @class */ (function () {
+    function BoardBuilderController(container) {
+        this.container = container;
+    }
+    BoardBuilderController.prototype.start = function () {
+        this.getContainer().init();
+        this.setAllClickListeners();
+    };
+    BoardBuilderController.prototype.setElementOnClick = function (id, func) {
+        document.getElementById(id).onclick = func;
+    };
+    BoardBuilderController.prototype.update = function () {
+        this.getContainer().update();
+        this.setAllClickListeners();
+    };
+    BoardBuilderController.prototype.setAllClickListeners = function () {
+        //this.setAllBoardSquareListerners();
+        //this.setAllSquareTypeListerners();
+        this.setNewBoardButtonListener();
+    };
+    BoardBuilderController.prototype.setNewBoardButtonListener = function () {
+        var newBoardButton = this.getContainer().getNewBoardButton();
+        this.setElementOnClick("newBoardButton", this.getNewBoardButtonOnClickFunction(this));
+    };
+    /*setAllBoardSquareListeners(){
+        var sqrs = this.getContainer().getBoardSquares();
+        for(var sqrIdx in sqrs){
+            var eachSqr = sqrs[sqrIdx];
+            this.setElementOnClick(eachSqr.getId(), this.getBoardSquareOnClickFunction(eachSqr.getId(), this));
+        }
+    }*/
+    /*setAllSquareTypeListerners(){
+        var sqrs = this.getContainer().getTypeSquares();
+        for(var sqrIdx in sqrs){
+            var eachSqr = sqrs[sqrIdx];
+            this.setElementOnClick(eachSqr.getId(), this.getSquareTypeOnClickFunction(eachSqr.getId(), this));
+        }
+    }*/
+    BoardBuilderController.prototype.getContainer = function () {
+        return this.container;
+    };
+    BoardBuilderController.prototype.getNewBoardButtonOnClickFunction = function (controller) {
+        return function () {
+            var currentX = document.getElementById("xInput").value;
+            var currentY = document.getElementById("yInput").value;
+            var newBoard = new Board(+currentX, +currentY, 0, 0);
+            controller.getContainer().setBoardView(newBoard);
+            controller.update();
+        };
+    };
+    return BoardBuilderController;
+}());
+var BoardBuilder = /** @class */ (function () {
+    function BoardBuilder() {
+    }
+    BoardBuilder.start = function () {
+        var container = new BoardBuilderHTMLContainer(document.body);
+        var controller = new BoardBuilderController(container);
+        controller.start();
+    };
+    return BoardBuilder;
+}());
