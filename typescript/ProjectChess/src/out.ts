@@ -3068,6 +3068,7 @@ class CSSClass{
 	yInput: HTMLElement;
 	newBoardButton: HTMLElement;
 	boardDiv: HTMLIFrameElement;
+	outputDiv: HTMLTextAreaElement;
 
 	constructor(parentElement: HTMLElement){
 		this.parentElement = parentElement;
@@ -3098,18 +3099,26 @@ class CSSClass{
 		this.boardDiv = board_div;
 
 		var breakDiv = document.createElement('br');
+		var breakDiv2 = document.createElement('br');
+
+		var outputDiv = document.createElement('textarea');
+		outputDiv.rows = 8;
+		outputDiv.cols = 100;
+		this.outputDiv = outputDiv;
 
 		this.parentElement.appendChild(xInputContainer);
 		this.parentElement.appendChild(yInputContainer);
 		this.parentElement.appendChild(this.newBoardButton);
 		this.parentElement.appendChild(breakDiv);
 		this.parentElement.appendChild(board_div);
+		this.parentElement.appendChild(breakDiv2);
+		this.parentElement.appendChild(outputDiv);
 
-		board_div.insertAdjacentHTML("beforeBegin", " ");
 	}
 
 	update(){
 		this.updateBoardHTML();
+		this.outputDiv.value = this.boardView.serialize();
 	}
 
 	updateBoardHTML(){
@@ -3172,6 +3181,13 @@ class CSSClass{
 		newBoardButton.innerHTML = "Create New Board";
 		return newBoardButton;
 	}
+
+	/*createTypesContainer():HTMLElement {
+		var typesContainer = document.createElement('div');
+		typesContainer.id = "typesContainer";
+
+		var typesContainer = document.createElement('div');
+	}*/
 }
 class BoardBuilderController{
 	container: BoardBuilderHTMLContainer;

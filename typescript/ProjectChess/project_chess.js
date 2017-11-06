@@ -2751,15 +2751,22 @@ var BoardBuilderHTMLContainer = /** @class */ (function () {
         board_div.style.overflow = "hidden";
         this.boardDiv = board_div;
         var breakDiv = document.createElement('br');
+        var breakDiv2 = document.createElement('br');
+        var outputDiv = document.createElement('textarea');
+        outputDiv.rows = 8;
+        outputDiv.cols = 100;
+        this.outputDiv = outputDiv;
         this.parentElement.appendChild(xInputContainer);
         this.parentElement.appendChild(yInputContainer);
         this.parentElement.appendChild(this.newBoardButton);
         this.parentElement.appendChild(breakDiv);
         this.parentElement.appendChild(board_div);
-        board_div.insertAdjacentHTML("beforeBegin", " ");
+        this.parentElement.appendChild(breakDiv2);
+        this.parentElement.appendChild(outputDiv);
     };
     BoardBuilderHTMLContainer.prototype.update = function () {
         this.updateBoardHTML();
+        this.outputDiv.value = this.boardView.serialize();
     };
     BoardBuilderHTMLContainer.prototype.updateBoardHTML = function () {
         this.boardDiv.contentDocument.body.innerHTML = this.boardView.toHTML();
