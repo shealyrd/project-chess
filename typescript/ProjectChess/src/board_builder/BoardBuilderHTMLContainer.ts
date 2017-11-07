@@ -7,6 +7,7 @@ class BoardBuilderHTMLContainer{
 	newBoardButton: HTMLElement;
 	boardDiv: HTMLIFrameElement;
 	outputDiv: HTMLTextAreaElement;
+	pieceTypesContainer: HTMLElement;
 
 	constructor(parentElement: HTMLElement){
 		this.parentElement = parentElement;
@@ -38,15 +39,20 @@ class BoardBuilderHTMLContainer{
 
 		var breakDiv = document.createElement('br');
 		var breakDiv2 = document.createElement('br');
+		var breakDiv3 = document.createElement('br');
 
 		var outputDiv = document.createElement('textarea');
 		outputDiv.rows = 8;
 		outputDiv.cols = 100;
 		this.outputDiv = outputDiv;
 
+		var pieceTypeContainer = this.createPieceTypeContainer();
+		this.pieceTypesContainer = pieceTypeContainer;
+
 		this.parentElement.appendChild(xInputContainer);
 		this.parentElement.appendChild(yInputContainer);
 		this.parentElement.appendChild(this.newBoardButton);
+		this.parentElement.appendChild(pieceTypeContainer);
 		this.parentElement.appendChild(breakDiv);
 		this.parentElement.appendChild(board_div);
 		this.parentElement.appendChild(breakDiv2);
@@ -120,10 +126,59 @@ class BoardBuilderHTMLContainer{
 		return newBoardButton;
 	}
 
-	/*createTypesContainer():HTMLElement {
+	createPieceTypeContainer():HTMLElement {
 		var typesContainer = document.createElement('div');
 		typesContainer.id = "typesContainer";
+		typesContainer.style.height = "50px";
+		typesContainer.style.width = "100%";
+		typesContainer.style.display = "inline-block";
+		for(var pieceType in PieceType){
+			var piece = new Piece(0, 0, 50, 50, 0, Color.WHITE, +pieceType);
+			var newElement = this.createDivFromString(piece.toHTML());
+			newElement.id = "piece_type_" + pieceType;
+			newElement.style.position = null;
+			newElement.style.left = null;
+			newElement.style.top = null;
+			newElement.style["float"] = "left";
+			typesContainer.appendChild(newElement);
+		}
 
-		var typesContainer = document.createElement('div');
-	}*/
+		return typesContainer;
+	}
+
+	getBoardSquares(): Square[]{
+		return this.boardView.getSquares();
+	}
+
+	getBoardSquareFromId(id: string): Square{
+		return this.boardView.getSquareById(id);
+	}
+
+	getSquareElementFromId(id: string): HTMLElement{
+		return this.boardDiv.contentDocument.getElementById(id);
+	}
+
+	createDivFromString(html: string): HTMLElement{
+		var newElement = document.createElement('div');
+		newElement.innerHTML = html;
+		return <HTMLElement> newElement.firstChild;
+	}
+
+	getPieceTypeDivs(): HTMLElement[]{
+		var result: HTMLElement[] = new Array();
+		var children = this.pieceTypesContainer.children;
+		for (var i = 0; i < children.length; i++) {
+			var child = children[i];
+			result.push(child);
+		}
+		return result;
+	}
+
+	revertAllPieceTypeBorders(){
+		var children = this.pieceTypesContainer.children;
+		for (var i = 0; i < children.length; i++) {
+			var child = children[i];
+			child.style.border = null;
+		}
+	}
 }

@@ -1,6 +1,7 @@
 class BoardBuilderController{
 	container: BoardBuilderHTMLContainer;
-	selectedSquareType: SquareType;
+	//selectedSquareType: SquareType;
+	selectedPieceType: PieceType;
 
 	constructor(container: BoardBuilderHTMLContainer){
 		this.container = container;
@@ -8,7 +9,7 @@ class BoardBuilderController{
 
 	start(){
 		this.getContainer().init();
-		this.setAllClickListeners();
+		this.setNewBoardButtonListener();
 	}
 	
     setElementOnClick(id: string, func: () => void ):void {
@@ -21,9 +22,8 @@ class BoardBuilderController{
 	}
 	
 	setAllClickListeners(){
-		//this.setAllBoardSquareListerners();
+		this.setAllBoardSquareListeners();
 		//this.setAllSquareTypeListerners();
-		this.setNewBoardButtonListener();
 	}
 	
 	setNewBoardButtonListener(){
@@ -31,14 +31,24 @@ class BoardBuilderController{
 		this.setElementOnClick("newBoardButton", this.getNewBoardButtonOnClickFunction(this));
 	}
 	
-	/*setAllBoardSquareListeners(){
+	setAllBoardSquareListeners(){
 		var sqrs = this.getContainer().getBoardSquares();
 		for(var sqrIdx in sqrs){
 			var eachSqr = sqrs[sqrIdx];
-			this.setElementOnClick(eachSqr.getId(), this.getBoardSquareOnClickFunction(eachSqr.getId(), this));
+			//this.setElementOnClick(eachSqr.getId(), this.getBoardSquareOnClickFunction(eachSqr.getId(), this));
+			this.getContainer().getSquareElementFromId(eachSqr.getId()).onclick = this.getBoardSquareOnClickFunction(eachSqr.getId(), this);
 		}
-	}*/
-	
+	}
+
+	setAllPieceTypeListeners(){
+		var pieces = this.getContainer().getPieceTypeDivs();
+
+		for(var eachPieceIdx in pieces){
+			var eachPieceDiv: HTMLElement = pieces[eachPieceIdx];
+			eachPieceDiv.onclick = this.getPieceTypeClickListener(eachPieceDiv, this);
+		}
+	}
+
 	/*setAllSquareTypeListerners(){
 		var sqrs = this.getContainer().getTypeSquares();
 		for(var sqrIdx in sqrs){
@@ -68,14 +78,31 @@ class BoardBuilderController{
 			this.selectedSquareType = controller.getContainer().getTypeSquareFromId(id).getType();
 			this.selectedSquareType = controller.getContainer().getTypeSquareFromId(id).getType();
 		};
-	}
-	
+	}*/
+
+
+
 	getBoardSquareOnClickFunction(id: string, controller: BoardBuilderController){
-		return new function () 
+		return () =>
 		{
-			var sqr = controller.getContainer().getBoardSquareFromId(id);
-			sqr.setSquareType(this.selectedSquareType);
+			var sqr: Square = controller.getContainer().getBoardSquareFromId(id);
+			if(sqr.getType() == SquareType.NORMAL){
+				sqr.setType(SquareType.NON_EXISTENT)
+			}
+			else{
+				sqr.setType(SquareType.NORMAL)
+			}
+			//sqr.setType(this.selectedSquareType);
 			controller.update();
 		};
-	}*/
+	}
+
+	getPieceTypeClickListener(eachPieceDiv:HTMLElement, boardBuilderController:BoardBuilderController): () => void {
+		return () => {
+			boardBuilderController.getContainer().revertAllPieceTypeBorders();
+			eachPieceDiv.style.border = "1px solid black";
+			var pieceType = +(eachPieceDiv.id.substring(11, eachPieceDiv.id.length));
+			boardBuilderController.selectedPieceType = pieceType;
+		}
+	}
 }

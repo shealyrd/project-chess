@@ -6,3 +6,5 @@ class BoardBuilder{
         controller.start();
     }
 }
+
+BoardBuilder.start();

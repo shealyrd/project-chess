@@ -3100,15 +3100,19 @@ class CSSClass{
 
 		var breakDiv = document.createElement('br');
 		var breakDiv2 = document.createElement('br');
+		var breakDiv3 = document.createElement('br');
 
 		var outputDiv = document.createElement('textarea');
 		outputDiv.rows = 8;
 		outputDiv.cols = 100;
 		this.outputDiv = outputDiv;
 
+		var typeContainer = this.getTypeSquares();
+
 		this.parentElement.appendChild(xInputContainer);
 		this.parentElement.appendChild(yInputContainer);
 		this.parentElement.appendChild(this.newBoardButton);
+		this.parentElement.appendChild(this.createPieceTypeContainer());
 		this.parentElement.appendChild(breakDiv);
 		this.parentElement.appendChild(board_div);
 		this.parentElement.appendChild(breakDiv2);
@@ -3182,12 +3186,42 @@ class CSSClass{
 		return newBoardButton;
 	}
 
-	/*createTypesContainer():HTMLElement {
+	createPieceTypeContainer():HTMLElement {
 		var typesContainer = document.createElement('div');
 		typesContainer.id = "typesContainer";
+		typesContainer.style.height = "50px";
+		typesContainer.style.width = "100%";
+		typesContainer.style.display = "inline-block";
+		for(var pieceType in PieceType){
+			var piece = new Piece(0, 0, 50, 50, 0, Color.WHITE, +pieceType);
+			var newElement = this.createDivFromString(piece.toHTML());
+			newElement.style.position = null;
+			newElement.style.left = null;
+			newElement.style.top = null;
+			newElement.style["float"] = "left";
+			typesContainer.appendChild(newElement);
+		}
 
-		var typesContainer = document.createElement('div');
-	}*/
+		return typesContainer;
+	}
+
+	getBoardSquares(): Square[]{
+		return this.boardView.getSquares();
+	}
+
+	getBoardSquareFromId(id: string): Square{
+		return this.boardView.getSquareById(id);
+	}
+
+	getSquareElementFromId(id: string): HTMLElement{
+		return this.boardDiv.contentDocument.getElementById(id);
+	}
+
+	createDivFromString(html: string): HTMLElement{
+		var newElement = document.createElement('div');
+		newElement.innerHTML = html;
+		return <HTMLElement> newElement.firstChild;
+	}
 }
 class BoardBuilderController{
 	container: BoardBuilderHTMLContainer;
@@ -3199,7 +3233,7 @@ class BoardBuilderController{
 
 	start(){
 		this.getContainer().init();
-		this.setAllClickListeners();
+		this.setNewBoardButtonListener();
 	}
 	
     setElementOnClick(id: string, func: () => void ):void {
@@ -3212,9 +3246,8 @@ class BoardBuilderController{
 	}
 	
 	setAllClickListeners(){
-		//this.setAllBoardSquareListerners();
+		this.setAllBoardSquareListeners();
 		//this.setAllSquareTypeListerners();
-		this.setNewBoardButtonListener();
 	}
 	
 	setNewBoardButtonListener(){
@@ -3222,13 +3255,14 @@ class BoardBuilderController{
 		this.setElementOnClick("newBoardButton", this.getNewBoardButtonOnClickFunction(this));
 	}
 	
-	/*setAllBoardSquareListeners(){
+	setAllBoardSquareListeners(){
 		var sqrs = this.getContainer().getBoardSquares();
 		for(var sqrIdx in sqrs){
 			var eachSqr = sqrs[sqrIdx];
-			this.setElementOnClick(eachSqr.getId(), this.getBoardSquareOnClickFunction(eachSqr.getId(), this));
+			//this.setElementOnClick(eachSqr.getId(), this.getBoardSquareOnClickFunction(eachSqr.getId(), this));
+			this.getContainer().getSquareElementFromId(eachSqr.getId()).onclick = this.getBoardSquareOnClickFunction(eachSqr.getId(), this);
 		}
-	}*/
+	}
 	
 	/*setAllSquareTypeListerners(){
 		var sqrs = this.getContainer().getTypeSquares();
@@ -3259,16 +3293,22 @@ class BoardBuilderController{
 			this.selectedSquareType = controller.getContainer().getTypeSquareFromId(id).getType();
 			this.selectedSquareType = controller.getContainer().getTypeSquareFromId(id).getType();
 		};
-	}
-	
+	}*/
+
 	getBoardSquareOnClickFunction(id: string, controller: BoardBuilderController){
-		return new function () 
+		return () =>
 		{
-			var sqr = controller.getContainer().getBoardSquareFromId(id);
-			sqr.setSquareType(this.selectedSquareType);
+			var sqr: Square = controller.getContainer().getBoardSquareFromId(id);
+			if(sqr.getType() == SquareType.NORMAL){
+				sqr.setType(SquareType.NON_EXISTENT)
+			}
+			else{
+				sqr.setType(SquareType.NORMAL)
+			}
+			//sqr.setType(this.selectedSquareType);
 			controller.update();
 		};
-	}*/
+	}
 }class BoardBuilder{
 
     static start(){
@@ -3277,3 +3317,5 @@ class BoardBuilderController{
         controller.start();
     }
 }
+
+BoardBuilder.start();

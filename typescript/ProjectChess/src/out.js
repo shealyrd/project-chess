@@ -2752,13 +2752,16 @@ var BoardBuilderHTMLContainer = /** @class */ (function () {
         this.boardDiv = board_div;
         var breakDiv = document.createElement('br');
         var breakDiv2 = document.createElement('br');
+        var breakDiv3 = document.createElement('br');
         var outputDiv = document.createElement('textarea');
         outputDiv.rows = 8;
         outputDiv.cols = 100;
         this.outputDiv = outputDiv;
+        var typeContainer = this.getTypeSquares();
         this.parentElement.appendChild(xInputContainer);
         this.parentElement.appendChild(yInputContainer);
         this.parentElement.appendChild(this.newBoardButton);
+        this.parentElement.appendChild(this.createPieceTypeContainer());
         this.parentElement.appendChild(breakDiv);
         this.parentElement.appendChild(board_div);
         this.parentElement.appendChild(breakDiv2);
@@ -2816,6 +2819,37 @@ var BoardBuilderHTMLContainer = /** @class */ (function () {
         newBoardButton.innerHTML = "Create New Board";
         return newBoardButton;
     };
+    BoardBuilderHTMLContainer.prototype.createPieceTypeContainer = function () {
+        var typesContainer = document.createElement('div');
+        typesContainer.id = "typesContainer";
+        typesContainer.style.height = "50px";
+        typesContainer.style.width = "100%";
+        typesContainer.style.display = "inline-block";
+        for (var pieceType in PieceType) {
+            var piece = new Piece(0, 0, 50, 50, 0, Color.WHITE, +pieceType);
+            var newElement = this.createDivFromString(piece.toHTML());
+            newElement.style.position = null;
+            newElement.style.left = null;
+            newElement.style.top = null;
+            newElement.style["float"] = "left";
+            typesContainer.appendChild(newElement);
+        }
+        return typesContainer;
+    };
+    BoardBuilderHTMLContainer.prototype.getBoardSquares = function () {
+        return this.boardView.getSquares();
+    };
+    BoardBuilderHTMLContainer.prototype.getBoardSquareFromId = function (id) {
+        return this.boardView.getSquareById(id);
+    };
+    BoardBuilderHTMLContainer.prototype.getSquareElementFromId = function (id) {
+        return this.boardDiv.contentDocument.getElementById(id);
+    };
+    BoardBuilderHTMLContainer.prototype.createDivFromString = function (html) {
+        var newElement = document.createElement('div');
+        newElement.innerHTML = html;
+        return newElement.firstChild;
+    };
     return BoardBuilderHTMLContainer;
 }());
 var BoardBuilderController = /** @class */ (function () {
@@ -2824,7 +2858,7 @@ var BoardBuilderController = /** @class */ (function () {
     }
     BoardBuilderController.prototype.start = function () {
         this.getContainer().init();
-        this.setAllClickListeners();
+        this.setNewBoardButtonListener();
     };
     BoardBuilderController.prototype.setElementOnClick = function (id, func) {
         document.getElementById(id).onclick = func;
@@ -2834,21 +2868,21 @@ var BoardBuilderController = /** @class */ (function () {
         this.setAllClickListeners();
     };
     BoardBuilderController.prototype.setAllClickListeners = function () {
-        //this.setAllBoardSquareListerners();
+        this.setAllBoardSquareListeners();
         //this.setAllSquareTypeListerners();
-        this.setNewBoardButtonListener();
     };
     BoardBuilderController.prototype.setNewBoardButtonListener = function () {
         var newBoardButton = this.getContainer().getNewBoardButton();
         this.setElementOnClick("newBoardButton", this.getNewBoardButtonOnClickFunction(this));
     };
-    /*setAllBoardSquareListeners(){
+    BoardBuilderController.prototype.setAllBoardSquareListeners = function () {
         var sqrs = this.getContainer().getBoardSquares();
-        for(var sqrIdx in sqrs){
+        for (var sqrIdx in sqrs) {
             var eachSqr = sqrs[sqrIdx];
-            this.setElementOnClick(eachSqr.getId(), this.getBoardSquareOnClickFunction(eachSqr.getId(), this));
+            //this.setElementOnClick(eachSqr.getId(), this.getBoardSquareOnClickFunction(eachSqr.getId(), this));
+            this.getContainer().getSquareElementFromId(eachSqr.getId()).onclick = this.getBoardSquareOnClickFunction(eachSqr.getId(), this);
         }
-    }*/
+    };
     /*setAllSquareTypeListerners(){
         var sqrs = this.getContainer().getTypeSquares();
         for(var sqrIdx in sqrs){
@@ -2868,6 +2902,26 @@ var BoardBuilderController = /** @class */ (function () {
             controller.update();
         };
     };
+    /*getSquareTypeOnClickFunction(id: string, controller: BoardBuilderController){
+        return new function ()
+        {
+            this.selectedSquareType = controller.getContainer().getTypeSquareFromId(id).getType();
+            this.selectedSquareType = controller.getContainer().getTypeSquareFromId(id).getType();
+        };
+    }*/
+    BoardBuilderController.prototype.getBoardSquareOnClickFunction = function (id, controller) {
+        return function () {
+            var sqr = controller.getContainer().getBoardSquareFromId(id);
+            if (sqr.getType() == SquareType.NORMAL) {
+                sqr.setType(SquareType.NON_EXISTENT);
+            }
+            else {
+                sqr.setType(SquareType.NORMAL);
+            }
+            //sqr.setType(this.selectedSquareType);
+            controller.update();
+        };
+    };
     return BoardBuilderController;
 }());
 var BoardBuilder = /** @class */ (function () {
@@ -2880,3 +2934,4 @@ var BoardBuilder = /** @class */ (function () {
     };
     return BoardBuilder;
 }());
+BoardBuilder.start();
