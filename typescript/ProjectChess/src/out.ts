@@ -862,6 +862,36 @@ class Square extends HTMLObject{
         }
     }
 
+    getPieceAtPos(pos: Pos): Piece{
+        for(var piece in this.pieces){
+            var each = this.pieces[piece];
+            if(each.getPos().equals(pos)){
+                return each;
+            }
+        }
+
+        return null;
+    }
+
+    removePieceAtPos(pos: Pos){
+        var idx2Delete;
+        for(var piece in this.pieces){
+            var each = this.pieces[piece];
+            if(each.getPos().equals(pos)){
+                idx2Delete = piece;
+            }
+        }
+        this.pieces.splice(idx2Delete, 1);
+
+        for(var locIdx in this.locations){
+            var each = this.locations[locIdx];
+            if(pos.equals(new Pos(each.getX(), each.getY()))){
+                idx2Delete = locIdx;
+            }
+        }
+        this.locations.splice(idx2Delete, 1);
+    }
+
     getPixelHeight(): number{
         return this.numRows * this.squareHeight + this.offsetTop;
     }
@@ -3066,9 +3096,11 @@ class CSSClass{
 	typeSquares: Square[];
 	xInput: HTMLElement;
 	yInput: HTMLElement;
+	switchColorsButton: HTMLElement;
 	newBoardButton: HTMLElement;
 	boardDiv: HTMLIFrameElement;
 	outputDiv: HTMLTextAreaElement;
+	pieceTypesContainer: HTMLElement;
 
 	constructor(parentElement: HTMLElement){
 		this.parentElement = parentElement;
@@ -3079,6 +3111,7 @@ class CSSClass{
 		this.xInput = this.createXInput();
 		this.yInput = this.createYInput();
 		this.newBoardButton = this.createNewBoardButton();
+		this.switchColorsButton = this.createSwitchColorsButton();
 
 		var xInputContainer: HTMLElement = document.createElement('div');
 		xInputContainer.id = "xInputContainer";
@@ -3107,12 +3140,14 @@ class CSSClass{
 		outputDiv.cols = 100;
 		this.outputDiv = outputDiv;
 
-		var typeContainer = this.getTypeSquares();
+		var pieceTypeContainer = this.createPieceTypeContainer();
+		this.pieceTypesContainer = pieceTypeContainer;
 
 		this.parentElement.appendChild(xInputContainer);
 		this.parentElement.appendChild(yInputContainer);
 		this.parentElement.appendChild(this.newBoardButton);
-		this.parentElement.appendChild(this.createPieceTypeContainer());
+		this.parentElement.appendChild(this.switchColorsButton);
+		this.parentElement.appendChild(pieceTypeContainer);
 		this.parentElement.appendChild(breakDiv);
 		this.parentElement.appendChild(board_div);
 		this.parentElement.appendChild(breakDiv2);
@@ -3167,6 +3202,24 @@ class CSSClass{
 		this.newBoardButton = element;
 	}
 
+	setAllPieceTypesToColor(color: Color){
+		var typesContainer = document.getElementById("typesContainer");
+		while (typesContainer.hasChildNodes()) {
+			typesContainer.removeChild(typesContainer.lastChild);
+		}
+		for(var pieceType in PieceType){
+			var piece = new Piece(0, 0, 50, 50, 0, color, +pieceType);
+			var newElement = this.createDivFromString(piece.toHTML());
+			newElement.id = "piece_type_" + pieceType;
+			newElement.style.position = null;
+			newElement.style.left = null;
+			newElement.style.top = null;
+			newElement.style["pointer-events"] = null;
+			newElement.style["float"] = "left";
+			typesContainer.appendChild(newElement);
+		}
+	}
+
 	createXInput(): HTMLElement{
 		var xInput = document.createElement('input');
 		xInput.id = "xInput";
@@ -3186,6 +3239,13 @@ class CSSClass{
 		return newBoardButton;
 	}
 
+	createSwitchColorsButton(): HTMLElement{
+		var switchColors = document.createElement('button');
+		switchColors.id = "switchColorsButton";
+		switchColors.innerHTML = "Switch Colors";
+		return switchColors;
+	}
+
 	createPieceTypeContainer():HTMLElement {
 		var typesContainer = document.createElement('div');
 		typesContainer.id = "typesContainer";
@@ -3195,9 +3255,11 @@ class CSSClass{
 		for(var pieceType in PieceType){
 			var piece = new Piece(0, 0, 50, 50, 0, Color.WHITE, +pieceType);
 			var newElement = this.createDivFromString(piece.toHTML());
+			newElement.id = "piece_type_" + pieceType;
 			newElement.style.position = null;
 			newElement.style.left = null;
 			newElement.style.top = null;
+			newElement.style["pointer-events"] = null;
 			newElement.style["float"] = "left";
 			typesContainer.appendChild(newElement);
 		}
@@ -3222,10 +3284,30 @@ class CSSClass{
 		newElement.innerHTML = html;
 		return <HTMLElement> newElement.firstChild;
 	}
+
+	getPieceTypeDivs(): HTMLElement[]{
+		var result: HTMLElement[] = new Array();
+		var children = this.pieceTypesContainer.children;
+		for (var i = 0; i < children.length; i++) {
+			var child = children[i];
+			result.push(<HTMLElement> child);
+		}
+		return result;
+	}
+
+	revertAllPieceTypeBorders(){
+		var children = this.pieceTypesContainer.children;
+		for (var i = 0; i < children.length; i++) {
+			var child = <HTMLElement> children[i];
+			child.style.border = null;
+		}
+	}
 }
 class BoardBuilderController{
 	container: BoardBuilderHTMLContainer;
-	selectedSquareType: SquareType;
+	//selectedSquareType: SquareType;
+	selectedPieceType: PieceType;
+	selectedColor: Color = Color.WHITE;
 
 	constructor(container: BoardBuilderHTMLContainer){
 		this.container = container;
@@ -3234,6 +3316,7 @@ class BoardBuilderController{
 	start(){
 		this.getContainer().init();
 		this.setNewBoardButtonListener();
+		this.setAllPieceTypeListeners();
 	}
 	
     setElementOnClick(id: string, func: () => void ):void {
@@ -3253,6 +3336,7 @@ class BoardBuilderController{
 	setNewBoardButtonListener(){
 		var newBoardButton = this.getContainer().getNewBoardButton();
 		this.setElementOnClick("newBoardButton", this.getNewBoardButtonOnClickFunction(this));
+		this.setElementOnClick("switchColorsButton", this.getSwitchColorsOnClickFunction(this));
 	}
 	
 	setAllBoardSquareListeners(){
@@ -3263,7 +3347,16 @@ class BoardBuilderController{
 			this.getContainer().getSquareElementFromId(eachSqr.getId()).onclick = this.getBoardSquareOnClickFunction(eachSqr.getId(), this);
 		}
 	}
-	
+
+	setAllPieceTypeListeners(){
+		var pieces = this.getContainer().getPieceTypeDivs();
+
+		for(var eachPieceIdx in pieces){
+			var eachPieceDiv: HTMLElement = pieces[eachPieceIdx];
+			eachPieceDiv.onclick = this.getPieceTypeClickListener(eachPieceDiv, this);
+		}
+	}
+
 	/*setAllSquareTypeListerners(){
 		var sqrs = this.getContainer().getTypeSquares();
 		for(var sqrIdx in sqrs){
@@ -3295,19 +3388,59 @@ class BoardBuilderController{
 		};
 	}*/
 
+
+
 	getBoardSquareOnClickFunction(id: string, controller: BoardBuilderController){
 		return () =>
 		{
 			var sqr: Square = controller.getContainer().getBoardSquareFromId(id);
-			if(sqr.getType() == SquareType.NORMAL){
-				sqr.setType(SquareType.NON_EXISTENT)
+			if(controller.selectedPieceType == null){
+				if(sqr.getType() == SquareType.NORMAL){
+					sqr.setType(SquareType.NON_EXISTENT)
+				}
+				else{
+					sqr.setType(SquareType.NORMAL)
+				}
 			}
 			else{
-				sqr.setType(SquareType.NORMAL)
+				if(controller.getContainer().boardView.getPieceAtPos(sqr.getPos()) == null){
+					controller.getContainer().boardView.addPiece(controller.selectedPieceType, sqr.getX(), sqr.getY(), controller.selectedColor);
+				}
+				else{
+					controller.getContainer().boardView.removePieceAtPos(sqr.getPos());
+				}
 			}
 			//sqr.setType(this.selectedSquareType);
 			controller.update();
 		};
+	}
+
+	getPieceTypeClickListener(eachPieceDiv:HTMLElement, boardBuilderController:BoardBuilderController): () => void {
+		return () => {
+			boardBuilderController.getContainer().revertAllPieceTypeBorders();
+			var pieceType = +(eachPieceDiv.id.substring(11, eachPieceDiv.id.length));
+			if(pieceType == boardBuilderController.selectedPieceType){
+				boardBuilderController.selectedPieceType = null;
+			}
+			else{
+				eachPieceDiv.style.border = "1px solid black";
+				boardBuilderController.selectedPieceType = pieceType;
+			}
+
+		}
+	}
+
+	getSwitchColorsOnClickFunction(boardBuilderController:BoardBuilderController): () => void{
+		return () => {
+			if(boardBuilderController.selectedColor == Color.WHITE){
+				boardBuilderController.selectedColor = Color.BLACK;
+			}
+			else{
+				boardBuilderController.selectedColor = Color.WHITE;
+			}
+			boardBuilderController.getContainer().setAllPieceTypesToColor(boardBuilderController.selectedColor);
+			setTimeout(()=>{this.setAllPieceTypeListeners();}, 10);
+		}
 	}
 }class BoardBuilder{
 

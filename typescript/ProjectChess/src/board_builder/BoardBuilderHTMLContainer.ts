@@ -4,6 +4,7 @@ class BoardBuilderHTMLContainer{
 	typeSquares: Square[];
 	xInput: HTMLElement;
 	yInput: HTMLElement;
+	switchColorsButton: HTMLElement;
 	newBoardButton: HTMLElement;
 	boardDiv: HTMLIFrameElement;
 	outputDiv: HTMLTextAreaElement;
@@ -18,6 +19,7 @@ class BoardBuilderHTMLContainer{
 		this.xInput = this.createXInput();
 		this.yInput = this.createYInput();
 		this.newBoardButton = this.createNewBoardButton();
+		this.switchColorsButton = this.createSwitchColorsButton();
 
 		var xInputContainer: HTMLElement = document.createElement('div');
 		xInputContainer.id = "xInputContainer";
@@ -52,6 +54,7 @@ class BoardBuilderHTMLContainer{
 		this.parentElement.appendChild(xInputContainer);
 		this.parentElement.appendChild(yInputContainer);
 		this.parentElement.appendChild(this.newBoardButton);
+		this.parentElement.appendChild(this.switchColorsButton);
 		this.parentElement.appendChild(pieceTypeContainer);
 		this.parentElement.appendChild(breakDiv);
 		this.parentElement.appendChild(board_div);
@@ -107,6 +110,24 @@ class BoardBuilderHTMLContainer{
 		this.newBoardButton = element;
 	}
 
+	setAllPieceTypesToColor(color: Color){
+		var typesContainer = document.getElementById("typesContainer");
+		while (typesContainer.hasChildNodes()) {
+			typesContainer.removeChild(typesContainer.lastChild);
+		}
+		for(var pieceType in PieceType){
+			var piece = new Piece(0, 0, 50, 50, 0, color, +pieceType);
+			var newElement = this.createDivFromString(piece.toHTML());
+			newElement.id = "piece_type_" + pieceType;
+			newElement.style.position = null;
+			newElement.style.left = null;
+			newElement.style.top = null;
+			newElement.style["pointer-events"] = null;
+			newElement.style["float"] = "left";
+			typesContainer.appendChild(newElement);
+		}
+	}
+
 	createXInput(): HTMLElement{
 		var xInput = document.createElement('input');
 		xInput.id = "xInput";
@@ -126,6 +147,13 @@ class BoardBuilderHTMLContainer{
 		return newBoardButton;
 	}
 
+	createSwitchColorsButton(): HTMLElement{
+		var switchColors = document.createElement('button');
+		switchColors.id = "switchColorsButton";
+		switchColors.innerHTML = "Switch Colors";
+		return switchColors;
+	}
+
 	createPieceTypeContainer():HTMLElement {
 		var typesContainer = document.createElement('div');
 		typesContainer.id = "typesContainer";
@@ -139,6 +167,7 @@ class BoardBuilderHTMLContainer{
 			newElement.style.position = null;
 			newElement.style.left = null;
 			newElement.style.top = null;
+			newElement.style["pointer-events"] = null;
 			newElement.style["float"] = "left";
 			typesContainer.appendChild(newElement);
 		}
@@ -169,7 +198,7 @@ class BoardBuilderHTMLContainer{
 		var children = this.pieceTypesContainer.children;
 		for (var i = 0; i < children.length; i++) {
 			var child = children[i];
-			result.push(child);
+			result.push(<HTMLElement> child);
 		}
 		return result;
 	}
@@ -177,7 +206,7 @@ class BoardBuilderHTMLContainer{
 	revertAllPieceTypeBorders(){
 		var children = this.pieceTypesContainer.children;
 		for (var i = 0; i < children.length; i++) {
-			var child = children[i];
+			var child = <HTMLElement> children[i];
 			child.style.border = null;
 		}
 	}

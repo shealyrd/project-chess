@@ -306,6 +306,36 @@ class Board extends HTMLObject{
         }
     }
 
+    getPieceAtPos(pos: Pos): Piece{
+        for(var piece in this.pieces){
+            var each = this.pieces[piece];
+            if(each.getPos().equals(pos)){
+                return each;
+            }
+        }
+
+        return null;
+    }
+
+    removePieceAtPos(pos: Pos){
+        var idx2Delete;
+        for(var piece in this.pieces){
+            var each = this.pieces[piece];
+            if(each.getPos().equals(pos)){
+                idx2Delete = piece;
+            }
+        }
+        this.pieces.splice(idx2Delete, 1);
+
+        for(var locIdx in this.locations){
+            var each = this.locations[locIdx];
+            if(pos.equals(new Pos(each.getX(), each.getY()))){
+                idx2Delete = locIdx;
+            }
+        }
+        this.locations.splice(idx2Delete, 1);
+    }
+
     getPixelHeight(): number{
         return this.numRows * this.squareHeight + this.offsetTop;
     }
