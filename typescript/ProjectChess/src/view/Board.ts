@@ -328,8 +328,8 @@ class Board extends HTMLObject{
         this.pieces.splice(idx2Delete, 1);
 
         for(var locIdx in this.locations){
-            var each = this.locations[locIdx];
-            if(pos.equals(new Pos(each.getX(), each.getY()))){
+            var eachLoc = this.locations[locIdx];
+            if(pos.equals(new Pos(eachLoc.getX(), eachLoc.getY()))){
                 idx2Delete = locIdx;
             }
         }

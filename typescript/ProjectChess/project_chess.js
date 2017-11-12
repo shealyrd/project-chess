@@ -771,8 +771,8 @@ var Board = /** @class */ (function (_super) {
         }
         this.pieces.splice(idx2Delete, 1);
         for (var locIdx in this.locations) {
-            var each = this.locations[locIdx];
-            if (pos.equals(new Pos(each.getX(), each.getY()))) {
+            var eachLoc = this.locations[locIdx];
+            if (pos.equals(new Pos(eachLoc.getX(), eachLoc.getY()))) {
                 idx2Delete = locIdx;
             }
         }
@@ -884,18 +884,32 @@ var Pos = /** @class */ (function () {
     };
     return Pos;
 }());
+var MoveType;
+(function (MoveType) {
+    MoveType[MoveType["NONEXECUTABLE"] = 0] = "NONEXECUTABLE";
+    MoveType[MoveType["CAPTURE"] = 1] = "CAPTURE";
+    MoveType[MoveType["NONCAPTURE"] = 2] = "NONCAPTURE";
+    MoveType[MoveType["FLING"] = 3] = "FLING";
+})(MoveType || (MoveType = {}));
 var Move = /** @class */ (function () {
-    function Move(origin, dest) {
+    function Move(origin, dest, type) {
         this.dest = dest;
         this.origin = origin;
+        this.type = type;
     }
     Move.prototype.getDest = function () {
         return this.dest;
+    };
+    Move.prototype.getType = function () {
+        return this.type;
     };
     Move.prototype.getOrigin = function () {
         return this.origin;
     };
     Move.prototype.equals = function (move) {
+        return this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin()) && (this.type == move.getType());
+    };
+    Move.prototype.equalsIgnoreType = function (move) {
         return this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin());
     };
     return Move;
@@ -922,6 +936,15 @@ var MoveCollection = /** @class */ (function () {
         });
         return result;
     };
+    MoveCollection.prototype.containsIgnoreType = function (move) {
+        var result = false;
+        this.moves.forEach(function (e, i, me) {
+            if (move.equalsIgnoreType(e)) {
+                result = true;
+            }
+        });
+        return result;
+    };
     MoveCollection.prototype.addAll = function (movesArg) {
         var _this = this;
         var moveArray = movesArg.getMoves();
@@ -939,6 +962,21 @@ var MoveCollection = /** @class */ (function () {
             for (var j = 0; j < this.moves.length; j++) {
                 var eachThisMove = this.moves[j];
                 if (eachArgMove.equals(eachThisMove)) {
+                    this.moves.splice(j, 1);
+                }
+            }
+        }
+        return this;
+    };
+    MoveCollection.prototype.minusIgnoreType = function (movesArg) {
+        var result = new Array();
+        var moveArray = movesArg.getMoves();
+        var length = this.moves.length;
+        for (var i = 0; i < moveArray.length; i++) {
+            var eachArgMove = moveArray[i];
+            for (var j = 0; j < this.moves.length; j++) {
+                var eachThisMove = this.moves[j];
+                if (eachArgMove.equalsIgnoreType(eachThisMove)) {
                     this.moves.splice(j, 1);
                 }
             }
@@ -970,14 +1008,14 @@ var MoveFactory = /** @class */ (function () {
         while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
             if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else {
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             y -= 1;
         }
         return new MoveCollection(result);
@@ -990,14 +1028,14 @@ var MoveFactory = /** @class */ (function () {
         while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
             if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else {
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             y += 1;
         }
         return new MoveCollection(result);
@@ -1010,14 +1048,14 @@ var MoveFactory = /** @class */ (function () {
         while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
             if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else {
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x -= 1;
         }
         return new MoveCollection(result);
@@ -1030,14 +1068,14 @@ var MoveFactory = /** @class */ (function () {
         while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
             if (piece.getBoardModel().isFree(new Pos(x, y)) == false) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else {
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x += 1;
         }
         return new MoveCollection(result);
@@ -1069,14 +1107,14 @@ var MoveFactory = /** @class */ (function () {
             while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
                 if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                     if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                         break;
                     }
                     else {
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
                 y -= 1;
             }
         }
@@ -1093,14 +1131,14 @@ var MoveFactory = /** @class */ (function () {
             while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
                 if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                     if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                         break;
                     }
                     else {
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
                 x += 1;
             }
         }
@@ -1117,14 +1155,14 @@ var MoveFactory = /** @class */ (function () {
             while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
                 if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                     if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                         break;
                     }
                     else {
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
                 x -= 1;
             }
         }
@@ -1141,16 +1179,23 @@ var MoveFactory = /** @class */ (function () {
             while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
                 if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                     if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                         break;
                     }
                     else {
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
                 y += 1;
             }
+        }
+        return result;
+    };
+    MoveFactory.getFling = function (piece, dest) {
+        var result = new MoveCollection();
+        if (piece.getBoardModel().isValidPosition(dest)) {
+            result.add(new Move(piece.getPos(), dest, MoveType.FLING));
         }
         return result;
     };
@@ -1170,14 +1215,14 @@ var MoveFactory = /** @class */ (function () {
         while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
             if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else {
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x -= 1;
             y -= 1;
         }
@@ -1191,14 +1236,14 @@ var MoveFactory = /** @class */ (function () {
         while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
             if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else {
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x += 1;
             y -= 1;
         }
@@ -1212,14 +1257,14 @@ var MoveFactory = /** @class */ (function () {
         while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
             if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else {
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x += 1;
             y += 1;
         }
@@ -1233,14 +1278,14 @@ var MoveFactory = /** @class */ (function () {
         while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
             if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else {
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x -= 1;
             y += 1;
         }
@@ -1261,11 +1306,11 @@ var MoveFactory = /** @class */ (function () {
         if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                 }
             }
             else {
-                result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
             }
         }
         return result;
@@ -1278,7 +1323,7 @@ var MoveFactory = /** @class */ (function () {
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
             }
             else {
-                result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
             }
         }
         return result;
@@ -1290,7 +1335,7 @@ var MoveFactory = /** @class */ (function () {
         if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                 }
             }
         }
@@ -1306,13 +1351,13 @@ var MoveFactory = /** @class */ (function () {
                 if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
                     if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                         if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
-                            result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                            result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                             count--;
                             newY--;
                         }
                     }
                     else {
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
                         count--;
                         newY--;
                     }
@@ -1327,13 +1372,13 @@ var MoveFactory = /** @class */ (function () {
                 if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
                     if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                         if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
-                            result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                            result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                             count--;
                             newY++;
                         }
                     }
                     else {
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
                         count--;
                         newY++;
                     }
@@ -1354,7 +1399,7 @@ var MoveFactory = /** @class */ (function () {
                         break;
                     }
                     else {
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
                         count--;
                         newY--;
                     }
@@ -1374,7 +1419,7 @@ var MoveFactory = /** @class */ (function () {
                         break;
                     }
                     else {
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
                         count--;
                         newY++;
                     }
@@ -1449,18 +1494,20 @@ var PawnModel = /** @class */ (function (_super) {
         return this.getBoardModel().getDirection(this.getColor());
     };
     PawnModel.prototype.getPossibleMoves = function () {
-        if (this.hasMoved) {
+        /*
+        if(this.hasMoved){
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
-                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
+                    .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()));
         }
-        else {
+        else{
             //alert(MoveFactory.getLineForward(this, 2, this.getDirection()).getMoves.length);
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                 .addAll(MoveFactory.getLineForwardNoncapturing(this, 2, this.getDirection())
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())));
-        }
+        }*/
+        return MoveFactory.getFling(this, new Pos(this.getPos().getX(), this.getPos().getY() - 3));
     };
     return PawnModel;
 }(PieceModel));
@@ -1595,15 +1642,15 @@ var PicketModel = /** @class */ (function (_super) {
         var x = this.getPos().getX();
         var y = this.getPos().getY();
         var invalidMoves = new MoveCollection();
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1)));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2)));
-        return MoveFactory.getAllDiagonal(this).minus(invalidMoves);
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1), MoveType.NONCAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2), MoveType.NONCAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1), MoveType.NONCAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2), MoveType.NONCAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1), MoveType.NONCAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2), MoveType.NONCAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1), MoveType.NONCAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2), MoveType.NONCAPTURE));
+        return MoveFactory.getAllDiagonal(this).minusIgnoreType(invalidMoves);
     };
     return PicketModel;
 }(PieceModel));
@@ -1814,7 +1861,12 @@ var BoardModel = /** @class */ (function () {
     BoardModel.prototype.executeMove = function (move) {
         var originalPiece = this.getPieceFromPosition(move.getOrigin());
         originalPiece.onMove(move);
-        this.movePiece(originalPiece.getPos(), move.getDest());
+        if ((move.getType() == MoveType.NONCAPTURE) || (move.getType() == MoveType.CAPTURE)) {
+            this.movePiece(originalPiece.getPos(), move.getDest());
+        }
+        else if (move.getType() == MoveType.FLING) {
+            this.removePiece(move.getDest());
+        }
     };
     BoardModel.prototype.movePiece = function (origin, dest) {
         var piece = this.getPieceFromPosition(origin);
@@ -1954,8 +2006,14 @@ var BoardFactory = /** @class */ (function () {
         board.populateFromSerial(BoardFactory.TAMERLANE_BOARD);
         return board;
     };
+    BoardFactory.testBoard = function () {
+        var board = new BoardModel(9, 9);
+        board.populateFromSerial(BoardFactory.TEST_BOARD);
+        return board;
+    };
     BoardFactory.STANDARD_BOARD = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     BoardFactory.TAMERLANE_BOARD = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
+    BoardFactory.TEST_BOARD = "[4_B],[3_B],[2_B],[5_B],[6_B],[2_B],[3_B],[4_B],[13_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[],[]/[],[],[13_B],[],[],[13_B],[],[13_B],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[3_W],[2_W],[6_W],[5_W],[2_W],[3_W],[10_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]";
     return BoardFactory;
 }());
 var Player = /** @class */ (function () {
@@ -2355,7 +2413,8 @@ var GameController = /** @class */ (function (_super) {
         return _this;
     }
     GameController.prototype.start = function () {
-        var board = BoardFactory.getTamerlaneBoard();
+        //var board: BoardModel = BoardFactory.getTamerlaneBoard();
+        var board = BoardFactory.testBoard();
         this.throbber = new Throbber(this.squareWidth * 2, this.squareHeight * 2, 99);
         this.throbber.centerInSquare(this.offsetLeft, this.offsetTop, this.squareWidth * board.getWidth(), this.squareHeight * board.getHeight());
         this.htmlContainer.setThrobberHTML(this.throbber.toHTML());
@@ -2533,8 +2592,8 @@ var GameController = /** @class */ (function (_super) {
     GameController.prototype.representsMovableSpace = function (id) {
         var moves = this.SELECTED_PIECE.getPossibleMoves();
         var sqr = this.boardView.getSquareById(id);
-        var thisMove = new Move(this.SELECTED_PIECE.getPos(), new Pos(sqr.getX(), sqr.getY()));
-        return moves.contains(thisMove);
+        var thisMove = new Move(this.SELECTED_PIECE.getPos(), new Pos(sqr.getX(), sqr.getY()), MoveType.NONEXECUTABLE);
+        return moves.containsIgnoreType(thisMove);
     };
     GameController.prototype.oppPieceIsSelected = function () {
         return ((this.SELECTED_PIECE != null && this.SELECTED_PIECE != undefined) && this.SELECTED_PIECE.getColor() == this.swapColor(this.getColor()));
@@ -2551,7 +2610,7 @@ var GameController = /** @class */ (function (_super) {
     };
     GameController.prototype.moveSelectedPieceToSquare = function (sqr) {
         this.turnOffClickListeners();
-        var move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos());
+        var move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos(), MoveType.NONEXECUTABLE);
         this.setChosenMove(move);
         this.unselectPiece();
         this.resetSquareColors();

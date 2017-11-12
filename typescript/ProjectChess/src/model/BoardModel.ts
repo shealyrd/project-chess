@@ -140,7 +140,13 @@ class BoardModel{
     executeMove(move: Move){
         var originalPiece: PieceModel = this.getPieceFromPosition(move.getOrigin());
         originalPiece.onMove(move);
-        this.movePiece(originalPiece.getPos(), move.getDest());
+        if((move.getType() == MoveType.NONCAPTURE) || (move.getType() == MoveType.CAPTURE))
+        {
+            this.movePiece(originalPiece.getPos(), move.getDest());
+        }
+        else if(move.getType() == MoveType.FLING){
+            this.removePiece(move.getDest());
+        }
     }
 
     movePiece(origin: Pos, dest: Pos) {

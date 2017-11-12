@@ -13,15 +13,15 @@ class PicketModel extends PieceModel{
 		var y = this.getPos().getY();
 	
 		var invalidMoves = new MoveCollection();
-		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1)));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2)));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1)));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2)));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1)));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2)));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1)));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2)));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1), MoveType.NONCAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2), MoveType.NONCAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1), MoveType.NONCAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2), MoveType.NONCAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1), MoveType.NONCAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2), MoveType.NONCAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1), MoveType.NONCAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2), MoveType.NONCAPTURE));
 		
-		return MoveFactory.getAllDiagonal(this).minus(invalidMoves);
+		return MoveFactory.getAllDiagonal(this).minusIgnoreType(invalidMoves);
     }
 }

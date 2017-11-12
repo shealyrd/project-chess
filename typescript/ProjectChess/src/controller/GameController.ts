@@ -27,7 +27,8 @@ class GameController extends Player{
 
 
     start(){
-        var board: BoardModel = BoardFactory.getTamerlaneBoard();
+        //var board: BoardModel = BoardFactory.getTamerlaneBoard();
+        var board: BoardModel = BoardFactory.testBoard();
         this.throbber = new Throbber(this.squareWidth * 2, this.squareHeight * 2, 99);
         this.throbber.centerInSquare(this.offsetLeft, this.offsetTop, this.squareWidth * board.getWidth(), this.squareHeight * board.getHeight());
         this.htmlContainer.setThrobberHTML(this.throbber.toHTML());
@@ -226,8 +227,8 @@ class GameController extends Player{
     representsMovableSpace(id: string): boolean {
         var moves: MoveCollection = this.SELECTED_PIECE.getPossibleMoves();
         var sqr: Square = this.boardView.getSquareById(id);
-        var thisMove = new Move(this.SELECTED_PIECE.getPos(), new Pos(sqr.getX(), sqr.getY()));
-        return moves.contains(thisMove);
+        var thisMove = new Move(this.SELECTED_PIECE.getPos(), new Pos(sqr.getX(), sqr.getY()), MoveType.NONEXECUTABLE);
+        return moves.containsIgnoreType(thisMove);
     }
 
     oppPieceIsSelected():boolean {
@@ -248,7 +249,7 @@ class GameController extends Player{
 
     moveSelectedPieceToSquare(sqr:Square):void {
         this.turnOffClickListeners();
-        var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos());
+        var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos(), MoveType.NONEXECUTABLE);
         this.setChosenMove(move);
         this.unselectPiece();
         this.resetSquareColors();

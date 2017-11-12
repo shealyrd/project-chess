@@ -10,14 +10,14 @@ class MoveFactory{
         while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
             if(!piece.getBoardModel().isFree(new Pos(x, y))){
                 if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             y -= 1;
         }
 
@@ -34,14 +34,14 @@ class MoveFactory{
         while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
             if(!piece.getBoardModel().isFree(new Pos(x, y))){
                 if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             y += 1;
         }
 
@@ -58,14 +58,14 @@ class MoveFactory{
         while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
             if(!piece.getBoardModel().isFree(new Pos(x, y))){
                 if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x -= 1;
         }
 
@@ -82,14 +82,14 @@ class MoveFactory{
         while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
             if(piece.getBoardModel().isFree(new Pos(x, y)) == false){
                 if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                    result.push(new Move(piece.getPos(), new Pos(x, y)));
+                    result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y)));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x += 1;
         }
 
@@ -132,14 +132,14 @@ class MoveFactory{
             while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
                 if(!piece.getBoardModel().isFree(new Pos(x, y))){
                     if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                         break;
                     }
                     else{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
                 y -= 1;
             }
         }
@@ -159,14 +159,14 @@ class MoveFactory{
             while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
                 if(!piece.getBoardModel().isFree(new Pos(x, y))){
                     if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                         break;
                     }
                     else{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
                 x += 1;
             }
         }
@@ -186,14 +186,14 @@ class MoveFactory{
             while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
                 if(!piece.getBoardModel().isFree(new Pos(x, y))){
                     if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                         break;
                     }
                     else{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
                 x -= 1;
             }
         }
@@ -213,21 +213,28 @@ class MoveFactory{
             while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
                 if(!piece.getBoardModel().isFree(new Pos(x, y))){
                     if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                         break;
                     }
                     else{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
                 y += 1;
             }
         }
 
         return result;
 	}
-	
+
+    static getFling(piece: PieceModel, dest: Pos): MoveCollection{
+        var result: MoveCollection = new MoveCollection();
+        if(piece.getBoardModel().isValidPosition(dest)){
+            result.add(new Move(piece.getPos(), dest, MoveType.FLING));
+        }
+        return result;
+    }
 
     static getAllCardinal(piece: PieceModel){
         var result: MoveCollection = new MoveCollection();
@@ -250,14 +257,14 @@ class MoveFactory{
         while(piece.getBoardModel().isValidPosition(new Pos(x, y))) {
             if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else {
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x -= 1;
             y -= 1;
         }
@@ -276,14 +283,14 @@ class MoveFactory{
     while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
         if(!piece.getBoardModel().isFree(new Pos(x, y))){
             if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 break;
             }
             else{
                 break;
             }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x += 1;
             y -= 1;
         }
@@ -302,14 +309,14 @@ class MoveFactory{
         while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
             if(!piece.getBoardModel().isFree(new Pos(x, y))){
                 if(piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()){
-                    result.add(new Move(piece.getPos(), new Pos(x, y)));
+                    result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                     break;
                 }
                 else{
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y)));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
             x += 1;
             y += 1;
         }
@@ -327,14 +334,14 @@ class MoveFactory{
             while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
                 if (!piece.getBoardModel().isFree(new Pos(x, y))) {
                     if (piece.getBoardModel().getPieceFromPosition(new Pos(x, y)).getColor() != piece.getColor()) {
-                        result.add(new Move(piece.getPos(), new Pos(x, y)));
+                        result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                         break;
                     }
                     else {
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y)));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
                 x -= 1;
                 y += 1;
             }
@@ -363,11 +370,11 @@ class MoveFactory{
         if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                 }
             }
             else{
-                result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
             }
         }
 
@@ -383,7 +390,7 @@ class MoveFactory{
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
             }
             else{
-                result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
             }
         }
 
@@ -399,7 +406,7 @@ class MoveFactory{
         if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                 if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
-                    result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                 }
             }
         }
@@ -419,13 +426,13 @@ class MoveFactory{
                 if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
                     if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                         if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
-                            result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                            result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                             count--;
                             newY--;
                         }
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
                         count--;
                         newY--;
                     }
@@ -441,13 +448,13 @@ class MoveFactory{
                 if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
                     if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                         if (piece.getBoardModel().getPieceFromPosition(new Pos(newX, newY)).getColor() != piece.getColor()) {
-                            result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                            result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                             count--;
                             newY++;
                         }
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
                         count--;
                         newY++;
                     }
@@ -472,7 +479,7 @@ class MoveFactory{
                         break;
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
                         count--;
                         newY--;
                     }
@@ -493,7 +500,7 @@ class MoveFactory{
                         break;
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY)));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
                         count--;
                         newY++;
                     }

@@ -17,6 +17,7 @@ type %~dp0\view\Board.ts  >> out.ts
 type %~dp0\view\Throbber.ts  >> out.ts 
 type %~dp0\view\AlertText.ts  >> out.ts 
 type %~dp0\model\Pos.ts  >> out.ts 
+type %~dp0\model\MoveType.ts  >> out.ts 
 type %~dp0\model\Move.ts  >> out.ts 
 type %~dp0\model\MoveCollection.ts  >> out.ts 
 type %~dp0\model\MoveFactory.ts  >> out.ts 
