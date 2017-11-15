@@ -1734,7 +1734,6 @@ enum MoveType{
     giveInternalAttributes(piece: PieceModel) {
         var currPiece = piece as PawnModel;
         currPiece.hasMoved = this.hasMoved;
-
     }
 
     getDirection(): number{
@@ -1742,7 +1741,7 @@ enum MoveType{
     }
 
     getPossibleMoves(): MoveCollection{
-        /*
+
         if(this.hasMoved){
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                     .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
@@ -1754,9 +1753,7 @@ enum MoveType{
                 .addAll(MoveFactory.getLineForwardNoncapturing(this, 2, this.getDirection())
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())));
-        }*/
-
-        return MoveFactory.getFling(this, new Pos(this.getPos().getX(), this.getPos().getY() - 3));
+        }
 
     }
 }class GiraffeRiderModel extends PieceModel{
@@ -2800,7 +2797,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr);
+                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
                 control.signalOpponentsMove();
             }
         };
@@ -2844,7 +2841,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr);
+                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
             }
         };
     }
@@ -2867,7 +2864,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr);
+                control.moveSelectedPieceToSquare(sqr, MoveType.NONCAPTURE);
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
@@ -2929,9 +2926,9 @@ class GameController extends Player{
         this.update();
     }
 
-    moveSelectedPieceToSquare(sqr:Square):void {
+    moveSelectedPieceToSquare(sqr:Square, type: MoveType):void {
         this.turnOffClickListeners();
-        var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos(), MoveType.NONEXECUTABLE);
+        var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos(), type);
         this.setChosenMove(move);
         this.unselectPiece();
         this.resetSquareColors();

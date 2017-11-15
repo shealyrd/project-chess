@@ -118,7 +118,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr);
+                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
                 control.signalOpponentsMove();
             }
         };
@@ -162,7 +162,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr);
+                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
             }
         };
     }
@@ -185,7 +185,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr);
+                control.moveSelectedPieceToSquare(sqr, MoveType.NONCAPTURE);
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
@@ -247,9 +247,9 @@ class GameController extends Player{
         this.update();
     }
 
-    moveSelectedPieceToSquare(sqr:Square):void {
+    moveSelectedPieceToSquare(sqr:Square, type: MoveType):void {
         this.turnOffClickListeners();
-        var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos(), MoveType.NONEXECUTABLE);
+        var move: Move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos(), type);
         this.setChosenMove(move);
         this.unselectPiece();
         this.resetSquareColors();

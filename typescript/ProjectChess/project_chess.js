@@ -1494,20 +1494,18 @@ var PawnModel = /** @class */ (function (_super) {
         return this.getBoardModel().getDirection(this.getColor());
     };
     PawnModel.prototype.getPossibleMoves = function () {
-        /*
-        if(this.hasMoved){
+        if (this.hasMoved) {
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
-                    .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()));
         }
-        else{
+        else {
             //alert(MoveFactory.getLineForward(this, 2, this.getDirection()).getMoves.length);
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                 .addAll(MoveFactory.getLineForwardNoncapturing(this, 2, this.getDirection())
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())));
-        }*/
-        return MoveFactory.getFling(this, new Pos(this.getPos().getX(), this.getPos().getY() - 3));
+        }
     };
     return PawnModel;
 }(PieceModel));
@@ -2494,7 +2492,7 @@ var GameController = /** @class */ (function (_super) {
             }
             else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
                 var sqr = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr);
+                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
                 control.signalOpponentsMove();
             }
         };
@@ -2536,7 +2534,7 @@ var GameController = /** @class */ (function (_super) {
             }
             else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
                 var sqr = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr);
+                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
             }
         };
     };
@@ -2557,7 +2555,7 @@ var GameController = /** @class */ (function (_super) {
             }
             else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
                 var sqr = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr);
+                control.moveSelectedPieceToSquare(sqr, MoveType.NONCAPTURE);
             }
             else if (control.myPieceIsSelected() && !(control.representsMovableSpace(id))) {
                 control.unselectPiece();
@@ -2608,9 +2606,9 @@ var GameController = /** @class */ (function (_super) {
         this.setSelectedPiece(piece);
         this.update();
     };
-    GameController.prototype.moveSelectedPieceToSquare = function (sqr) {
+    GameController.prototype.moveSelectedPieceToSquare = function (sqr, type) {
         this.turnOffClickListeners();
-        var move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos(), MoveType.NONEXECUTABLE);
+        var move = new Move(this.SELECTED_PIECE.getPos(), sqr.getPos(), type);
         this.setChosenMove(move);
         this.unselectPiece();
         this.resetSquareColors();
@@ -3109,4 +3107,5 @@ var BoardBuilder = /** @class */ (function () {
     };
     return BoardBuilder;
 }());
-BoardBuilder.start();
+//BoardBuilder.start();
+GameBox.start();

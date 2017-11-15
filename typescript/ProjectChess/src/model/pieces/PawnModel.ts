@@ -17,7 +17,6 @@ class PawnModel extends PieceModel{
     giveInternalAttributes(piece: PieceModel) {
         var currPiece = piece as PawnModel;
         currPiece.hasMoved = this.hasMoved;
-
     }
 
     getDirection(): number{
@@ -25,7 +24,7 @@ class PawnModel extends PieceModel{
     }
 
     getPossibleMoves(): MoveCollection{
-        /*
+
         if(this.hasMoved){
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                     .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
@@ -37,9 +36,7 @@ class PawnModel extends PieceModel{
                 .addAll(MoveFactory.getLineForwardNoncapturing(this, 2, this.getDirection())
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())));
-        }*/
-
-        return MoveFactory.getFling(this, new Pos(this.getPos().getX(), this.getPos().getY() - 3));
+        }
 
     }
 }
