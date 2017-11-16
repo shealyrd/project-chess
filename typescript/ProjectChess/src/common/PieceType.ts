@@ -13,5 +13,6 @@ enum PieceType{
 	PICKET = 11,
 	ELEPHANT_RIDER = 12,
 	CAMEL_RIDER = 13,
-	HERO = 14
+	HERO = 14,
+	CANNON = 15
 }
