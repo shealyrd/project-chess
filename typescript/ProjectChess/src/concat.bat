@@ -35,6 +35,7 @@ type %~dp0\model\pieces\WarMachineModel.ts  >> out.ts
 type %~dp0\model\pieces\PicketModel.ts  >> out.ts 
 type %~dp0\model\pieces\ElephantRiderModel.ts  >> out.ts 
 type %~dp0\model\pieces\CamelRiderModel.ts  >> out.ts 
+type %~dp0\model\pieces\CannonModel.ts  >> out.ts 
 type %~dp0\model\PieceFactory.ts  >> out.ts 
 type %~dp0\model\BoardModel.ts  >> out.ts 
 type %~dp0\model\BoardFactory.ts  >> out.ts 

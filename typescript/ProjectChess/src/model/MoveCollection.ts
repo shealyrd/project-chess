@@ -80,7 +80,18 @@ class MoveCollection{
 
         return this;
     }
-
+	
+	public getMovesOfType(type: MoveType): MoveCollection{
+		var result: MoveCollection  = new MoveCollection();
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.getType() == type){
+				result.add(eachMove);
+			}
+        }
+		return result;
+	}
+	
     public containsDestination(pos: Pos){
         for(var moveIdx in this.getMoves()){
             var eachMove = this.moves[moveIdx];
