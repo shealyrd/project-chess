@@ -30,6 +30,10 @@ abstract class PieceModel{
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllUpwards(this);
     }
+
+    getDirection(): number{
+        return this.getBoardModel().getDirection(this.getColor());
+    }
 	
 	transformInto(type: PieceType){
 		this.getBoardModel().removePiece(this.getPos());

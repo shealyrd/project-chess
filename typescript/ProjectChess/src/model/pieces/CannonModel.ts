@@ -17,6 +17,7 @@ class CannonModel extends PieceModel{
     }
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this));
+        return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this))
+        .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()))
     }
 }

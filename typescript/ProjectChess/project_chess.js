@@ -188,6 +188,7 @@ var PieceType;
     PieceType[PieceType["ELEPHANT_RIDER"] = 12] = "ELEPHANT_RIDER";
     PieceType[PieceType["CAMEL_RIDER"] = 13] = "CAMEL_RIDER";
     PieceType[PieceType["HERO"] = 14] = "HERO";
+    PieceType[PieceType["CANNON"] = 15] = "CANNON";
 })(PieceType || (PieceType = {}));
 var PieceLocation = /** @class */ (function () {
     function PieceLocation(x, y, type, color) {
@@ -254,6 +255,7 @@ var PieceImageDatabase = /** @class */ (function () {
         whiteImages.set(PieceType.ELEPHANT_RIDER, 'imgs//pieces//Elephant_W.png');
         whiteImages.set(PieceType.PICKET, 'imgs//pieces//Picket_W.png');
         whiteImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_W.png');
+        whiteImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_W.png');
         return whiteImages;
     };
     PieceImageDatabase.blackMap = function () {
@@ -271,6 +273,7 @@ var PieceImageDatabase = /** @class */ (function () {
         blackImages.set(PieceType.ELEPHANT_RIDER, 'imgs//pieces//Elephant_B.png');
         blackImages.set(PieceType.PICKET, 'imgs//pieces//Picket_B.png');
         blackImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_B.png');
+        blackImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_B.png');
         return blackImages;
     };
     PieceImageDatabase.whiteImages = PieceImageDatabase.whiteMap();
@@ -1315,6 +1318,19 @@ var MoveFactory = /** @class */ (function () {
         }
         return result;
     };
+    MoveFactory.getRelativeToPieceFling = function (piece, x, y) {
+        var result = new MoveCollection();
+        var newX = piece.getPos().getX() + x;
+        var newY = piece.getPos().getY() + y;
+        if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+            if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+            }
+            else {
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.FLING));
+            }
+        }
+        return result;
+    };
     MoveFactory.getRelativeToPieceNonCapturing = function (piece, x, y) {
         var result = new MoveCollection();
         var newX = piece.getPos().getX() + x;
@@ -1455,6 +1471,9 @@ var PieceModel = /** @class */ (function () {
     PieceModel.prototype.getPossibleMoves = function () {
         return MoveFactory.getAllUpwards(this);
     };
+    PieceModel.prototype.getDirection = function () {
+        return this.getBoardModel().getDirection(this.getColor());
+    };
     PieceModel.prototype.transformInto = function (type) {
         this.getBoardModel().removePiece(this.getPos());
         this.getBoardModel().addPiece(type, this.getPos().getX(), this.getPos().getY(), this.getColor());
@@ -1489,9 +1508,6 @@ var PawnModel = /** @class */ (function (_super) {
     PawnModel.prototype.giveInternalAttributes = function (piece) {
         var currPiece = piece;
         currPiece.hasMoved = this.hasMoved;
-    };
-    PawnModel.prototype.getDirection = function () {
-        return this.getBoardModel().getDirection(this.getColor());
     };
     PawnModel.prototype.getPossibleMoves = function () {
         if (this.hasMoved) {
@@ -1675,14 +1691,16 @@ var CamelRiderModel = /** @class */ (function (_super) {
     CamelRiderModel.prototype.onMove = function () { };
     CamelRiderModel.prototype.giveInternalAttributes = function (piece) { };
     CamelRiderModel.prototype.getPossibleMoves = function () {
-        return MoveFactory.getRelativeToPiece(this, -3, -1)
-            .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+        /*  return MoveFactory.getRelativeToPiece(this, -3, -1)
+          .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
+          .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
+          .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
+          .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
+          .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
+          .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
+          .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));*/
+        return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this))
+            .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()));
     };
     return CamelRiderModel;
 }(PieceModel));

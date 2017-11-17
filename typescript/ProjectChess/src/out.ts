@@ -188,7 +188,8 @@ enum State{
 	PICKET = 11,
 	ELEPHANT_RIDER = 12,
 	CAMEL_RIDER = 13,
-	HERO = 14
+	HERO = 14,
+	CANNON = 15
 }
 class PieceLocation{
     x : number;
@@ -265,6 +266,7 @@ class PieceImageDatabase{
         whiteImages.set(PieceType.ELEPHANT_RIDER, 'imgs//pieces//Elephant_W.png');
         whiteImages.set(PieceType.PICKET, 'imgs//pieces//Picket_W.png');
         whiteImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_W.png');
+        whiteImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_W.png');
         return whiteImages;
     }
 
@@ -283,6 +285,7 @@ class PieceImageDatabase{
         blackImages.set(PieceType.ELEPHANT_RIDER, 'imgs//pieces//Elephant_B.png');
         blackImages.set(PieceType.PICKET, 'imgs//pieces//Picket_B.png');
         blackImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_B.png');
+        blackImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_B.png');
         return blackImages;
     }
 }class Piece extends HTMLObject{
@@ -1531,6 +1534,22 @@ enum MoveType{
         return result;
     }
 
+    static getRelativeToPieceFling(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+            if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
+            }
+            else{
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.FLING));
+            }
+        }
+
+        return result;
+    }
+
     static getRelativeToPieceNonCapturing(piece: PieceModel, x: number, y: number){
         var result: MoveCollection = new MoveCollection();
         var newX: number = piece.getPos().getX() + x;
@@ -1695,6 +1714,10 @@ enum MoveType{
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllUpwards(this);
     }
+
+    getDirection(): number{
+        return this.getBoardModel().getDirection(this.getColor());
+    }
 	
 	transformInto(type: PieceType){
 		this.getBoardModel().removePiece(this.getPos());
@@ -1736,9 +1759,6 @@ enum MoveType{
         currPiece.hasMoved = this.hasMoved;
     }
 
-    getDirection(): number{
-        return this.getBoardModel().getDirection(this.getColor());
-    }
 
     getPossibleMoves(): MoveCollection{
 
@@ -1927,14 +1947,16 @@ enum MoveType{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getRelativeToPiece(this, -3, -1)
+      /*  return MoveFactory.getRelativeToPiece(this, -3, -1)
         .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
         .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
         .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
         .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));*/
+        return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this))
+            .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()))
     }
 }class PieceFactory{
 

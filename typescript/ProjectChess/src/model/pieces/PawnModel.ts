@@ -19,9 +19,6 @@ class PawnModel extends PieceModel{
         currPiece.hasMoved = this.hasMoved;
     }
 
-    getDirection(): number{
-        return this.getBoardModel().getDirection(this.getColor());
-    }
 
     getPossibleMoves(): MoveCollection{
 
