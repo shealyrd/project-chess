@@ -1947,36 +1947,16 @@ enum MoveType{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-       return MoveFactory.getRelativeToPiece(this, -3, -1)
+      /*  return MoveFactory.getRelativeToPiece(this, -3, -1)
         .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
         .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
         .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
         .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
-    }
-}class CannonModel extends PieceModel{
-    hasMoved: boolean;
-
-    constructor(board: BoardModel, pos: Pos, color: Color){
-        super(board, pos, color, PieceType.CANNON);
-    }
-
-    onMove(move: Move){
-    }
-
-    giveInternalAttributes(piece: PieceModel) {
-
-    }
-
-    getDirection(): number{
-        return this.getBoardModel().getDirection(this.getColor());
-    }
-
-    getPossibleMoves(): MoveCollection{
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));*/
         return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this))
-        .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()))
+            .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()))
     }
 }class PieceFactory{
 
@@ -1996,7 +1976,6 @@ enum MoveType{
             case PieceType.CAMEL_RIDER: newPiece = new CamelRiderModel(board, pos, color); break;
             case PieceType.ELEPHANT_RIDER: newPiece = new ElephantRiderModel(board, pos, color); break;
             case PieceType.PICKET: newPiece = new PicketModel(board, pos, color); break;
-			case PieceType.CANNON: newPiece = new CannonModel(board, pos, color); break;
         }
         return newPiece;
     }
@@ -2297,7 +2276,7 @@ enum MoveType{
 }class BoardFactory{
     static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     static TAMERLANE_BOARD: string = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
-    static TEST_BOARD: string = "[],[1_B],[],[1_B],[],[]/[],[],[6_B],[],[],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[15_W],[],[],[]/[],[],[6_W],[],[],[]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
+    static TEST_BOARD: string = "[4_B],[3_B],[2_B],[5_B],[6_B],[2_B],[3_B],[4_B],[13_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[],[]/[],[],[13_B],[],[],[13_B],[],[13_B],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[3_W],[2_W],[6_W],[5_W],[2_W],[3_W],[10_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]";
     static getStandardBoard(): BoardModel{
         var board: BoardModel = new BoardModel(8,8);
         board.populateFromSerial(BoardFactory.STANDARD_BOARD);
@@ -2310,7 +2289,7 @@ enum MoveType{
     }
 
     static testBoard(): BoardModel{
-        var board: BoardModel = new BoardModel(6,6);
+        var board: BoardModel = new BoardModel(9,9);
         board.populateFromSerial(BoardFactory.TEST_BOARD);
         return board;
     }

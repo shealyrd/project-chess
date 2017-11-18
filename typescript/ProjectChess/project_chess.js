@@ -1691,34 +1691,18 @@ var CamelRiderModel = /** @class */ (function (_super) {
     CamelRiderModel.prototype.onMove = function () { };
     CamelRiderModel.prototype.giveInternalAttributes = function (piece) { };
     CamelRiderModel.prototype.getPossibleMoves = function () {
-        return MoveFactory.getRelativeToPiece(this, -3, -1)
-            .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
-    };
-    return CamelRiderModel;
-}(PieceModel));
-var CannonModel = /** @class */ (function (_super) {
-    __extends(CannonModel, _super);
-    function CannonModel(board, pos, color) {
-        return _super.call(this, board, pos, color, PieceType.CANNON) || this;
-    }
-    CannonModel.prototype.onMove = function (move) {
-    };
-    CannonModel.prototype.giveInternalAttributes = function (piece) {
-    };
-    CannonModel.prototype.getDirection = function () {
-        return this.getBoardModel().getDirection(this.getColor());
-    };
-    CannonModel.prototype.getPossibleMoves = function () {
+        /*  return MoveFactory.getRelativeToPiece(this, -3, -1)
+          .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
+          .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
+          .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
+          .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
+          .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
+          .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
+          .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));*/
         return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this))
             .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()));
     };
-    return CannonModel;
+    return CamelRiderModel;
 }(PieceModel));
 var PieceFactory = /** @class */ (function () {
     function PieceFactory() {
@@ -1764,9 +1748,6 @@ var PieceFactory = /** @class */ (function () {
                 break;
             case PieceType.PICKET:
                 newPiece = new PicketModel(board, pos, color);
-                break;
-            case PieceType.CANNON:
-                newPiece = new CannonModel(board, pos, color);
                 break;
         }
         return newPiece;
@@ -1888,7 +1869,7 @@ var BoardModel = /** @class */ (function () {
         var _this = this;
         this.pos2PieceMap.forEach(function (value, key, map) {
             if (key.equals(pos)) {
-                _this.pos2PieceMap.delete(key);
+                _this.pos2PieceMap["delete"](key);
             }
         });
         this.pos2PieceMap.set(pos, null);
@@ -2042,13 +2023,13 @@ var BoardFactory = /** @class */ (function () {
         return board;
     };
     BoardFactory.testBoard = function () {
-        var board = new BoardModel(6, 6);
+        var board = new BoardModel(9, 9);
         board.populateFromSerial(BoardFactory.TEST_BOARD);
         return board;
     };
     BoardFactory.STANDARD_BOARD = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     BoardFactory.TAMERLANE_BOARD = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
-    BoardFactory.TEST_BOARD = "[],[1_B],[],[1_B],[],[]/[],[],[6_B],[],[],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[15_W],[],[],[]/[],[],[6_W],[],[],[]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
+    BoardFactory.TEST_BOARD = "[4_B],[3_B],[2_B],[5_B],[6_B],[2_B],[3_B],[4_B],[13_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[],[]/[],[],[13_B],[],[],[13_B],[],[13_B],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[3_W],[2_W],[6_W],[5_W],[2_W],[3_W],[10_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]";
     return BoardFactory;
 }());
 var Player = /** @class */ (function () {
