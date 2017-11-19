@@ -91,6 +91,16 @@ class MoveCollection{
         return false;
     }
 
+    public containsType(type: MoveType){
+        for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.getType() == type){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public shuffle(){
         Algorithms.shuffle(this.moves);
     }

@@ -98,7 +98,21 @@ class GameController extends Player{
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
-                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                if(thisPiece.getPossibleMoves().containsType(MoveType.FLING)){
+                    var choiceModal = new ChoiceModal();
+                    choiceModal.addChoice("Move");
+                    choiceModal.addChoice("Fire");
+                    choiceModal.setOnChoice((result) => {
+                        control.htmlContainer.hideChoiceModal();
+                        control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                    });
+                    control.htmlContainer.setChoiceModal(choiceModal);
+                    control.htmlContainer.showChoiceModal();
+                }
+                else{
+                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                }
+
             }
             else if(control.myPieceIsSelected() && control.selectedPieceIsAtSquareId(id)){
                 control.unselectPiece();

@@ -5,6 +5,7 @@ type %~dp0\common\CallbackPool.ts >> out.ts
 type %~dp0\common\IDSequence.ts >> out.ts 
 type %~dp0\view\HTMLObject.ts >> out.ts 
 type %~dp0\view\HTMLBuilder.ts >> out.ts 
+type %~dp0\view\ChoiceModal.ts >> out.ts 
 type %~dp0\common\Color.ts  >> out.ts 
 type %~dp0\common\SquareType.ts  >> out.ts 
 type %~dp0\common\PieceType.ts  >> out.ts 
@@ -35,6 +36,7 @@ type %~dp0\model\pieces\WarMachineModel.ts  >> out.ts
 type %~dp0\model\pieces\PicketModel.ts  >> out.ts 
 type %~dp0\model\pieces\ElephantRiderModel.ts  >> out.ts 
 type %~dp0\model\pieces\CamelRiderModel.ts  >> out.ts 
+type %~dp0\model\pieces\CannonModel.ts  >> out.ts 
 type %~dp0\model\PieceFactory.ts  >> out.ts 
 type %~dp0\model\BoardModel.ts  >> out.ts 
 type %~dp0\model\BoardFactory.ts  >> out.ts 
@@ -53,3 +55,4 @@ type %~dp0\global\GameBox.ts  >> out.ts
 type %~dp0\board_builder\BoardBuilderHTMLContainer.ts  >> out.ts 
 type %~dp0\board_builder\BoardBuilderController.ts  >> out.ts 
 type %~dp0\board_builder\BoardBuilder.ts  >> out.ts 
+type %~dp0\global\RunCommands.ts  >> out.ts 

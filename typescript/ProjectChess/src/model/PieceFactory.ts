@@ -16,6 +16,7 @@ class PieceFactory{
             case PieceType.CAMEL_RIDER: newPiece = new CamelRiderModel(board, pos, color); break;
             case PieceType.ELEPHANT_RIDER: newPiece = new ElephantRiderModel(board, pos, color); break;
             case PieceType.PICKET: newPiece = new PicketModel(board, pos, color); break;
+            case PieceType.CANNON: newPiece = new CannonModel(board, pos, color); break;
         }
         return newPiece;
     }

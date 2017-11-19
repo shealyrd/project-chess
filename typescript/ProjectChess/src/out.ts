@@ -167,6 +167,80 @@ enum State{
 
         return result;
     }
+}class ChoiceModal{
+    choices: string[] = new Array();
+    rowHeight: number;
+    width: number;
+    onChoice: (choice: string) => void;
+
+    constructor(rowHeight?: number, width?: number){
+        if(rowHeight == null){
+            rowHeight = 23;
+        }
+        if(width == null){
+            width = 154;
+        }
+        this.rowHeight = rowHeight;
+        this.width = width;
+    }
+
+    addChoice(newChoice: string){
+        this.choices.push(newChoice);
+    }
+
+    setOnChoice(inputfunc: (choice: string) => void){
+        this.onChoice = inputfunc;
+    }
+
+    toHTML():string{
+        var builder: HTMLBuilder = new HTMLBuilder();
+        var choiceListHTML = this.getChoiceListHTML();
+
+        builder
+            .newDiv()
+            .addStyle("width", this.width + "px")
+            .addStyle("display", "inline-block");
+
+        builder.addInnerDiv(choiceListHTML);
+
+        return builder.toString();
+    }
+
+    toHTMLElement(): HTMLElement{
+        var newElement = document.createElement('div');
+        newElement.innerHTML = this.toHTML();
+        var result = <HTMLElement> newElement.firstChild;
+        for (var i = 0; i < result.children.length; i++) {
+            var eachElement = <HTMLElement> result.children[i];
+            eachElement.onmouseover = function() { this.style.backgroundColor = "rgb(222,222,222)"};
+            eachElement.onmouseleave = function() { this.style.backgroundColor = "#ebebeb"};
+            eachElement.onclick = (function(element, global) {return () => {global.onChoice(element.innerHTML)}}(eachElement, this));
+        }
+
+        return result;
+    }
+
+    getChoiceListHTML():string {
+        var result = "";
+        for(var choice in this.choices){
+            var eachChoice = this.choices[choice];
+            var builder: HTMLBuilder = new HTMLBuilder();
+            builder.newDiv()
+                .addClass("choice_model_item")
+                .addStyle("height", this.rowHeight + "px")
+                .addStyle("vertical-align", "middle")
+                .addStyle("padding", (this.rowHeight / 1.77) + "px " + (this.rowHeight / 2.3) + "px")
+                .addStyle("top", "0")
+                .addStyle("font-weight", "300")
+                .addStyle("font-size", "18px")
+                .addStyle("font-family", "Roboto, sans-serif")
+                .addStyle("color", "#555")
+                .addStyle("background-color", "#ebebeb");
+            builder.addInnerDiv(eachChoice);
+            result = result + builder.toString();
+        }
+        return result;
+    }
 }enum Color{
 	WHITE,
 	BLACK
@@ -1148,6 +1222,16 @@ enum MoveType{
         return false;
     }
 
+    public containsType(type: MoveType){
+        for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.getType() == type){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public shuffle(){
         Algorithms.shuffle(this.moves);
     }
@@ -1947,16 +2031,36 @@ enum MoveType{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-      /*  return MoveFactory.getRelativeToPiece(this, -3, -1)
+       return MoveFactory.getRelativeToPiece(this, -3, -1)
         .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
         .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
         .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
         .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));*/
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+    }
+}class CannonModel extends PieceModel{
+    hasMoved: boolean;
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.CANNON);
+    }
+
+    onMove(move: Move){
+    }
+
+    giveInternalAttributes(piece: PieceModel) {
+
+    }
+
+    getDirection(): number{
+        return this.getBoardModel().getDirection(this.getColor());
+    }
+
+    getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this))
-            .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()))
+        .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()))
     }
 }class PieceFactory{
 
@@ -1976,6 +2080,7 @@ enum MoveType{
             case PieceType.CAMEL_RIDER: newPiece = new CamelRiderModel(board, pos, color); break;
             case PieceType.ELEPHANT_RIDER: newPiece = new ElephantRiderModel(board, pos, color); break;
             case PieceType.PICKET: newPiece = new PicketModel(board, pos, color); break;
+            case PieceType.CANNON: newPiece = new CannonModel(board, pos, color); break;
         }
         return newPiece;
     }
@@ -2276,7 +2381,7 @@ enum MoveType{
 }class BoardFactory{
     static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     static TAMERLANE_BOARD: string = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
-    static TEST_BOARD: string = "[4_B],[3_B],[2_B],[5_B],[6_B],[2_B],[3_B],[4_B],[13_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[],[]/[],[],[13_B],[],[],[13_B],[],[13_B],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[3_W],[2_W],[6_W],[5_W],[2_W],[3_W],[10_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]";
+    static TEST_BOARD: string = "[6_B],[],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[15_W],[],[],[]/[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
     static getStandardBoard(): BoardModel{
         var board: BoardModel = new BoardModel(8,8);
         board.populateFromSerial(BoardFactory.STANDARD_BOARD);
@@ -2289,7 +2394,7 @@ enum MoveType{
     }
 
     static testBoard(): BoardModel{
-        var board: BoardModel = new BoardModel(9,9);
+        var board: BoardModel = new BoardModel(6,6);
         board.populateFromSerial(BoardFactory.TEST_BOARD);
         return board;
     }
@@ -2446,15 +2551,20 @@ enum MoveType{
 
 }class GameHTMLContainer{
     parentElement: HTMLElement;
+    boardParentElement: HTMLElement;
     boardElement: string;
     alertTextElement: string;
     throbberElement: string;
+    choiceModal: HTMLElement;
 
     alertTextOn: boolean;
     throbberOn: boolean;
 
+
     constructor(parentElement: HTMLElement){
         this.parentElement = parentElement;
+        this.boardParentElement= document.createElement("div");
+        parentElement.appendChild(this.boardParentElement);
     }
 
     setBoardHTML(html: string){
@@ -2485,6 +2595,24 @@ enum MoveType{
         this.throbberOn = false;
     }
 
+    setChoiceModal(modal: ChoiceModal){
+        if(this.choiceModal != null){
+            this.parentElement.removeChild(this.choiceModal);
+        }
+        this.choiceModal = modal.toHTMLElement();
+        this.choiceModal.style.display = "none";
+        this.choiceModal.style["z-index"] = 1000;
+        this.parentElement.appendChild(this.choiceModal);
+    }
+
+    showChoiceModal(){
+        this.choiceModal.style.display = "block";
+    }
+
+    hideChoiceModal(){
+        this.choiceModal.style.display = "none";
+    }
+
     update(){
         var newHTML: string = this.boardElement;
         if(this.alertTextOn){
@@ -2493,7 +2621,7 @@ enum MoveType{
         if(this.throbberOn){
             newHTML += this.throbberElement;
         }
-        this.parentElement.innerHTML = newHTML;
+        this.boardParentElement.innerHTML = newHTML;
     }
 }class ChessGame{
     board: BoardModel;
@@ -2799,7 +2927,21 @@ class GameController extends Player{
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
-                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                if(thisPiece.getPossibleMoves().containsType(MoveType.FLING)){
+                    var choiceModal = new ChoiceModal();
+                    choiceModal.addChoice("Move");
+                    choiceModal.addChoice("Fire");
+                    choiceModal.setOnChoice((result) => {
+                        control.htmlContainer.hideChoiceModal();
+                        control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                    });
+                    control.htmlContainer.setChoiceModal(choiceModal);
+                    control.htmlContainer.showChoiceModal();
+                }
+                else{
+                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                }
+
             }
             else if(control.myPieceIsSelected() && control.selectedPieceIsAtSquareId(id)){
                 control.unselectPiece();
@@ -3533,6 +3675,4 @@ class BoardBuilderController{
         var controller = new BoardBuilderController(container);
         controller.start();
     }
-}
-
-BoardBuilder.start();
+}GameBox.start();

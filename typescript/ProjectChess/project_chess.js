@@ -162,6 +162,69 @@ var HTMLBuilder = /** @class */ (function () {
     };
     return HTMLBuilder;
 }());
+var ChoiceModal = /** @class */ (function () {
+    function ChoiceModal(rowHeight, width) {
+        this.choices = new Array();
+        if (rowHeight == null) {
+            rowHeight = 23;
+        }
+        if (width == null) {
+            width = 154;
+        }
+        this.rowHeight = rowHeight;
+        this.width = width;
+    }
+    ChoiceModal.prototype.addChoice = function (newChoice) {
+        this.choices.push(newChoice);
+    };
+    ChoiceModal.prototype.setOnChoice = function (inputfunc) {
+        this.onChoice = inputfunc;
+    };
+    ChoiceModal.prototype.toHTML = function () {
+        var builder = new HTMLBuilder();
+        var choiceListHTML = this.getChoiceListHTML();
+        builder
+            .newDiv()
+            .addStyle("width", this.width + "px")
+            .addStyle("display", "inline-block");
+        builder.addInnerDiv(choiceListHTML);
+        return builder.toString();
+    };
+    ChoiceModal.prototype.toHTMLElement = function () {
+        var newElement = document.createElement('div');
+        newElement.innerHTML = this.toHTML();
+        var result = newElement.firstChild;
+        for (var i = 0; i < result.children.length; i++) {
+            var eachElement = result.children[i];
+            eachElement.onmouseover = function () { this.style.backgroundColor = "rgb(222,222,222)"; };
+            eachElement.onmouseleave = function () { this.style.backgroundColor = "#ebebeb"; };
+            eachElement.onclick = (function (element, global) { return function () { global.onChoice(element.innerHTML); }; }(eachElement, this));
+        }
+        return result;
+    };
+    ChoiceModal.prototype.getChoiceListHTML = function () {
+        var result = "";
+        for (var choice in this.choices) {
+            var eachChoice = this.choices[choice];
+            var builder = new HTMLBuilder();
+            builder.newDiv()
+                .addClass("choice_model_item")
+                .addStyle("height", this.rowHeight + "px")
+                .addStyle("vertical-align", "middle")
+                .addStyle("padding", (this.rowHeight / 1.77) + "px " + (this.rowHeight / 2.3) + "px")
+                .addStyle("top", "0")
+                .addStyle("font-weight", "300")
+                .addStyle("font-size", "18px")
+                .addStyle("font-family", "Roboto, sans-serif")
+                .addStyle("color", "#555")
+                .addStyle("background-color", "#ebebeb");
+            builder.addInnerDiv(eachChoice);
+            result = result + builder.toString();
+        }
+        return result;
+    };
+    return ChoiceModal;
+}());
 var Color;
 (function (Color) {
     Color[Color["WHITE"] = 0] = "WHITE";
@@ -995,6 +1058,15 @@ var MoveCollection = /** @class */ (function () {
         }
         return false;
     };
+    MoveCollection.prototype.containsType = function (type) {
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            if (eachMove.getType() == type) {
+                return true;
+            }
+        }
+        return false;
+    };
     MoveCollection.prototype.shuffle = function () {
         Algorithms.shuffle(this.moves);
     };
@@ -1691,18 +1763,34 @@ var CamelRiderModel = /** @class */ (function (_super) {
     CamelRiderModel.prototype.onMove = function () { };
     CamelRiderModel.prototype.giveInternalAttributes = function (piece) { };
     CamelRiderModel.prototype.getPossibleMoves = function () {
-        /*  return MoveFactory.getRelativeToPiece(this, -3, -1)
-          .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
-          .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
-          .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
-          .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
-          .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
-          .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-          .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));*/
+        return MoveFactory.getRelativeToPiece(this, -3, -1)
+            .addAll(MoveFactory.getRelativeToPiece(this, 3, -1))
+            .addAll(MoveFactory.getRelativeToPiece(this, -3, 1))
+            .addAll(MoveFactory.getRelativeToPiece(this, 3, 1))
+            .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
+            .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
+            .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
+            .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+    };
+    return CamelRiderModel;
+}(PieceModel));
+var CannonModel = /** @class */ (function (_super) {
+    __extends(CannonModel, _super);
+    function CannonModel(board, pos, color) {
+        return _super.call(this, board, pos, color, PieceType.CANNON) || this;
+    }
+    CannonModel.prototype.onMove = function (move) {
+    };
+    CannonModel.prototype.giveInternalAttributes = function (piece) {
+    };
+    CannonModel.prototype.getDirection = function () {
+        return this.getBoardModel().getDirection(this.getColor());
+    };
+    CannonModel.prototype.getPossibleMoves = function () {
         return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this))
             .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()));
     };
-    return CamelRiderModel;
+    return CannonModel;
 }(PieceModel));
 var PieceFactory = /** @class */ (function () {
     function PieceFactory() {
@@ -1748,6 +1836,9 @@ var PieceFactory = /** @class */ (function () {
                 break;
             case PieceType.PICKET:
                 newPiece = new PicketModel(board, pos, color);
+                break;
+            case PieceType.CANNON:
+                newPiece = new CannonModel(board, pos, color);
                 break;
         }
         return newPiece;
@@ -2023,13 +2114,13 @@ var BoardFactory = /** @class */ (function () {
         return board;
     };
     BoardFactory.testBoard = function () {
-        var board = new BoardModel(9, 9);
+        var board = new BoardModel(6, 6);
         board.populateFromSerial(BoardFactory.TEST_BOARD);
         return board;
     };
     BoardFactory.STANDARD_BOARD = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     BoardFactory.TAMERLANE_BOARD = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
-    BoardFactory.TEST_BOARD = "[4_B],[3_B],[2_B],[5_B],[6_B],[2_B],[3_B],[4_B],[13_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[],[]/[],[],[13_B],[],[],[13_B],[],[13_B],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[3_W],[2_W],[6_W],[5_W],[2_W],[3_W],[10_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0]";
+    BoardFactory.TEST_BOARD = "[6_B],[],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[15_W],[],[],[]/[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
     return BoardFactory;
 }());
 var Player = /** @class */ (function () {
@@ -2199,6 +2290,8 @@ var MiniMaxPlayer = /** @class */ (function (_super) {
 var GameHTMLContainer = /** @class */ (function () {
     function GameHTMLContainer(parentElement) {
         this.parentElement = parentElement;
+        this.boardParentElement = document.createElement("div");
+        parentElement.appendChild(this.boardParentElement);
     }
     GameHTMLContainer.prototype.setBoardHTML = function (html) {
         this.boardElement = html;
@@ -2221,6 +2314,21 @@ var GameHTMLContainer = /** @class */ (function () {
     GameHTMLContainer.prototype.turnOffThrobber = function () {
         this.throbberOn = false;
     };
+    GameHTMLContainer.prototype.setChoiceModal = function (modal) {
+        if (this.choiceModal != null) {
+            this.parentElement.removeChild(this.choiceModal);
+        }
+        this.choiceModal = modal.toHTMLElement();
+        this.choiceModal.style.display = "none";
+        this.choiceModal.style["z-index"] = 1000;
+        this.parentElement.appendChild(this.choiceModal);
+    };
+    GameHTMLContainer.prototype.showChoiceModal = function () {
+        this.choiceModal.style.display = "block";
+    };
+    GameHTMLContainer.prototype.hideChoiceModal = function () {
+        this.choiceModal.style.display = "none";
+    };
     GameHTMLContainer.prototype.update = function () {
         var newHTML = this.boardElement;
         if (this.alertTextOn) {
@@ -2229,7 +2337,7 @@ var GameHTMLContainer = /** @class */ (function () {
         if (this.throbberOn) {
             newHTML += this.throbberElement;
         }
-        this.parentElement.innerHTML = newHTML;
+        this.boardParentElement.innerHTML = newHTML;
     };
     return GameHTMLContainer;
 }());
@@ -2490,7 +2598,20 @@ var GameController = /** @class */ (function (_super) {
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece = control.getPieceAtSquareId(id);
-                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                if (thisPiece.getPossibleMoves().containsType(MoveType.FLING)) {
+                    var choiceModal = new ChoiceModal();
+                    choiceModal.addChoice("Move");
+                    choiceModal.addChoice("Fire");
+                    choiceModal.setOnChoice(function (result) {
+                        control.htmlContainer.hideChoiceModal();
+                        control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                    });
+                    control.htmlContainer.setChoiceModal(choiceModal);
+                    control.htmlContainer.showChoiceModal();
+                }
+                else {
+                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                }
             }
             else if (control.myPieceIsSelected() && control.selectedPieceIsAtSquareId(id)) {
                 control.unselectPiece();
@@ -3125,5 +3246,4 @@ var BoardBuilder = /** @class */ (function () {
     };
     return BoardBuilder;
 }());
-//BoardBuilder.start();
 GameBox.start();
