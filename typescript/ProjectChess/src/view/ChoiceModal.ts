@@ -2,7 +2,8 @@ class ChoiceModal{
     choices: string[] = new Array();
     rowHeight: number;
     width: number;
-    onChoice: (choice: string) => void;
+    onChoice: (choice: HTMLElement) => void;
+    pos: Pos;
 
     constructor(rowHeight?: number, width?: number){
         if(rowHeight == null){
@@ -19,7 +20,7 @@ class ChoiceModal{
         this.choices.push(newChoice);
     }
 
-    setOnChoice(inputfunc: (choice: string) => void){
+    setOnChoice(inputfunc: (choice: HTMLElement) => void){
         this.onChoice = inputfunc;
     }
 
@@ -30,11 +31,27 @@ class ChoiceModal{
         builder
             .newDiv()
             .addStyle("width", this.width + "px")
-            .addStyle("display", "inline-block");
-
+            .addStyle("display", "inline-block")
+            .addStyle("position", "absolute")
+            .addStyle("z-index", "100")
+            .addStyle("top", this.pos.getY() + "px")
+            .addStyle("left", this.pos.getX() + "px");
         builder.addInnerDiv(choiceListHTML);
 
         return builder.toString();
+    }
+
+    setPos(pos: Pos){
+        this.pos = pos;
+    }
+
+    setInMiddleOfElement(element: HTMLElement){
+        var elementWidth = element.offsetWidth;
+        var elementHeight = element.offsetHeight;
+        var myHeight = this.rowHeight * this.choices.length;
+        var resultX = (elementWidth/2) - (this.width/2);
+        var resultY = (elementHeight/2) - (myHeight/2);
+        this.setPos(new Pos(resultX, resultY));
     }
 
     toHTMLElement(): HTMLElement{
@@ -45,9 +62,8 @@ class ChoiceModal{
             var eachElement = <HTMLElement> result.children[i];
             eachElement.onmouseover = function() { this.style.backgroundColor = "rgb(222,222,222)"};
             eachElement.onmouseleave = function() { this.style.backgroundColor = "#ebebeb"};
-            eachElement.onclick = (function(element, global) {return () => {global.onChoice(element.innerHTML)}}(eachElement, this));
+            eachElement.onclick = (function(element, global) {return () => {global.onChoice(element)}}(eachElement, this));
         }
-
         return result;
     }
 

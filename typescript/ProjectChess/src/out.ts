@@ -171,7 +171,8 @@ enum State{
     choices: string[] = new Array();
     rowHeight: number;
     width: number;
-    onChoice: (choice: string) => void;
+    onChoice: (choice: HTMLElement) => void;
+    pos: Pos;
 
     constructor(rowHeight?: number, width?: number){
         if(rowHeight == null){
@@ -188,7 +189,7 @@ enum State{
         this.choices.push(newChoice);
     }
 
-    setOnChoice(inputfunc: (choice: string) => void){
+    setOnChoice(inputfunc: (choice: HTMLElement) => void){
         this.onChoice = inputfunc;
     }
 
@@ -199,11 +200,27 @@ enum State{
         builder
             .newDiv()
             .addStyle("width", this.width + "px")
-            .addStyle("display", "inline-block");
-
+            .addStyle("display", "inline-block")
+            .addStyle("position", "absolute")
+            .addStyle("z-index", "100")
+            .addStyle("top", this.pos.getY() + "px")
+            .addStyle("left", this.pos.getX() + "px");
         builder.addInnerDiv(choiceListHTML);
 
         return builder.toString();
+    }
+
+    setPos(pos: Pos){
+        this.pos = pos;
+    }
+
+    setInMiddleOfElement(element: HTMLElement){
+        var elementWidth = element.offsetWidth;
+        var elementHeight = element.offsetHeight;
+        var myHeight = this.rowHeight * this.choices.length;
+        var resultX = (elementWidth/2) - (this.width/2);
+        var resultY = (elementHeight/2) - (myHeight/2);
+        this.setPos(new Pos(resultX, resultY));
     }
 
     toHTMLElement(): HTMLElement{
@@ -214,9 +231,8 @@ enum State{
             var eachElement = <HTMLElement> result.children[i];
             eachElement.onmouseover = function() { this.style.backgroundColor = "rgb(222,222,222)"};
             eachElement.onmouseleave = function() { this.style.backgroundColor = "#ebebeb"};
-            eachElement.onclick = (function(element, global) {return () => {global.onChoice(element.innerHTML)}}(eachElement, this));
+            eachElement.onclick = (function(element, global) {return () => {global.onChoice(element)}}(eachElement, this));
         }
-
         return result;
     }
 
@@ -2564,6 +2580,7 @@ enum MoveType{
     constructor(parentElement: HTMLElement){
         this.parentElement = parentElement;
         this.boardParentElement= document.createElement("div");
+
         parentElement.appendChild(this.boardParentElement);
     }
 
@@ -2621,8 +2638,11 @@ enum MoveType{
         if(this.throbberOn){
             newHTML += this.throbberElement;
         }
-        this.boardParentElement.innerHTML = newHTML;
-    }
+        this.boardParentElement.innerHTML = newHTML ;
+        this.boardParentElement.style.display = "inline-block";
+        this.boardParentElement.style.width = "auto";
+        this.boardParentElement.style.height = "auto";
+}
 }class ChessGame{
     board: BoardModel;
     white: Player;
@@ -2931,6 +2951,7 @@ class GameController extends Player{
                     var choiceModal = new ChoiceModal();
                     choiceModal.addChoice("Move");
                     choiceModal.addChoice("Fire");
+                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
                     choiceModal.setOnChoice((result) => {
                         control.htmlContainer.hideChoiceModal();
                         control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);

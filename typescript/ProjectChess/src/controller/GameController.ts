@@ -102,6 +102,7 @@ class GameController extends Player{
                     var choiceModal = new ChoiceModal();
                     choiceModal.addChoice("Move");
                     choiceModal.addChoice("Fire");
+                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
                     choiceModal.setOnChoice((result) => {
                         control.htmlContainer.hideChoiceModal();
                         control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);

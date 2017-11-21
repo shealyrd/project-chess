@@ -13,6 +13,7 @@ class GameHTMLContainer{
     constructor(parentElement: HTMLElement){
         this.parentElement = parentElement;
         this.boardParentElement= document.createElement("div");
+
         parentElement.appendChild(this.boardParentElement);
     }
 
@@ -70,6 +71,11 @@ class GameHTMLContainer{
         if(this.throbberOn){
             newHTML += this.throbberElement;
         }
-        this.boardParentElement.innerHTML = newHTML;
-    }
+        this.boardParentElement.innerHTML = newHTML ;
+        /*this.boardParentElement.style.display = "inline-block";
+        this.boardParentElement.style.width = "auto";
+        this.boardParentElement.style.height = "auto";*/
+
+        //You need to pass in the board and do the math
+}
 }

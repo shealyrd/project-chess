@@ -186,9 +186,24 @@ var ChoiceModal = /** @class */ (function () {
         builder
             .newDiv()
             .addStyle("width", this.width + "px")
-            .addStyle("display", "inline-block");
+            .addStyle("display", "inline-block")
+            .addStyle("position", "absolute")
+            .addStyle("z-index", "100")
+            .addStyle("top", this.pos.getY() + "px")
+            .addStyle("left", this.pos.getX() + "px");
         builder.addInnerDiv(choiceListHTML);
         return builder.toString();
+    };
+    ChoiceModal.prototype.setPos = function (pos) {
+        this.pos = pos;
+    };
+    ChoiceModal.prototype.setInMiddleOfElement = function (element) {
+        var elementWidth = element.offsetWidth;
+        var elementHeight = element.offsetHeight;
+        var myHeight = this.rowHeight * this.choices.length;
+        var resultX = (elementWidth / 2) - (this.width / 2);
+        var resultY = (elementHeight / 2) - (myHeight / 2);
+        this.setPos(new Pos(resultX, resultY));
     };
     ChoiceModal.prototype.toHTMLElement = function () {
         var newElement = document.createElement('div');
@@ -198,7 +213,7 @@ var ChoiceModal = /** @class */ (function () {
             var eachElement = result.children[i];
             eachElement.onmouseover = function () { this.style.backgroundColor = "rgb(222,222,222)"; };
             eachElement.onmouseleave = function () { this.style.backgroundColor = "#ebebeb"; };
-            eachElement.onclick = (function (element, global) { return function () { global.onChoice(element.innerHTML); }; }(eachElement, this));
+            eachElement.onclick = (function (element, global) { return function () { global.onChoice(element); }; }(eachElement, this));
         }
         return result;
     };
@@ -2338,6 +2353,9 @@ var GameHTMLContainer = /** @class */ (function () {
             newHTML += this.throbberElement;
         }
         this.boardParentElement.innerHTML = newHTML;
+        this.boardParentElement.style.display = "inline-block";
+        this.boardParentElement.style.width = "auto";
+        this.boardParentElement.style.height = "auto";
     };
     return GameHTMLContainer;
 }());
@@ -2602,6 +2620,7 @@ var GameController = /** @class */ (function (_super) {
                     var choiceModal = new ChoiceModal();
                     choiceModal.addChoice("Move");
                     choiceModal.addChoice("Fire");
+                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
                     choiceModal.setOnChoice(function (result) {
                         control.htmlContainer.hideChoiceModal();
                         control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
