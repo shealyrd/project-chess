@@ -6,6 +6,9 @@ class GameHTMLContainer{
     throbberElement: string;
     choiceModal: HTMLElement;
 
+	boardWidth: number;
+	boardHeight: number;
+	
     alertTextOn: boolean;
     throbberOn: boolean;
 
@@ -28,7 +31,21 @@ class GameHTMLContainer{
     setThrobberHTML(html: string){
         this.throbberElement = html;
     }
-
+	
+	calculateBoardDimensions(){
+		var newElement = document.createElement('div');
+		newElement.innerHTML = html;
+		var firstRow = <HTMLElement> newElement.firstChild;
+		this.boardWidth = firstRow.offsetWidth;
+		var rowCount = 0;
+		for (var i = 0; i < newElement.childNodes.length; i++) {
+			if (newElement.childNodes[i].className == "row") {
+				rowCount++:
+			}        
+		}
+		this.boardHeight = firstRow.offsetHeight * rowCount;
+	}
+	
     turnOnAlertText(){
         this.alertTextOn = true;
     }
@@ -63,6 +80,7 @@ class GameHTMLContainer{
         this.choiceModal.style.display = "none";
     }
 
+	
     update(){
         var newHTML: string = this.boardElement;
         if(this.alertTextOn){
@@ -72,10 +90,10 @@ class GameHTMLContainer{
             newHTML += this.throbberElement;
         }
         this.boardParentElement.innerHTML = newHTML ;
-        /*this.boardParentElement.style.display = "inline-block";
-        this.boardParentElement.style.width = "auto";
-        this.boardParentElement.style.height = "auto";*/
+		calculateBoardDimensions();
+		
+        this.boardParentElement.style.width = this.boardParentWidth;
+        this.boardParentElement.style.height = this.boardParentHeight;
 
-        //You need to pass in the board and do the math
-}
+	}
 }
