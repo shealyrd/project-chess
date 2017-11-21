@@ -18,10 +18,10 @@ class Board extends HTMLObject{
     constructor(numCol: number, numRows: number, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number) {
         super();
         if (offsetTop == null) {
-            offsetTop = 25;
+            offsetTop = 0;
         }
         if (offsetLeft == null) {
-            offsetLeft = 25;
+            offsetLeft = 0;
         }
         if (squareWidth == null) {
             squareWidth = 50;

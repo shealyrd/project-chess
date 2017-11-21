@@ -36,7 +36,7 @@ class HTMLBuilder{
         var result: string;
         var style: string;
         var idDef: string = "";
-        var classDef: string;
+        var classDef: string = "";
 		var innerDivDef: string = "";
 
         if(this.id != undefined){
@@ -49,12 +49,16 @@ class HTMLBuilder{
             style = style + each + ": " + this.styles[each] + "; ";
         }
         style = style + "\"";
+		
+		if(this.classes.length != 0){
+		    classDef = "class=\"";
+			for (var eachClass in this.classes) {
+				classDef = classDef + this.classes[eachClass] + " ";
+			}
+			classDef = classDef.substring(0, classDef.length - 1);
+			classDef = classDef + "\"";
+		}
 
-        classDef = "class=\"";
-        for (var eachClass in this.classes) {
-            classDef = classDef + this.classes[eachClass] + " ";
-        }
-        classDef = classDef + "\"";
 		
 		if(this.innerDivs.length > 0){
 			for(var eachDiv in this.innerDivs){

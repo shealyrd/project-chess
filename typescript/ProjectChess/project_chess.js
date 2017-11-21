@@ -136,7 +136,7 @@ var HTMLBuilder = /** @class */ (function () {
         var result;
         var style;
         var idDef = "";
-        var classDef;
+        var classDef = "";
         var innerDivDef = "";
         if (this.id != undefined) {
             idDef = "id=\"" + this.id + "\"";
@@ -146,11 +146,14 @@ var HTMLBuilder = /** @class */ (function () {
             style = style + each + ": " + this.styles[each] + "; ";
         }
         style = style + "\"";
-        classDef = "class=\"";
-        for (var eachClass in this.classes) {
-            classDef = classDef + this.classes[eachClass] + " ";
+        if (this.classes.length != 0) {
+            classDef = "class=\"";
+            for (var eachClass in this.classes) {
+                classDef = classDef + this.classes[eachClass] + " ";
+            }
+            classDef = classDef.substring(0, classDef.length - 1);
+            classDef = classDef + "\"";
         }
-        classDef = classDef + "\"";
         if (this.innerDivs.length > 0) {
             for (var eachDiv in this.innerDivs) {
                 innerDivDef += this.innerDivs[eachDiv];
@@ -587,10 +590,10 @@ var Board = /** @class */ (function (_super) {
         _this.pieces = new Array();
         _this.locations = new Array();
         if (offsetTop == null) {
-            offsetTop = 25;
+            offsetTop = 0;
         }
         if (offsetLeft == null) {
-            offsetLeft = 25;
+            offsetLeft = 0;
         }
         if (squareWidth == null) {
             squareWidth = 50;
@@ -1975,7 +1978,7 @@ var BoardModel = /** @class */ (function () {
         var _this = this;
         this.pos2PieceMap.forEach(function (value, key, map) {
             if (key.equals(pos)) {
-                _this.pos2PieceMap["delete"](key);
+                _this.pos2PieceMap.delete(key);
             }
         });
         this.pos2PieceMap.set(pos, null);
@@ -2317,6 +2320,19 @@ var GameHTMLContainer = /** @class */ (function () {
     GameHTMLContainer.prototype.setThrobberHTML = function (html) {
         this.throbberElement = html;
     };
+    GameHTMLContainer.prototype.calculateBoardDimensions = function () {
+        var newElement = document.createElement('div');
+        newElement.innerHTML = this.boardElement;
+        var firstRow = newElement.firstChild;
+        this.boardParentWidth = +firstRow.style.width.substring(0, firstRow.style.width.length - 2);
+        var rowCount = 0;
+        for (var i = 0; i < newElement.children.length; i++) {
+            if (newElement.children[i].className == "row") {
+                rowCount++;
+            }
+        }
+        this.boardParentHeight = +firstRow.style.height.substring(0, firstRow.style.height.length - 2) * rowCount;
+    };
     GameHTMLContainer.prototype.turnOnAlertText = function () {
         this.alertTextOn = true;
     };
@@ -2353,9 +2369,10 @@ var GameHTMLContainer = /** @class */ (function () {
             newHTML += this.throbberElement;
         }
         this.boardParentElement.innerHTML = newHTML;
-        this.boardParentElement.style.display = "inline-block";
-        this.boardParentElement.style.width = "auto";
-        this.boardParentElement.style.height = "auto";
+        this.calculateBoardDimensions();
+        this.boardParentElement.style.position = "absolute";
+        this.boardParentElement.style.width = this.boardParentWidth + "px";
+        this.boardParentElement.style.height = this.boardParentHeight + "px";
     };
     return GameHTMLContainer;
 }());
@@ -2963,7 +2980,7 @@ var GameBox = /** @class */ (function () {
         Preloader.preload();
         CSSManager.initAndApply();
         var container = new GameHTMLContainer(document.body);
-        var game = new GameController(container, 100, 100, 50, 50);
+        var game = new GameController(container, 0, 0, 50, 50);
         game.start();
     };
     return GameBox;

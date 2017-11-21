@@ -136,7 +136,7 @@ enum State{
         var result: string;
         var style: string;
         var idDef: string = "";
-        var classDef: string;
+        var classDef: string = "";
 		var innerDivDef: string = "";
 
         if(this.id != undefined){
@@ -149,12 +149,16 @@ enum State{
             style = style + each + ": " + this.styles[each] + "; ";
         }
         style = style + "\"";
+		
+		if(this.classes.length != 0){
+		    classDef = "class=\"";
+			for (var eachClass in this.classes) {
+				classDef = classDef + this.classes[eachClass] + " ";
+			}
+			classDef = classDef.substring(0, classDef.length - 1);
+			classDef = classDef + "\"";
+		}
 
-        classDef = "class=\"";
-        for (var eachClass in this.classes) {
-            classDef = classDef + this.classes[eachClass] + " ";
-        }
-        classDef = classDef + "\"";
 		
 		if(this.innerDivs.length > 0){
 			for(var eachDiv in this.innerDivs){
@@ -667,10 +671,10 @@ class Square extends HTMLObject{
     constructor(numCol: number, numRows: number, offsetTop?: number, offsetLeft?: number, squareWidth?: number, squareHeight?: number) {
         super();
         if (offsetTop == null) {
-            offsetTop = 25;
+            offsetTop = 0;
         }
         if (offsetLeft == null) {
-            offsetLeft = 25;
+            offsetLeft = 0;
         }
         if (squareWidth == null) {
             squareWidth = 50;
@@ -2573,6 +2577,9 @@ enum MoveType{
     throbberElement: string;
     choiceModal: HTMLElement;
 
+	boardParentWidth: number;
+	boardParentHeight: number;
+	
     alertTextOn: boolean;
     throbberOn: boolean;
 
@@ -2595,7 +2602,22 @@ enum MoveType{
     setThrobberHTML(html: string){
         this.throbberElement = html;
     }
-
+	
+	calculateBoardDimensions(){
+		var newElement = document.createElement('div');
+		newElement.innerHTML = this.boardElement;
+		var firstRow = <HTMLElement> newElement.firstChild;
+        this.boardParentWidth = +firstRow.style.width.substring(0, firstRow.style.width.length - 2);
+		var rowCount = 0;
+		for (var i = 0; i < newElement.children.length; i++) {
+			if (newElement.children[i].className == "row") {
+                rowCount++;
+			}        
+		}
+		this.boardParentHeight = +firstRow.style.height.substring(0, firstRow.style.height.length - 2) * rowCount;
+	}
+	
+	
     turnOnAlertText(){
         this.alertTextOn = true;
     }
@@ -2630,6 +2652,7 @@ enum MoveType{
         this.choiceModal.style.display = "none";
     }
 
+	
     update(){
         var newHTML: string = this.boardElement;
         if(this.alertTextOn){
@@ -2639,10 +2662,11 @@ enum MoveType{
             newHTML += this.throbberElement;
         }
         this.boardParentElement.innerHTML = newHTML ;
-        this.boardParentElement.style.display = "inline-block";
-        this.boardParentElement.style.width = "auto";
-        this.boardParentElement.style.height = "auto";
-}
+		this.calculateBoardDimensions();
+		this.boardParentElement.style.position = "absolute";
+        this.boardParentElement.style.width = this.boardParentWidth + "px";
+        this.boardParentElement.style.height = this.boardParentHeight + "px";
+	}
 }class ChessGame{
     board: BoardModel;
     white: Player;
@@ -3334,7 +3358,7 @@ class CSSClass{
         Preloader.preload();
         CSSManager.initAndApply();
         var container: GameHTMLContainer = new GameHTMLContainer(document.body);
-        var game = new GameController(container, 100, 100, 50, 50);
+        var game = new GameController(container, 0, 0, 50, 50);
         game.start();
     }
 }class BoardBuilderHTMLContainer{

@@ -6,8 +6,8 @@ class GameHTMLContainer{
     throbberElement: string;
     choiceModal: HTMLElement;
 
-	boardWidth: number;
-	boardHeight: number;
+	boardParentWidth: number;
+	boardParentHeight: number;
 	
     alertTextOn: boolean;
     throbberOn: boolean;
@@ -34,17 +34,18 @@ class GameHTMLContainer{
 	
 	calculateBoardDimensions(){
 		var newElement = document.createElement('div');
-		newElement.innerHTML = html;
+		newElement.innerHTML = this.boardElement;
 		var firstRow = <HTMLElement> newElement.firstChild;
-		this.boardWidth = firstRow.offsetWidth;
+        this.boardParentWidth = +firstRow.style.width.substring(0, firstRow.style.width.length - 2);
 		var rowCount = 0;
-		for (var i = 0; i < newElement.childNodes.length; i++) {
-			if (newElement.childNodes[i].className == "row") {
-				rowCount++:
+		for (var i = 0; i < newElement.children.length; i++) {
+			if (newElement.children[i].className == "row") {
+                rowCount++;
 			}        
 		}
-		this.boardHeight = firstRow.offsetHeight * rowCount;
+		this.boardParentHeight = +firstRow.style.height.substring(0, firstRow.style.height.length - 2) * rowCount;
 	}
+	
 	
     turnOnAlertText(){
         this.alertTextOn = true;
@@ -90,10 +91,9 @@ class GameHTMLContainer{
             newHTML += this.throbberElement;
         }
         this.boardParentElement.innerHTML = newHTML ;
-		calculateBoardDimensions();
-		
-        this.boardParentElement.style.width = this.boardParentWidth;
-        this.boardParentElement.style.height = this.boardParentHeight;
-
+		this.calculateBoardDimensions();
+		this.boardParentElement.style.position = "absolute";
+        this.boardParentElement.style.width = this.boardParentWidth + "px";
+        this.boardParentElement.style.height = this.boardParentHeight + "px";
 	}
 }
