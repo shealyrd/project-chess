@@ -107,6 +107,7 @@ class MiniMaxPlayer extends Player{
 				case PieceType.ELEPHANT_RIDER: thisValue += 3; break;
 				case PieceType.WAR_MACHINE: thisValue += 2; break;
 				case PieceType.PICKET: thisValue += 2; break;
+				case PieceType.CANNON: thisValue += 2; break;
 				case PieceType.KING: thisValue += 1000; break;
 			}
 			if(eachPiece.getColor() == color){

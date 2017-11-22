@@ -2,7 +2,7 @@ class ChoiceModal{
     choices: string[] = new Array();
     rowHeight: number;
     width: number;
-    onChoice: (choice: HTMLElement) => void;
+    onChoice: (choice: string) => void;
     pos: Pos;
 
     constructor(rowHeight?: number, width?: number){
@@ -20,7 +20,7 @@ class ChoiceModal{
         this.choices.push(newChoice);
     }
 
-    setOnChoice(inputfunc: (choice: HTMLElement) => void){
+    setOnChoice(inputfunc: (choice: string) => void){
         this.onChoice = inputfunc;
     }
 
@@ -62,7 +62,7 @@ class ChoiceModal{
             var eachElement = <HTMLElement> result.children[i];
             eachElement.onmouseover = function() { this.style.backgroundColor = "rgb(222,222,222)"};
             eachElement.onmouseleave = function() { this.style.backgroundColor = "#ebebeb"};
-            eachElement.onclick = (function(element, global) {return () => {global.onChoice(element)}}(eachElement, this));
+            eachElement.onclick = (function(element, global) {return () => {global.onChoice(element.innerHTML)}}(eachElement, this));
         }
         return result;
     }

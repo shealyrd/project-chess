@@ -17,7 +17,7 @@ class MoveFactory{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             y -= 1;
         }
 
@@ -41,7 +41,7 @@ class MoveFactory{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             y += 1;
         }
 
@@ -65,7 +65,7 @@ class MoveFactory{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x -= 1;
         }
 
@@ -89,7 +89,7 @@ class MoveFactory{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x += 1;
         }
 
@@ -139,7 +139,7 @@ class MoveFactory{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 y -= 1;
             }
         }
@@ -166,7 +166,7 @@ class MoveFactory{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 x += 1;
             }
         }
@@ -193,7 +193,7 @@ class MoveFactory{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 x -= 1;
             }
         }
@@ -220,7 +220,7 @@ class MoveFactory{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 y += 1;
             }
         }
@@ -264,7 +264,7 @@ class MoveFactory{
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x -= 1;
             y -= 1;
         }
@@ -290,7 +290,7 @@ class MoveFactory{
                 break;
             }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x += 1;
             y -= 1;
         }
@@ -316,7 +316,7 @@ class MoveFactory{
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x += 1;
             y += 1;
         }
@@ -341,7 +341,7 @@ class MoveFactory{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 x -= 1;
                 y += 1;
             }
@@ -374,7 +374,7 @@ class MoveFactory{
                 }
             }
             else{
-                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
             }
         }
 
@@ -388,8 +388,6 @@ class MoveFactory{
 
         if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
-            }
-            else{
                 result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.FLING));
             }
         }
@@ -406,7 +404,7 @@ class MoveFactory{
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
             }
             else{
-                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
             }
         }
 
@@ -448,7 +446,7 @@ class MoveFactory{
                         }
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY--;
                     }
@@ -470,7 +468,7 @@ class MoveFactory{
                         }
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY++;
                     }
@@ -495,7 +493,7 @@ class MoveFactory{
                         break;
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY--;
                     }
@@ -516,7 +514,7 @@ class MoveFactory{
                         break;
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY++;
                     }

@@ -6,6 +6,7 @@ class GameController extends Player{
     consoleCtrl: ConsoleController;
     //temp storage
     SELECTED_PIECE: PieceModel;
+    SELECTED_MOVE_TYPE: MoveType;
     CHOSEN_MOVE: Move;
 
     offsetTop: number;
@@ -105,12 +106,21 @@ class GameController extends Player{
                     choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
                     choiceModal.setOnChoice((result) => {
                         control.htmlContainer.hideChoiceModal();
-                        control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                        if(result == "Move"){
+                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
+                        }
+                        else if(result == "Fire"){
+                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
+                        }
+
                     });
                     control.htmlContainer.setChoiceModal(choiceModal);
                     control.htmlContainer.showChoiceModal();
                 }
                 else{
+                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
                     control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
                 }
 
@@ -124,7 +134,30 @@ class GameController extends Player{
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
-                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                if(thisPiece.getPossibleMoves().containsType(MoveType.FLING)){
+                    var choiceModal = new ChoiceModal();
+                    choiceModal.addChoice("Move");
+                    choiceModal.addChoice("Fire");
+                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
+                    choiceModal.setOnChoice((result) => {
+                        control.htmlContainer.hideChoiceModal();
+                        if(result == "Move"){
+                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
+                        }
+                        else if(result == "Fire"){
+                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
+                        }
+
+                    });
+                    control.htmlContainer.setChoiceModal(choiceModal);
+                    control.htmlContainer.showChoiceModal();
+                }
+                else {
+                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
+                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                }
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
@@ -133,7 +166,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
+                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
                 control.signalOpponentsMove();
             }
         };
@@ -177,7 +210,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
+                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
             }
         };
     }
@@ -200,7 +233,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, MoveType.NONCAPTURE);
+                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
@@ -261,6 +294,16 @@ class GameController extends Player{
         this.setSelectedPiece(piece);
         this.update();
     }
+
+    tracePieceMovesOfType(piece: PieceModel, hex: string, type: MoveType):void {
+        var moves: MoveCollection = piece.getPossibleMoves();
+        var movesOfType = moves.getTypeSubset(type);
+        this.setSquaresToColor(movesOfType, hex);
+        this.setSquareToColor(piece.getPos(), hex);
+        this.setSelectedPiece(piece);
+        this.update();
+    }
+
 
     moveSelectedPieceToSquare(sqr:Square, type: MoveType):void {
         this.turnOffClickListeners();

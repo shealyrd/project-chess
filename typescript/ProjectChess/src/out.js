@@ -136,7 +136,7 @@ var HTMLBuilder = /** @class */ (function () {
         var result;
         var style;
         var idDef = "";
-        var classDef;
+        var classDef = "";
         var innerDivDef = "";
         if (this.id != undefined) {
             idDef = "id=\"" + this.id + "\"";
@@ -146,11 +146,14 @@ var HTMLBuilder = /** @class */ (function () {
             style = style + each + ": " + this.styles[each] + "; ";
         }
         style = style + "\"";
-        classDef = "class=\"";
-        for (var eachClass in this.classes) {
-            classDef = classDef + this.classes[eachClass] + " ";
+        if (this.classes.length != 0) {
+            classDef = "class=\"";
+            for (var eachClass in this.classes) {
+                classDef = classDef + this.classes[eachClass] + " ";
+            }
+            classDef = classDef.substring(0, classDef.length - 1);
+            classDef = classDef + "\"";
         }
-        classDef = classDef + "\"";
         if (this.innerDivs.length > 0) {
             for (var eachDiv in this.innerDivs) {
                 innerDivDef += this.innerDivs[eachDiv];
@@ -213,7 +216,7 @@ var ChoiceModal = /** @class */ (function () {
             var eachElement = result.children[i];
             eachElement.onmouseover = function () { this.style.backgroundColor = "rgb(222,222,222)"; };
             eachElement.onmouseleave = function () { this.style.backgroundColor = "#ebebeb"; };
-            eachElement.onclick = (function (element, global) { return function () { global.onChoice(element); }; }(eachElement, this));
+            eachElement.onclick = (function (element, global) { return function () { global.onChoice(element.innerHTML); }; }(eachElement, this));
         }
         return result;
     };
@@ -587,10 +590,10 @@ var Board = /** @class */ (function (_super) {
         _this.pieces = new Array();
         _this.locations = new Array();
         if (offsetTop == null) {
-            offsetTop = 25;
+            offsetTop = 0;
         }
         if (offsetLeft == null) {
-            offsetLeft = 25;
+            offsetLeft = 0;
         }
         if (squareWidth == null) {
             squareWidth = 50;
@@ -969,8 +972,7 @@ var MoveType;
 (function (MoveType) {
     MoveType[MoveType["NONEXECUTABLE"] = 0] = "NONEXECUTABLE";
     MoveType[MoveType["CAPTURE"] = 1] = "CAPTURE";
-    MoveType[MoveType["NONCAPTURE"] = 2] = "NONCAPTURE";
-    MoveType[MoveType["FLING"] = 3] = "FLING";
+    MoveType[MoveType["FLING"] = 2] = "FLING";
 })(MoveType || (MoveType = {}));
 var Move = /** @class */ (function () {
     function Move(origin, dest, type) {
@@ -1082,6 +1084,16 @@ var MoveCollection = /** @class */ (function () {
         }
         return false;
     };
+    MoveCollection.prototype.getTypeSubset = function (type) {
+        var result = new MoveCollection();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            if (eachMove.getType() == type) {
+                result.add(eachMove);
+            }
+        }
+        return result;
+    };
     MoveCollection.prototype.shuffle = function () {
         Algorithms.shuffle(this.moves);
     };
@@ -1105,7 +1117,7 @@ var MoveFactory = /** @class */ (function () {
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             y -= 1;
         }
         return new MoveCollection(result);
@@ -1125,7 +1137,7 @@ var MoveFactory = /** @class */ (function () {
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             y += 1;
         }
         return new MoveCollection(result);
@@ -1145,7 +1157,7 @@ var MoveFactory = /** @class */ (function () {
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x -= 1;
         }
         return new MoveCollection(result);
@@ -1165,7 +1177,7 @@ var MoveFactory = /** @class */ (function () {
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x += 1;
         }
         return new MoveCollection(result);
@@ -1204,7 +1216,7 @@ var MoveFactory = /** @class */ (function () {
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 y -= 1;
             }
         }
@@ -1228,7 +1240,7 @@ var MoveFactory = /** @class */ (function () {
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 x += 1;
             }
         }
@@ -1252,7 +1264,7 @@ var MoveFactory = /** @class */ (function () {
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 x -= 1;
             }
         }
@@ -1276,7 +1288,7 @@ var MoveFactory = /** @class */ (function () {
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 y += 1;
             }
         }
@@ -1312,7 +1324,7 @@ var MoveFactory = /** @class */ (function () {
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x -= 1;
             y -= 1;
         }
@@ -1333,7 +1345,7 @@ var MoveFactory = /** @class */ (function () {
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x += 1;
             y -= 1;
         }
@@ -1354,7 +1366,7 @@ var MoveFactory = /** @class */ (function () {
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x += 1;
             y += 1;
         }
@@ -1375,7 +1387,7 @@ var MoveFactory = /** @class */ (function () {
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x -= 1;
             y += 1;
         }
@@ -1400,7 +1412,7 @@ var MoveFactory = /** @class */ (function () {
                 }
             }
             else {
-                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
             }
         }
         return result;
@@ -1411,8 +1423,6 @@ var MoveFactory = /** @class */ (function () {
         var newY = piece.getPos().getY() + y;
         if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
-            }
-            else {
                 result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.FLING));
             }
         }
@@ -1426,7 +1436,7 @@ var MoveFactory = /** @class */ (function () {
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
             }
             else {
-                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
             }
         }
         return result;
@@ -1460,7 +1470,7 @@ var MoveFactory = /** @class */ (function () {
                         }
                     }
                     else {
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY--;
                     }
@@ -1481,7 +1491,7 @@ var MoveFactory = /** @class */ (function () {
                         }
                     }
                     else {
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY++;
                     }
@@ -1502,7 +1512,7 @@ var MoveFactory = /** @class */ (function () {
                         break;
                     }
                     else {
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY--;
                     }
@@ -1522,7 +1532,7 @@ var MoveFactory = /** @class */ (function () {
                         break;
                     }
                     else {
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY++;
                     }
@@ -1743,14 +1753,14 @@ var PicketModel = /** @class */ (function (_super) {
         var x = this.getPos().getX();
         var y = this.getPos().getY();
         var invalidMoves = new MoveCollection();
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1), MoveType.NONCAPTURE));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2), MoveType.NONCAPTURE));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1), MoveType.NONCAPTURE));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2), MoveType.NONCAPTURE));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1), MoveType.NONCAPTURE));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2), MoveType.NONCAPTURE));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1), MoveType.NONCAPTURE));
-        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2), MoveType.NONCAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1), MoveType.CAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2), MoveType.CAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1), MoveType.CAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2), MoveType.CAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1), MoveType.CAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2), MoveType.CAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1), MoveType.CAPTURE));
+        invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2), MoveType.CAPTURE));
         return MoveFactory.getAllDiagonal(this).minusIgnoreType(invalidMoves);
     };
     return PicketModel;
@@ -1983,7 +1993,7 @@ var BoardModel = /** @class */ (function () {
     BoardModel.prototype.executeMove = function (move) {
         var originalPiece = this.getPieceFromPosition(move.getOrigin());
         originalPiece.onMove(move);
-        if ((move.getType() == MoveType.NONCAPTURE) || (move.getType() == MoveType.CAPTURE)) {
+        if ((move.getType() == MoveType.CAPTURE)) {
             this.movePiece(originalPiece.getPos(), move.getDest());
         }
         else if (move.getType() == MoveType.FLING) {
@@ -2135,7 +2145,7 @@ var BoardFactory = /** @class */ (function () {
     };
     BoardFactory.STANDARD_BOARD = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     BoardFactory.TAMERLANE_BOARD = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
-    BoardFactory.TEST_BOARD = "[6_B],[],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[15_W],[],[],[]/[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
+    BoardFactory.TEST_BOARD = "[6_B],[1_B],[1_B],[1_B],[1_B],[]/[15_B],[15_B],[15_B],[15_B],[15_B],[15_B]/[],[],[],[],[],[]/[],[],[],[],[],[]/[15_W],[15_W],[15_W],[15_W],[15_W],[15_W]/[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
     return BoardFactory;
 }());
 var Player = /** @class */ (function () {
@@ -2317,6 +2327,19 @@ var GameHTMLContainer = /** @class */ (function () {
     GameHTMLContainer.prototype.setThrobberHTML = function (html) {
         this.throbberElement = html;
     };
+    GameHTMLContainer.prototype.calculateBoardDimensions = function () {
+        var newElement = document.createElement('div');
+        newElement.innerHTML = this.boardElement;
+        var firstRow = newElement.firstChild;
+        this.boardParentWidth = +firstRow.style.width.substring(0, firstRow.style.width.length - 2);
+        var rowCount = 0;
+        for (var i = 0; i < newElement.children.length; i++) {
+            if (newElement.children[i].className == "row") {
+                rowCount++;
+            }
+        }
+        this.boardParentHeight = +firstRow.style.height.substring(0, firstRow.style.height.length - 2) * rowCount;
+    };
     GameHTMLContainer.prototype.turnOnAlertText = function () {
         this.alertTextOn = true;
     };
@@ -2353,9 +2376,10 @@ var GameHTMLContainer = /** @class */ (function () {
             newHTML += this.throbberElement;
         }
         this.boardParentElement.innerHTML = newHTML;
-        this.boardParentElement.style.display = "inline-block";
-        this.boardParentElement.style.width = "auto";
-        this.boardParentElement.style.height = "auto";
+        this.calculateBoardDimensions();
+        this.boardParentElement.style.position = "absolute";
+        this.boardParentElement.style.width = this.boardParentWidth + "px";
+        this.boardParentElement.style.height = this.boardParentHeight + "px";
     };
     return GameHTMLContainer;
 }());
@@ -2623,12 +2647,20 @@ var GameController = /** @class */ (function (_super) {
                     choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
                     choiceModal.setOnChoice(function (result) {
                         control.htmlContainer.hideChoiceModal();
-                        control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                        if (result == "Move") {
+                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
+                        }
+                        else if (result == "Fire") {
+                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
+                        }
                     });
                     control.htmlContainer.setChoiceModal(choiceModal);
                     control.htmlContainer.showChoiceModal();
                 }
                 else {
+                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
                     control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
                 }
             }
@@ -2641,7 +2673,29 @@ var GameController = /** @class */ (function (_super) {
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece = control.getPieceAtSquareId(id);
-                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                if (thisPiece.getPossibleMoves().containsType(MoveType.FLING)) {
+                    var choiceModal = new ChoiceModal();
+                    choiceModal.addChoice("Move");
+                    choiceModal.addChoice("Fire");
+                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
+                    choiceModal.setOnChoice(function (result) {
+                        control.htmlContainer.hideChoiceModal();
+                        if (result == "Move") {
+                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
+                        }
+                        else if (result == "Fire") {
+                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
+                        }
+                    });
+                    control.htmlContainer.setChoiceModal(choiceModal);
+                    control.htmlContainer.showChoiceModal();
+                }
+                else {
+                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
+                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                }
             }
             else if (control.myPieceIsSelected() && !(control.representsMovableSpace(id))) {
                 control.unselectPiece();
@@ -2650,7 +2704,7 @@ var GameController = /** @class */ (function (_super) {
             }
             else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
                 var sqr = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
+                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
                 control.signalOpponentsMove();
             }
         };
@@ -2692,7 +2746,7 @@ var GameController = /** @class */ (function (_super) {
             }
             else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
                 var sqr = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
+                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
             }
         };
     };
@@ -2713,7 +2767,7 @@ var GameController = /** @class */ (function (_super) {
             }
             else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
                 var sqr = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, MoveType.NONCAPTURE);
+                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
             }
             else if (control.myPieceIsSelected() && !(control.representsMovableSpace(id))) {
                 control.unselectPiece();
@@ -2760,6 +2814,14 @@ var GameController = /** @class */ (function (_super) {
     GameController.prototype.tracePieceMoves = function (piece, hex) {
         var moves = piece.getPossibleMoves();
         this.setSquaresToColor(moves, hex);
+        this.setSquareToColor(piece.getPos(), hex);
+        this.setSelectedPiece(piece);
+        this.update();
+    };
+    GameController.prototype.tracePieceMovesOfType = function (piece, hex, type) {
+        var moves = piece.getPossibleMoves();
+        var movesOfType = moves.getTypeSubset(type);
+        this.setSquaresToColor(movesOfType, hex);
         this.setSquareToColor(piece.getPos(), hex);
         this.setSelectedPiece(piece);
         this.update();
@@ -2963,7 +3025,7 @@ var GameBox = /** @class */ (function () {
         Preloader.preload();
         CSSManager.initAndApply();
         var container = new GameHTMLContainer(document.body);
-        var game = new GameController(container, 100, 100, 50, 50);
+        var game = new GameController(container, 0, 0, 50, 50);
         game.start();
     };
     return GameBox;

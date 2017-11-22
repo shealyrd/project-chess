@@ -175,7 +175,7 @@ enum State{
     choices: string[] = new Array();
     rowHeight: number;
     width: number;
-    onChoice: (choice: HTMLElement) => void;
+    onChoice: (choice: string) => void;
     pos: Pos;
 
     constructor(rowHeight?: number, width?: number){
@@ -193,7 +193,7 @@ enum State{
         this.choices.push(newChoice);
     }
 
-    setOnChoice(inputfunc: (choice: HTMLElement) => void){
+    setOnChoice(inputfunc: (choice: string) => void){
         this.onChoice = inputfunc;
     }
 
@@ -235,7 +235,7 @@ enum State{
             var eachElement = <HTMLElement> result.children[i];
             eachElement.onmouseover = function() { this.style.backgroundColor = "rgb(222,222,222)"};
             eachElement.onmouseleave = function() { this.style.backgroundColor = "#ebebeb"};
-            eachElement.onclick = (function(element, global) {return () => {global.onChoice(element)}}(eachElement, this));
+            eachElement.onclick = (function(element, global) {return () => {global.onChoice(element.innerHTML)}}(eachElement, this));
         }
         return result;
     }
@@ -1116,7 +1116,6 @@ class Pos{
 enum MoveType{
     NONEXECUTABLE,
     CAPTURE,
-    NONCAPTURE,
     FLING
 }class Move{
     private dest: Pos;
@@ -1252,6 +1251,19 @@ enum MoveType{
         return false;
     }
 
+    public getTypeSubset(type: MoveType): MoveCollection{
+        var result = new MoveCollection();
+
+        for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.getType() == type){
+                result.add(eachMove);
+            }
+        }
+
+        return result;
+    }
+
     public shuffle(){
         Algorithms.shuffle(this.moves);
     }
@@ -1274,7 +1286,7 @@ enum MoveType{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             y -= 1;
         }
 
@@ -1298,7 +1310,7 @@ enum MoveType{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             y += 1;
         }
 
@@ -1322,7 +1334,7 @@ enum MoveType{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x -= 1;
         }
 
@@ -1346,7 +1358,7 @@ enum MoveType{
                     break;
                 }
             }
-            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x += 1;
         }
 
@@ -1396,7 +1408,7 @@ enum MoveType{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 y -= 1;
             }
         }
@@ -1423,7 +1435,7 @@ enum MoveType{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 x += 1;
             }
         }
@@ -1450,7 +1462,7 @@ enum MoveType{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 x -= 1;
             }
         }
@@ -1477,7 +1489,7 @@ enum MoveType{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 y += 1;
             }
         }
@@ -1521,7 +1533,7 @@ enum MoveType{
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x -= 1;
             y -= 1;
         }
@@ -1547,7 +1559,7 @@ enum MoveType{
                 break;
             }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x += 1;
             y -= 1;
         }
@@ -1573,7 +1585,7 @@ enum MoveType{
                     break;
                 }
             }
-            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+            result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
             x += 1;
             y += 1;
         }
@@ -1598,7 +1610,7 @@ enum MoveType{
                         break;
                     }
                 }
-                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
                 x -= 1;
                 y += 1;
             }
@@ -1631,7 +1643,7 @@ enum MoveType{
                 }
             }
             else{
-                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
             }
         }
 
@@ -1645,8 +1657,6 @@ enum MoveType{
 
         if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
-            }
-            else{
                 result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.FLING));
             }
         }
@@ -1663,7 +1673,7 @@ enum MoveType{
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
             }
             else{
-                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
             }
         }
 
@@ -1705,7 +1715,7 @@ enum MoveType{
                         }
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY--;
                     }
@@ -1727,7 +1737,7 @@ enum MoveType{
                         }
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY++;
                     }
@@ -1752,7 +1762,7 @@ enum MoveType{
                         break;
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY--;
                     }
@@ -1773,7 +1783,7 @@ enum MoveType{
                         break;
                     }
                     else{
-                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.NONCAPTURE));
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
                         count--;
                         newY++;
                     }
@@ -2015,14 +2025,14 @@ enum MoveType{
 		var y = this.getPos().getY();
 	
 		var invalidMoves = new MoveCollection();
-		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1), MoveType.NONCAPTURE));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2), MoveType.NONCAPTURE));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1), MoveType.NONCAPTURE));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2), MoveType.NONCAPTURE));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1), MoveType.NONCAPTURE));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2), MoveType.NONCAPTURE));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1), MoveType.NONCAPTURE));
-		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2), MoveType.NONCAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y + 1), MoveType.CAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y + 2), MoveType.CAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y + 1), MoveType.CAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y + 2), MoveType.CAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 1, y - 1), MoveType.CAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2), MoveType.CAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1), MoveType.CAPTURE));
+		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2), MoveType.CAPTURE));
 		
 		return MoveFactory.getAllDiagonal(this).minusIgnoreType(invalidMoves);
     }
@@ -2252,7 +2262,7 @@ enum MoveType{
     executeMove(move: Move){
         var originalPiece: PieceModel = this.getPieceFromPosition(move.getOrigin());
         originalPiece.onMove(move);
-        if((move.getType() == MoveType.NONCAPTURE) || (move.getType() == MoveType.CAPTURE))
+        if((move.getType() == MoveType.CAPTURE))
         {
             this.movePiece(originalPiece.getPos(), move.getDest());
         }
@@ -2401,7 +2411,7 @@ enum MoveType{
 }class BoardFactory{
     static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     static TAMERLANE_BOARD: string = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
-    static TEST_BOARD: string = "[6_B],[],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[],[],[],[]/[],[],[15_W],[],[],[]/[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
+    static TEST_BOARD: string = "[6_B],[1_B],[1_B],[1_B],[1_B],[]/[15_B],[15_B],[15_B],[15_B],[15_B],[15_B]/[],[],[],[],[],[]/[],[],[],[],[],[]/[15_W],[15_W],[15_W],[15_W],[15_W],[15_W]/[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
     static getStandardBoard(): BoardModel{
         var board: BoardModel = new BoardModel(8,8);
         board.populateFromSerial(BoardFactory.STANDARD_BOARD);
@@ -2879,6 +2889,7 @@ class GameController extends Player{
     consoleCtrl: ConsoleController;
     //temp storage
     SELECTED_PIECE: PieceModel;
+    SELECTED_MOVE_TYPE: MoveType;
     CHOSEN_MOVE: Move;
 
     offsetTop: number;
@@ -2978,12 +2989,21 @@ class GameController extends Player{
                     choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
                     choiceModal.setOnChoice((result) => {
                         control.htmlContainer.hideChoiceModal();
-                        control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                        if(result == "Move"){
+                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
+                        }
+                        else if(result == "Fire"){
+                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
+                        }
+
                     });
                     control.htmlContainer.setChoiceModal(choiceModal);
                     control.htmlContainer.showChoiceModal();
                 }
                 else{
+                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
                     control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
                 }
 
@@ -2997,7 +3017,30 @@ class GameController extends Player{
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
-                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                if(thisPiece.getPossibleMoves().containsType(MoveType.FLING)){
+                    var choiceModal = new ChoiceModal();
+                    choiceModal.addChoice("Move");
+                    choiceModal.addChoice("Fire");
+                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
+                    choiceModal.setOnChoice((result) => {
+                        control.htmlContainer.hideChoiceModal();
+                        if(result == "Move"){
+                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
+                        }
+                        else if(result == "Fire"){
+                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
+                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
+                        }
+
+                    });
+                    control.htmlContainer.setChoiceModal(choiceModal);
+                    control.htmlContainer.showChoiceModal();
+                }
+                else {
+                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
+                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
+                }
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
@@ -3006,7 +3049,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
+                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
                 control.signalOpponentsMove();
             }
         };
@@ -3050,7 +3093,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, MoveType.CAPTURE);
+                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
             }
         };
     }
@@ -3073,7 +3116,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, MoveType.NONCAPTURE);
+                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
@@ -3134,6 +3177,16 @@ class GameController extends Player{
         this.setSelectedPiece(piece);
         this.update();
     }
+
+    tracePieceMovesOfType(piece: PieceModel, hex: string, type: MoveType):void {
+        var moves: MoveCollection = piece.getPossibleMoves();
+        var movesOfType = moves.getTypeSubset(type);
+        this.setSquaresToColor(movesOfType, hex);
+        this.setSquareToColor(piece.getPos(), hex);
+        this.setSelectedPiece(piece);
+        this.update();
+    }
+
 
     moveSelectedPieceToSquare(sqr:Square, type: MoveType):void {
         this.turnOffClickListeners();

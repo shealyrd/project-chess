@@ -101,6 +101,19 @@ class MoveCollection{
         return false;
     }
 
+    public getTypeSubset(type: MoveType): MoveCollection{
+        var result = new MoveCollection();
+
+        for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.getType() == type){
+                result.add(eachMove);
+            }
+        }
+
+        return result;
+    }
+
     public shuffle(){
         Algorithms.shuffle(this.moves);
     }

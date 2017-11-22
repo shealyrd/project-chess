@@ -140,7 +140,7 @@ class BoardModel{
     executeMove(move: Move){
         var originalPiece: PieceModel = this.getPieceFromPosition(move.getOrigin());
         originalPiece.onMove(move);
-        if((move.getType() == MoveType.NONCAPTURE) || (move.getType() == MoveType.CAPTURE))
+        if((move.getType() == MoveType.CAPTURE))
         {
             this.movePiece(originalPiece.getPos(), move.getDest());
         }
