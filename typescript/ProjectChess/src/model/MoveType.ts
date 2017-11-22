@@ -1,5 +1,6 @@
 enum MoveType{
     NONEXECUTABLE,
     CAPTURE,
-    FLING
+    FLING,
+    HOP
 }

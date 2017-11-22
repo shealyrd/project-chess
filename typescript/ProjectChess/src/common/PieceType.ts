@@ -14,5 +14,6 @@ enum PieceType{
 	ELEPHANT_RIDER = 12,
 	CAMEL_RIDER = 13,
 	HERO = 14,
-	CANNON = 15
+	CANNON = 15,
+	CHECKER = 16
 }
