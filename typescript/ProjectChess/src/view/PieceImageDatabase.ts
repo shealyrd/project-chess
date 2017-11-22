@@ -48,6 +48,7 @@ class PieceImageDatabase{
         whiteImages.set(PieceType.PICKET, 'imgs//pieces//Picket_W.png');
         whiteImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_W.png');
         whiteImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_W.png');
+        whiteImages.set(PieceType.CHECKER, 'imgs//pieces//WarMachine_W.png');
         return whiteImages;
     }
 
@@ -67,6 +68,7 @@ class PieceImageDatabase{
         blackImages.set(PieceType.PICKET, 'imgs//pieces//Picket_B.png');
         blackImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_B.png');
         blackImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_B.png');
+        blackImages.set(PieceType.CHECKER, 'imgs//pieces//WarMachine_B.png');
         return blackImages;
     }
 }
