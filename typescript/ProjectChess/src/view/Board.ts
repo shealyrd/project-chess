@@ -233,6 +233,7 @@ class Board extends HTMLObject{
                 var eachSqr: Square = result.getSquareAtPos(new Pos(x,y));
 				var sqrData: string = squares[x].substring(1, squares[x].length - 1);
 				eachSqr.setType(+sqrData);
+				eachSqr.resetHexColor();
             }
         }
         return result;

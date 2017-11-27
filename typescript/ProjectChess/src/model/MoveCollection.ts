@@ -36,6 +36,109 @@ class MoveCollection{
         return result;
     }
 
+	public getAllChains(move: Move){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.beginsWithChain(move)){
+                result.add(eachMove);
+            }
+        }
+		
+        return result;
+	}
+	
+	
+	public filterDestinationType(board: BoardModel, type: SquareType): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            var destType = board.getSquareTypeAtPos(eachMove.getDest());
+			if(!(destType == type)){
+				result.add(eachMove);
+			}
+        }
+		
+        return result;
+	}
+	
+	
+	public onlyWithDestinationType(board: BoardModel, type: SquareType): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            var destType = board.getSquareTypeAtPos(eachMove.getDest());
+			if(destType == type){
+				result.add(eachMove);
+			}
+        }
+		
+        return result;
+	}
+	
+	public flattenToLastSubmoves(){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			result.add(eachMove.getFinalSubMove().cloneWithoutNextMove());
+        }
+        return result;
+	}
+	
+		
+	public flattenToDepth(depth: number){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			if(eachMove.getMoveDepth() >= depth){
+				result.add(eachMove.getSubMoveAtDepth(depth));			
+			}
+        }
+        return result;
+	}
+	
+	
+	public flattenToFirstSubmoves(){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			result.add(eachMove.cloneWithoutNextMove());
+        }
+		
+        return result;
+	}
+	
+	public getMaximumDepth(): number{
+		var result: number = 1;
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			if(eachMove.getMoveDepth() > result){
+				result = eachMove.getMoveDepth();
+			}
+        }
+		
+        return result;
+	}
+
+	public getAllWithDepth(depth: number){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			if(eachMove.getMoveDepth() == depth){
+				result.add(eachMove);
+			}   
+        }
+        return result;
+	}
+	
     public addAll(movesArg: MoveCollection): MoveCollection{
         var moveArray: Move[] = movesArg.getMoves();
         moveArray.forEach((e, i, me) => {
@@ -113,7 +216,35 @@ class MoveCollection{
 
         return result;
     }
+	
+	public getDestinationSubset(pos: Pos): MoveCollection{
+        var result = new MoveCollection();
 
+        for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.getDest().equals(pos)){
+                result.add(eachMove);
+            }
+        }
+
+        return result;
+    }
+	
+	public getNumberOfTypes(): number{
+		var typeSet = new Set();
+		
+        for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            typeSet.add(eachMove.getType());
+        }
+	
+		return typeSet.size;
+	}
+	
+	public size(): number{
+		return this.moves.length;
+	}
+	
     public shuffle(){
         Algorithms.shuffle(this.moves);
     }

@@ -33,6 +33,16 @@ class BoardModel{
         });
 	}
 	
+	getSquareTypeAtPos(pos: Pos){
+		var result: SquareType;
+        this.pos2SquareType.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                result = this.pos2SquareType.get(key);
+            }
+        });
+		return result;
+	}
+	
     getDirection(color: Color): number{
         if(Color.WHITE == color){
             return 1;
@@ -147,6 +157,16 @@ class BoardModel{
         else if(move.getType() == MoveType.FLING){
             this.removePiece(move.getDest());
         }
+		else if(move.getType() == MoveType.HOP){
+            var removePos: Pos = move.getDest().minus(move.getOrigin()).divide(2);
+			removePos = originalPiece.getPos().plus(removePos);
+			this.movePiece(originalPiece.getPos(), move.getDest());
+			this.removePiece(removePos);
+        }
+		
+		if(move.hasNextMove()){
+			this.executeMove(move.getNextMove());
+		}
     }
 
     movePiece(origin: Pos, dest: Pos) {

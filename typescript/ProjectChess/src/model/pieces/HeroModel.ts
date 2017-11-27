@@ -9,7 +9,7 @@ class HeroModel extends PieceModel{
 
     getPossibleMoves(): MoveCollection{
         return MoveFactory.getAllCardinal(this)
-            .addAll(MoveFactory.getAllDiagonal(this))
+            .addAll(MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC))
 			.addAll(MoveFactory.getRelativeToPiece(this, -2, -1)
 			.addAll(MoveFactory.getRelativeToPiece(this, 2, -1))
 			.addAll(MoveFactory.getRelativeToPiece(this, -2, 1))

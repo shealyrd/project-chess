@@ -8,6 +8,6 @@ class RookModel extends PieceModel{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getAllCardinal(this);
+        return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC);
     }
 }

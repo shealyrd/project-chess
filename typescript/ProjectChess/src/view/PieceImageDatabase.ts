@@ -49,6 +49,10 @@ class PieceImageDatabase{
         whiteImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_W.png');
         whiteImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_W.png');
         whiteImages.set(PieceType.CHECKER, 'imgs//pieces//WarMachine_W.png');
+		whiteImages.set(PieceType.KING_CHECKER, 'imgs//pieces//WarMachine_W.png');
+		whiteImages.set(PieceType.BATTLESHIP, 'imgs//pieces//WarMachine_W.png');
+		whiteImages.set(PieceType.NIGHTRIDER, 'imgs//pieces//Knight_W.png');
+		whiteImages.set(PieceType.ROSE_KNIGHT, 'imgs//pieces//Knight_W.png');
         return whiteImages;
     }
 
@@ -69,6 +73,10 @@ class PieceImageDatabase{
         blackImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_B.png');
         blackImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_B.png');
         blackImages.set(PieceType.CHECKER, 'imgs//pieces//WarMachine_B.png');
+		blackImages.set(PieceType.KING_CHECKER, 'imgs//pieces//WarMachine_B.png');
+		blackImages.set(PieceType.BATTLESHIP, 'imgs//pieces//WarMachine_B.png');
+		blackImages.set(PieceType.NIGHTRIDER, 'imgs//pieces//Knight_B.png');
+		blackImages.set(PieceType.ROSE_KNIGHT, 'imgs//pieces//Knight_B.png');
         return blackImages;
     }
 }

@@ -15,6 +15,7 @@ class CamelRiderModel extends PieceModel{
         .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
         .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3))
+		.filterDestinationType(this.getBoardModel(), SquareType.WATER);
     }
 }

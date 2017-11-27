@@ -22,6 +22,6 @@ class PicketModel extends PieceModel{
 		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1), MoveType.CAPTURE));
 		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2), MoveType.CAPTURE));
 		
-		return MoveFactory.getAllDiagonal(this).minusIgnoreType(invalidMoves);
+		return MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC).minusIgnoreType(invalidMoves);
     }
 }

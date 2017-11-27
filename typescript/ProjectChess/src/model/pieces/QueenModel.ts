@@ -8,7 +8,8 @@ class QueenModel extends PieceModel{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getAllCardinal(this)
-            .addAll(MoveFactory.getAllDiagonal(this));
+	
+			return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC)
+					.addAll(MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC));
     }
 }

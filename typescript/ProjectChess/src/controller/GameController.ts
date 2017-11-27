@@ -8,7 +8,13 @@ class GameController extends Player{
     SELECTED_PIECE: PieceModel;
     SELECTED_MOVE_TYPE: MoveType;
     CHOSEN_MOVE: Move;
-
+	
+	MUTLI_HOP_SELECTION_DEPTH: number = 1;
+	IN_MULTI_HOP_SELECTION: boolean = false;
+	MULTI_HOP_ORIGIN: Move;
+	CURRENT_MULTI_HOP_POSITION: Pos;
+	MULTI_HOP_MOVE_ARRAY: Move[] = new Array();
+	
     offsetTop: number;
     offsetLeft: number;
     squareWidth: number;
@@ -92,37 +98,24 @@ class GameController extends Player{
     turnOnThrobber(){
         this.htmlContainer.turnOnThrobber();
     }
-
+				
     getMyPieceClickListenerFunction(id: string, control: GameController){
         return function () {
-            if(!control.myPieceIsSelected()){
+			if(control.isInMultiHopSelection() && control.isCandidateForMultiHopSelection(id)){
+				var sqr: Square = control.getSquareAtId(id);
+				control.continueMultiHopSelection(sqr);
+			}
+			else if(control.isInMultiHopSelection()){
+				control.resetAllMultiHopVariables()
+				control.unselectPiece();
+                control.resetSquareColors(); 
+                control.update();
+			}
+            else if(!control.myPieceIsSelected()){
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
-                if(thisPiece.getPossibleMoves().containsType(MoveType.FLING)){
-                    var choiceModal = new ChoiceModal();
-                    choiceModal.addChoice("Move");
-                    choiceModal.addChoice("Fire");
-                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
-                    choiceModal.setOnChoice((result) => {
-                        control.htmlContainer.hideChoiceModal();
-                        if(result == "Move"){
-                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
-                        }
-                        else if(result == "Fire"){
-                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
-                        }
-
-                    });
-                    control.htmlContainer.setChoiceModal(choiceModal);
-                    control.htmlContainer.showChoiceModal();
-                }
-                else{
-                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
-                }
+				control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
 
             }
             else if(control.myPieceIsSelected() && control.selectedPieceIsAtSquareId(id)){
@@ -134,30 +127,7 @@ class GameController extends Player{
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
-                if(thisPiece.getPossibleMoves().containsType(MoveType.FLING)){
-                    var choiceModal = new ChoiceModal();
-                    choiceModal.addChoice("Move");
-                    choiceModal.addChoice("Fire");
-                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
-                    choiceModal.setOnChoice((result) => {
-                        control.htmlContainer.hideChoiceModal();
-                        if(result == "Move"){
-                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
-                        }
-                        else if(result == "Fire"){
-                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
-                        }
-
-                    });
-                    control.htmlContainer.setChoiceModal(choiceModal);
-                    control.htmlContainer.showChoiceModal();
-                }
-                else {
-                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
-                }
+				control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
@@ -166,7 +136,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
+                control.makeMoveAtSqr(sqr);
                 control.signalOpponentsMove();
             }
         };
@@ -185,6 +155,7 @@ class GameController extends Player{
 
     getOppPieceClickListenerFunction(id: string, control: GameController){
         return function () {
+			control.resetAllMultiHopVariables();
             if (!control.oppPieceIsSelected() && !control.myPieceIsSelected()) {
                 control.unselectPiece();
                 control.resetSquareColors();
@@ -210,11 +181,107 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
+				control.makeMoveAtSqr(sqr);
             }
         };
     }
 
+	makeMoveAtSqr(sqr: Square){
+	    this.turnOffClickListeners();
+		var chosenMove: Move;
+		var moves = this.SELECTED_PIECE.getPossibleMoves().getDestinationSubset(sqr.getPos());
+        var numTypes = moves.getNumberOfTypes();
+		if(numTypes == 1){
+			chosenMove = moves.getMoves()[0];
+		}
+		else if(numTypes > 1){
+			alert("moves found with duplicate destinations");
+		}
+		else{
+			//throw error
+			alert("ERROR IN GAMECONTROLLER: INVALID MOVE");
+		}
+        this.setChosenMove(chosenMove);
+		
+        this.resetSquareColors();
+		if(chosenMove.getType() == MoveType.HOP){	
+			this.MULTI_HOP_ORIGIN = chosenMove;
+			this.CURRENT_MULTI_HOP_POSITION = this.MULTI_HOP_ORIGIN.getOrigin();
+			var allChains: MoveCollection = this.SELECTED_PIECE.getPossibleMoves().getAllChains(chosenMove.cloneWithoutNextMove());
+			var maxDepth = allChains.getMaximumDepth();
+			if(this.MUTLI_HOP_SELECTION_DEPTH < maxDepth){
+				this.CURRENT_MULTI_HOP_POSITION = chosenMove.getDest();
+				this.MULTI_HOP_MOVE_ARRAY.push(new Move(this.MULTI_HOP_ORIGIN.getOrigin(), sqr.getPos(), MoveType.HOP));
+				this.resetSquareColors();
+				this.MUTLI_HOP_SELECTION_DEPTH += 1;
+				this.setSquareToColor(chosenMove.getDest(), "#00FF00");
+				this.setSquaresToColor(allChains.flattenToDepth(this.MUTLI_HOP_SELECTION_DEPTH), StaticColors.SQUARE_SELECTION_BLUE);
+				this.IN_MULTI_HOP_SELECTION = true;
+				this.update();
+			}
+			else{
+				this.makeMoveAtSqrForMultiHop(sqr);
+			}
+		}
+		else{
+			this.unselectPiece();
+			this.signalOpponentsMove();
+		}
+		
+	}
+	
+	continueMultiHopSelection(sqr: Square){
+			var cursorMove = this.compileMoveFromMultiHopArray();
+			cursorMove.appendMoveToEnd(new Move(this.CURRENT_MULTI_HOP_POSITION, sqr.getPos(), MoveType.HOP));
+			var allChains: MoveCollection = this.SELECTED_PIECE.getPossibleMoves().getAllChains(cursorMove);
+			var maxDepth = allChains.getMaximumDepth();
+			if(this.MUTLI_HOP_SELECTION_DEPTH < maxDepth){
+				this.MUTLI_HOP_SELECTION_DEPTH += 1;
+				this.MULTI_HOP_MOVE_ARRAY.push(new Move(this.CURRENT_MULTI_HOP_POSITION, sqr.getPos(), MoveType.HOP));
+				this.CURRENT_MULTI_HOP_POSITION = sqr.getPos();
+				this.resetSquareColors();
+				this.setSquareToColor(sqr.getPos(), "#00FF00");
+				this.setSquaresToColor(allChains.flattenToDepth(this.MUTLI_HOP_SELECTION_DEPTH), StaticColors.SQUARE_SELECTION_BLUE);
+				this.update();
+			}
+			else{
+				this.makeMoveAtSqrForMultiHop(sqr);
+			}
+	}
+	
+	compileMoveFromMultiHopArray(){
+		var chosenMove: Move;
+		for(var i = 0; i < this.MULTI_HOP_MOVE_ARRAY.length; i++){
+			if(chosenMove == null){
+				chosenMove = this.MULTI_HOP_MOVE_ARRAY[i].clone();
+			}
+			else{
+				chosenMove.getFinalSubMove().setNextMove(this.MULTI_HOP_MOVE_ARRAY[i].clone());
+			}
+		}
+		return chosenMove;
+	}
+	
+	makeMoveAtSqrForMultiHop(sqr: Square){
+		this.MULTI_HOP_MOVE_ARRAY.push(new Move(this.CURRENT_MULTI_HOP_POSITION, sqr.getPos(), MoveType.HOP));
+		var chosenMove: Move;
+		for(var i = 0; i < this.MULTI_HOP_MOVE_ARRAY.length; i++){
+			if(chosenMove == null){
+				chosenMove = this.MULTI_HOP_MOVE_ARRAY[i].clone();
+			}
+			else{
+				chosenMove.getFinalSubMove().setNextMove(this.MULTI_HOP_MOVE_ARRAY[i].clone());
+			}
+		}
+		this.setChosenMove(chosenMove);
+        this.resetSquareColors();
+		this.MUTLI_HOP_SELECTION_DEPTH = 1;
+		this.IN_MULTI_HOP_SELECTION = false;
+		this.MULTI_HOP_MOVE_ARRAY = new Array();
+		this.unselectPiece();
+		this.signalOpponentsMove();
+	}
+	
     addSquareClickListeners(){
         var squares: Square[] = this.boardView.getSquares();
         for (var square in squares) {
@@ -227,22 +294,37 @@ class GameController extends Player{
 
     getSquareClickListenerFunction(id: string, control: GameController){
         return function () {
-            if(control.oppPieceIsSelected()){
+			if(control.isInMultiHopSelection() && control.isCandidateForMultiHopSelection(id)){
+				var sqr: Square = control.getSquareAtId(id);
+				control.continueMultiHopSelection(sqr);
+			}
+			else if(control.isInMultiHopSelection()){
+				control.resetAllMultiHopVariables()
+				control.unselectPiece();
+                control.resetSquareColors(); 
+                control.update();
+			}
+            else if(control.oppPieceIsSelected()){
                 control.unselectPiece();
                 control.resetSquareColors();
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
+                control.makeMoveAtSqr(sqr);
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
-                control.resetSquareColors();
+                control.resetSquareColors(); 
                 control.update();
             }
         };
     }
 
+	isCandidateForMultiHopSelection(id: string){
+		var sqr: Square = this.getSquareAtId(id);
+		return this.SELECTED_PIECE.getPossibleMoves().getAllChains(this.compileMoveFromMultiHopArray()).flattenToDepth(this.MUTLI_HOP_SELECTION_DEPTH).containsDestination(sqr.getPos());
+	}
+	
     hasNoClickListener(id: string) {
         return document.getElementById(id).onclick == null || document.getElementById(id).onclick == undefined;
     }
@@ -276,7 +358,7 @@ class GameController extends Player{
         var moves: MoveCollection = this.SELECTED_PIECE.getPossibleMoves();
         var sqr: Square = this.boardView.getSquareById(id);
         var thisMove = new Move(this.SELECTED_PIECE.getPos(), new Pos(sqr.getX(), sqr.getY()), MoveType.NONEXECUTABLE);
-        return moves.containsIgnoreType(thisMove);
+        return moves.flattenToFirstSubmoves().containsIgnoreType(thisMove);
     }
 
     oppPieceIsSelected():boolean {
@@ -418,6 +500,14 @@ class GameController extends Player{
             }, 3000);
     }
 
+	resetAllMultiHopVariables(){
+		this.MUTLI_HOP_SELECTION_DEPTH = 1;
+		this.IN_MULTI_HOP_SELECTION = false;
+		this.MULTI_HOP_ORIGIN = null;
+		this.CURRENT_MULTI_HOP_POSITION = null;
+		this.MULTI_HOP_MOVE_ARRAY = new Array();
+	}
+	
     readyForMove(){
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
 		this.turnOffThrobber();
@@ -427,6 +517,10 @@ class GameController extends Player{
         }
     }
 
+	isInMultiHopSelection(){
+		return this.IN_MULTI_HOP_SELECTION;
+	}
+	
     turnOffThrobber():void {
         this.htmlContainer.turnOffThrobber();
     }

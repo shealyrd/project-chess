@@ -25,14 +25,16 @@ class PawnModel extends PieceModel{
         if(this.hasMoved){
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                     .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
-                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()));
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()))
+				.filterDestinationType(this.getBoardModel(), SquareType.WATER);
         }
         else{
             //alert(MoveFactory.getLineForward(this, 2, this.getDirection()).getMoves.length);
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                 .addAll(MoveFactory.getLineForwardNoncapturing(this, 2, this.getDirection())
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
-                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())));
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())))
+				.filterDestinationType(this.getBoardModel(), SquareType.WATER);
         }
 
     }

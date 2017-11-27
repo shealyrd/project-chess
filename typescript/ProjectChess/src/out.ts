@@ -266,7 +266,8 @@ enum State{
 	BLACK
 }enum SquareType{
     NORMAL = 0,
-    NON_EXISTENT = 1
+    NON_EXISTENT = 1,
+	WATER = 2
 }enum PieceType{
 
     PAWN = 1,
@@ -283,7 +284,12 @@ enum State{
 	ELEPHANT_RIDER = 12,
 	CAMEL_RIDER = 13,
 	HERO = 14,
-	CANNON = 15
+	CANNON = 15,
+	CHECKER = 16,
+	KING_CHECKER = 17,
+	BATTLESHIP = 18,
+	NIGHTRIDER = 19,
+	ROSE_KNIGHT = 20
 }
 class PieceLocation{
     x : number;
@@ -361,6 +367,11 @@ class PieceImageDatabase{
         whiteImages.set(PieceType.PICKET, 'imgs//pieces//Picket_W.png');
         whiteImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_W.png');
         whiteImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_W.png');
+        whiteImages.set(PieceType.CHECKER, 'imgs//pieces//WarMachine_W.png');
+		whiteImages.set(PieceType.KING_CHECKER, 'imgs//pieces//WarMachine_W.png');
+		whiteImages.set(PieceType.BATTLESHIP, 'imgs//pieces//WarMachine_W.png');
+		whiteImages.set(PieceType.NIGHTRIDER, 'imgs//pieces//Knight_W.png');
+		whiteImages.set(PieceType.ROSE_KNIGHT, 'imgs//pieces//Knight_W.png');
         return whiteImages;
     }
 
@@ -380,6 +391,11 @@ class PieceImageDatabase{
         blackImages.set(PieceType.PICKET, 'imgs//pieces//Picket_B.png');
         blackImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_B.png');
         blackImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_B.png');
+        blackImages.set(PieceType.CHECKER, 'imgs//pieces//WarMachine_B.png');
+		blackImages.set(PieceType.KING_CHECKER, 'imgs//pieces//WarMachine_B.png');
+		blackImages.set(PieceType.BATTLESHIP, 'imgs//pieces//WarMachine_B.png');
+		blackImages.set(PieceType.NIGHTRIDER, 'imgs//pieces//Knight_B.png');
+		blackImages.set(PieceType.ROSE_KNIGHT, 'imgs//pieces//Knight_B.png');
         return blackImages;
     }
 }class Piece extends HTMLObject{
@@ -520,11 +536,17 @@ class Square extends HTMLObject{
     resetHexColor(){
        var hexColor: string;
 
-        switch(this.col){
-            case Color.WHITE: hexColor = "#f0d9b5"; break;
-            case Color.BLACK: hexColor = "#b58863"; break;
-        }
+	   	if(this.getType() == SquareType.WATER){
+			hexColor = "#74ccf4";
+		}
+		else{
+			switch(this.col){
+				case Color.WHITE: hexColor = "#f0d9b5"; break;
+				case Color.BLACK: hexColor = "#b58863"; break;
+			}
+		}
 
+        
         this.setHexColor(hexColor);
     }
 
@@ -560,7 +582,7 @@ class Square extends HTMLObject{
                 .addStyle("height", this.getHeight() + "px");
 
         builder.setId(this.getId());
-
+		
 		if(!(this.getType() == SquareType.NON_EXISTENT)){
 		    builder.addStyle("border", "1px solid black");
 			builder.addStyle("background-color", this.hexColor);
@@ -886,6 +908,7 @@ class Square extends HTMLObject{
                 var eachSqr: Square = result.getSquareAtPos(new Pos(x,y));
 				var sqrData: string = squares[x].substring(1, squares[x].length - 1);
 				eachSqr.setType(+sqrData);
+				eachSqr.resetHexColor();
             }
         }
         return result;
@@ -1112,15 +1135,30 @@ class Pos{
         var newY = this.getY() + addPos.getY();
         return new Pos(newX, newY);
     }
+	
+	minus(subPos: Pos): Pos{
+        var newX = this.getX() - subPos.getX();
+        var newY = this.getY() - subPos.getY();
+        return new Pos(newX, newY);
+    }
+	
+	divide(scalar: number): Pos{
+		var newX = Math.floor(this.getX() / scalar);
+        var newY = Math.floor(this.getY() / scalar);
+        return new Pos(newX, newY);
+	}
 }
 enum MoveType{
     NONEXECUTABLE,
     CAPTURE,
-    FLING
+    FLING,
+    HOP,
+	MULTIHOP
 }class Move{
     private dest: Pos;
     private origin: Pos;
     private type: MoveType;
+	private nextMove: Move;
 
     constructor(origin: Pos, dest: Pos, type: MoveType){
         this.dest = dest;
@@ -1135,17 +1173,108 @@ enum MoveType{
     getType(): MoveType{
         return this.type;
     }
-
+	
     getOrigin(): Pos{
         return this.origin;
     }
-
+	
+	getNextMove(): Move{
+        return this.nextMove;
+    }
+	
+	setNextMove(move: Move){
+        this.nextMove = move;
+    }
+	
+	hasNextMove(): boolean{
+        return (this.nextMove != null);
+    }
+	
+	cloneWithoutNextMove(){
+		return new Move(this.getOrigin(), this.getDest(), this.getType());
+	}
+	
+	getSubMoveAtDepth(depth: number): Move{
+		var result: Move = this;
+		for(var i = 2; i <= depth; i++){
+			result = result.getNextMove();
+		}
+		return result;
+	}
+	
+	appendMoveToEnd(move: Move){
+		this.getFinalSubMove().setNextMove(move);
+	}
+	
+	beginsWithChain(move: Move): boolean{
+		var result = true;
+		if(this.getMoveDepth() < move.getMoveDepth()){
+			result = false;
+		}
+		else{
+			for(var i = 1; i <= move.getMoveDepth(); i++){
+				result = result && move.getSubMoveAtDepth(i).cloneWithoutNextMove().equals(this.getSubMoveAtDepth(i).cloneWithoutNextMove());
+			}
+		}
+		return result;
+	}
+	
+	getFinalSubMove(): Move{
+		var moveHandle: Move = this;
+		while(moveHandle.hasNextMove()){
+			moveHandle = moveHandle.getNextMove();
+		}
+		return moveHandle;
+	}
+	
+	getMoveDepth(): number{
+		var moveHandle: Move = this;
+		var result: number = 1;
+		
+		while(moveHandle.hasNextMove()){
+			result++;
+			moveHandle = moveHandle.getNextMove();
+		}
+		
+		return result;
+	}
+	
+	clone(){
+		var result: Move = new Move(this.getOrigin(), this.getDest(), this.getType());
+		if(this.hasNextMove()){
+			result.setNextMove(this.getNextMove().clone());
+		}
+		return result;
+	}
+	
     equals(move: Move): boolean{
-        return this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin()) && (this.type ==  move.getType());
+        var result: boolean = this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin()) && (this.type ==  move.getType());
+		if(result){
+			if(this.nextMove != null && move.nextMove != null){
+				result = result && this.getNextMove().equals(move.getNextMove());
+			}
+			else if(this.getNextMove() == null && move.getNextMove() == null){
+			}
+			else{
+				result = false;
+			}
+		}
+		return result;
     }
 
     equalsIgnoreType(move: Move): boolean{
-        return this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin());
+        var result: boolean = this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin());
+		if(result){
+			if(this.nextMove != null && move.nextMove != null){
+				result = result && this.getNextMove().equals(move.getNextMove());
+			}
+			else if(this.getNextMove() == null && move.getNextMove() == null){
+			}
+			else{
+				result = false;
+			}
+		}
+		return result;
     }
 
 }class MoveCollection{
@@ -1186,6 +1315,109 @@ enum MoveType{
         return result;
     }
 
+	public getAllChains(move: Move){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.beginsWithChain(move)){
+                result.add(eachMove);
+            }
+        }
+		
+        return result;
+	}
+	
+	
+	public filterDestinationType(board: BoardModel, type: SquareType): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            var destType = board.getSquareTypeAtPos(eachMove.getDest());
+			if(!(destType == type)){
+				result.add(eachMove);
+			}
+        }
+		
+        return result;
+	}
+	
+	
+	public onlyWithDestinationType(board: BoardModel, type: SquareType): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            var destType = board.getSquareTypeAtPos(eachMove.getDest());
+			if(destType == type){
+				result.add(eachMove);
+			}
+        }
+		
+        return result;
+	}
+	
+	public flattenToLastSubmoves(){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			result.add(eachMove.getFinalSubMove().cloneWithoutNextMove());
+        }
+        return result;
+	}
+	
+		
+	public flattenToDepth(depth: number){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			if(eachMove.getMoveDepth() >= depth){
+				result.add(eachMove.getSubMoveAtDepth(depth));			
+			}
+        }
+        return result;
+	}
+	
+	
+	public flattenToFirstSubmoves(){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			result.add(eachMove.cloneWithoutNextMove());
+        }
+		
+        return result;
+	}
+	
+	public getMaximumDepth(): number{
+		var result: number = 1;
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			if(eachMove.getMoveDepth() > result){
+				result = eachMove.getMoveDepth();
+			}
+        }
+		
+        return result;
+	}
+
+	public getAllWithDepth(depth: number){
+		var result: MoveCollection = new MoveCollection();
+		
+	    for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+			if(eachMove.getMoveDepth() == depth){
+				result.add(eachMove);
+			}   
+        }
+        return result;
+	}
+	
     public addAll(movesArg: MoveCollection): MoveCollection{
         var moveArray: Move[] = movesArg.getMoves();
         moveArray.forEach((e, i, me) => {
@@ -1263,10 +1495,100 @@ enum MoveType{
 
         return result;
     }
+	
+	public getDestinationSubset(pos: Pos): MoveCollection{
+        var result = new MoveCollection();
 
+        for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            if(eachMove.getDest().equals(pos)){
+                result.add(eachMove);
+            }
+        }
+
+        return result;
+    }
+	
+	public getNumberOfTypes(): number{
+		var typeSet = new Set();
+		
+        for(var moveIdx in this.getMoves()){
+            var eachMove = this.moves[moveIdx];
+            typeSet.add(eachMove.getType());
+        }
+	
+		return typeSet.size;
+	}
+	
+	public size(): number{
+		return this.moves.length;
+	}
+	
     public shuffle(){
         Algorithms.shuffle(this.moves);
     }
+}class MoveFilters{
+
+	static BASIC = (pos: Pos, piece: PieceModel) => {
+			var result: MoveFilterResult;
+		    if(piece.getBoardModel().isFree(pos) == false){
+                if(piece.getBoardModel().getPieceFromPosition(pos).getColor() != piece.getColor()){
+					if(piece.getBoardModel().getSquareTypeAtPos(pos) == SquareType.NORMAL){
+						result = new MoveFilterResult(true, true);
+					}
+					else{
+						result = new MoveFilterResult(false, true);
+					}
+                }
+                else{
+                    result = new MoveFilterResult(false, true);
+                }
+            }
+			else{
+				if(piece.getBoardModel().getSquareTypeAtPos(pos) == SquareType.NORMAL){
+					result = new MoveFilterResult(true, false);
+				}
+				else{
+					result = new MoveFilterResult(false, true);
+				}
+			}
+            return result;
+		};
+
+	static BASIC_ONLY_WATER = (pos: Pos, piece: PieceModel) => {
+			var result: MoveFilterResult;
+		    if(piece.getBoardModel().isFree(pos) == false){
+                if(piece.getBoardModel().getPieceFromPosition(pos).getColor() != piece.getColor()){
+					if(piece.getBoardModel().getSquareTypeAtPos(pos) == SquareType.WATER){
+						result = new MoveFilterResult(true, true);
+					}
+					else{
+						result = new MoveFilterResult(false, true);
+					}
+                }
+                else{
+                    result = new MoveFilterResult(false, true);
+                }
+            }
+			else{
+				if(piece.getBoardModel().getSquareTypeAtPos(pos) == SquareType.WATER){
+					result = new MoveFilterResult(true, false);
+				}
+				else{
+					result = new MoveFilterResult(false, true);
+				}
+			}
+            return result;
+		};
+}class MoveFilterResult{
+	passesFilter: boolean
+	breakLoop: boolean
+	
+    constructor(passesFilter: boolean, breakLoop: boolean){
+        this.passesFilter = passesFilter;
+		this.breakLoop = breakLoop;
+    }
+
 }class MoveFactory{
 
     static getAllUpwards(piece: PieceModel){
@@ -1364,6 +1686,207 @@ enum MoveType{
 
         return new MoveCollection(result);
     }
+	
+	static getAllOrthagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+		var result: MoveCollection = new MoveCollection();
+		
+		result.addAll(MoveFactory.getAllRightWithCondition(piece, func));
+		result.addAll(MoveFactory.getAllLeftWithCondition(piece, func));
+		result.addAll(MoveFactory.getAllDownwardsWithCondition(piece, func));
+		result.addAll(MoveFactory.getAllUpwardsWithCondition(piece, func));
+		
+		return result;
+	}
+	
+	static getAllRightWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+		var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY();
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x += 1;
+        }
+
+        return new MoveCollection(result);
+	}
+	
+	static getAllLeftWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY();
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x -= 1;
+        }
+
+        return new MoveCollection(result);
+    }
+	
+	static getAllUpwardsWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX();
+        var y = piece.getPos().getY() - 1;
+
+         while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            y -= 1;
+        }
+
+        return new MoveCollection(result);
+    }
+	
+	static getAllDownwardsWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX();
+        var y = piece.getPos().getY() + 1;
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            y += 1;
+        }
+
+        return new MoveCollection(result);
+    }
+
+	static getLeapingLineWithCondition(piece: PieceModel, x: number, y: number, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+	    var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        while(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+			var filterResult: MoveFilterResult = func(new Pos(newX, newY), piece);
+            if(filterResult.passesFilter){
+				result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+			newX += x;
+			newY += y;
+        }
+
+        return result;
+	}
+	
+	
+static getAllCircularLeapsWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+		var coordinates = new Array();
+        coordinates.push(new Pos(-1, -2));
+        coordinates.push(new Pos(-2, -1));
+        coordinates.push(new Pos(-2, 1));
+        coordinates.push(new Pos(-1, 2));
+        coordinates.push(new Pos(1, 2));
+        coordinates.push(new Pos(2, 1));
+        coordinates.push(new Pos(2, -1));
+        coordinates.push(new Pos(1, -2));
+        var result = new MoveCollection();
+        for (var eachIdx in coordinates) {
+            var eachCoordinate = coordinates[eachIdx];
+            var newX = piece.getPos().getX() + eachCoordinate.getX();
+            var newY = piece.getPos().getY() + eachCoordinate.getY();
+            var counter = 1;
+			var idxIncr = +eachIdx;
+            while (piece.getBoardModel().isValidPosition(new Pos(newX, newY)) && (counter < 8)) {
+
+                var filterResult = func(new Pos(newX, newY), piece);
+                if (filterResult.passesFilter) {
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
+                }
+                if (filterResult.breakLoop) {
+                    break;
+                }
+                var nextCoordinate;
+                if (idxIncr < (coordinates.length -1)) {
+					idxIncr++;
+                }
+                else {
+					idxIncr = 0;
+                }
+				nextCoordinate = coordinates[+idxIncr];
+                newX = newX + nextCoordinate.getX();
+                newY = newY + nextCoordinate.getY();
+                counter++;
+				
+            }
+        }
+        return result;
+	}
+	
+	static getCircularLeapWithCondition(piece: PieceModel, x: number, y: number, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+	    var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+		var swapTemp: number;
+		var circularState: number = 1;
+		
+        while(piece.getBoardModel().isValidPosition(new Pos(newX, newY)) && (circularState <= 8)){
+			var filterResult = func(new Pos(newX, newY), piece);
+            if (filterResult.passesFilter) {
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            if (circularState == 4) {
+                x = x * (-1);
+				circularState = 1;
+            }
+            else if (circularState == 3) {
+                swapTemp = x;
+                x = y;
+                y = swapTemp;
+            }
+            else if (circularState == 2) {
+                y = y * (-1);
+            }
+            else if (circularState == 1) {
+                swapTemp = x;
+                x = y;
+                y = swapTemp;
+            }
+			newX = newX + x;
+			newY = newY + y;
+            circularState += 1;
+        }
+
+        return result;
+	}
 
 	static getGiraffeMovement(piece: PieceModel){
 		var board: BoardModel = piece.getBoardModel();
@@ -1515,7 +2038,109 @@ enum MoveType{
 
         return result;
     }
+	
+	static getAllDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var result: MoveCollection = new MoveCollection();
 
+        result.addAll(MoveFactory.getAllLeftDownDiagonalWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllRightDownDiagonalWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllRightUpDiagonalWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllLeftUpDiagonalWithCondition(piece, func));
+
+        return result;
+    }
+
+	static getAllLeftUpDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+		var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() - 1;
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+           	var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x -= 1;
+            y -= 1;
+        }
+
+
+        return result;
+    }
+	
+	static getAllRightUpDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() - 1;
+
+		while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+           	var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x += 1;
+            y -= 1;
+        }
+
+        return result;
+    }
+	
+	static getAllRightDownDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() + 1;
+
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x += 1;
+            y += 1;
+        }
+
+        return result;
+    }
+	
+	static getAllLeftDownDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() + 1;
+
+            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+				var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+				if(filterResult.passesFilter){
+					result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+				}
+				if(filterResult.breakLoop){
+					break;
+				}
+                x -= 1;
+                y += 1;
+            }
+
+
+        return result;
+    }
+	
     static getAllLeftUpDiagonal(piece: PieceModel){
         var board: BoardModel = piece.getBoardModel();
         var result: MoveCollection = new MoveCollection();
@@ -1663,6 +2288,168 @@ enum MoveType{
 
         return result;
     }
+
+    static getRelativeToPieceHop(piece: PieceModel, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+            if (piece.getBoardModel().isFree(new Pos(newX, newY))) {
+			    var removePos: Pos = new Pos(newX, newY).minus(piece.getPos()).divide(2);
+				removePos = piece.getPos().plus(removePos);
+				if (!piece.getBoardModel().isFree(removePos)) {
+					if (piece.getBoardModel().getPieceFromPosition(removePos).getColor() != piece.getColor()) {
+						result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.HOP));
+					}
+				}
+            }
+        }
+
+        return result;
+    }
+
+	static getHop(board: BoardModel, color: Color, origin: Pos, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+        var newX: number = origin.getX() + x;
+        var newY: number = origin.getY() + y;
+
+        if(board.isValidPosition(new Pos(newX, newY))){
+            if (board.isFree(new Pos(newX, newY))) {
+			    var removePos: Pos = new Pos(newX, newY).minus(origin).divide(2);
+				removePos = origin.plus(removePos);
+				if (!board.isFree(removePos)) {
+					if (board.getPieceFromPosition(removePos).getColor() != color) {
+						result.add(new Move(origin, new Pos(newX, newY), MoveType.HOP));
+					}
+				}
+            }
+        }
+
+        return result;
+    }
+	
+	static applyMove(move: Move, board: BoardModel): BoardModel{
+		var newBoard = new BoardModel(board.getWidth(), board.getHeight());
+		newBoard.populateFromSerial(board.serialize());
+		newBoard.executeMove(move);
+		return newBoard;
+	}
+	
+	static getRecursiveCheckerKingHop(piece: PieceModel){
+		var direction = piece.getDirection();
+		var moves: MoveCollection;
+		var result: MoveCollection = new MoveCollection();
+		
+		moves = MoveFactory.getRelativeToPieceHop(piece, 2, -2)
+		.addAll(MoveFactory.getRelativeToPieceHop(piece, -2, -2))
+		.addAll(MoveFactory.getRelativeToPieceHop(piece, -2, 2))
+		.addAll(MoveFactory.getRelativeToPieceHop(piece, 2, 2));
+		
+		for(var eachMoveIdx in moves.getMoves()){
+			var eachMove = moves.getMoves()[eachMoveIdx];
+			var newBoard = MoveFactory.applyMove(eachMove, piece.getBoardModel());
+			var transformedMoves = MoveFactory.recursivelyTransformKingHop(eachMove, piece, newBoard);
+			result.addAll(transformedMoves);
+		}
+		
+		return result;
+    }
+
+	static recursivelyTransformKingHop(move: Move, piece: PieceModel, board: BoardModel): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		var eachMoveHopOptions = MoveFactory.getHop(board, piece.getColor(), move.getDest(), 2, -2)
+			.addAll(MoveFactory.getHop(board, piece.getColor(), move.getDest(), -2, -2))
+			.addAll(MoveFactory.getHop(board, piece.getColor(), move.getDest(), -2, 2))
+			.addAll(MoveFactory.getHop(board, piece.getColor(), move.getDest(), 2, 2));
+		
+		if(eachMoveHopOptions.size() >= 1){
+			for(var eachMoveIdx in eachMoveHopOptions.getMoves()){
+				var eachMove = eachMoveHopOptions.getMoves()[eachMoveIdx];
+				var newBoard = MoveFactory.applyMove(eachMove, board);
+				var transformedMoves = MoveFactory.recursivelyTransformKingHop(eachMove, piece, newBoard);
+				for(var eachMoveIdx2 in transformedMoves.getMoves()){
+					var eachMove2 = transformedMoves.getMoves()[eachMoveIdx2];
+					var moveCopy = move.clone();
+					moveCopy.setNextMove(eachMove2);
+					result.add(moveCopy);
+				}
+			}
+		}
+		else{
+			result.add(move);
+		}
+		return result;
+	}
+	
+	static getRecursiveCheckerHop(piece: PieceModel){
+		var direction = piece.getDirection();
+		var moves: MoveCollection;
+		var result: MoveCollection = new MoveCollection();
+		
+		moves = MoveFactory.getRelativeToPieceHop(piece, 2, -2 * direction)
+		.addAll(MoveFactory.getRelativeToPieceHop(piece, -2, -2 * direction));
+		
+		for(var eachMoveIdx in moves.getMoves()){
+			var eachMove = moves.getMoves()[eachMoveIdx];
+			var transformedMoves = MoveFactory.recursivelyTransformHop(eachMove, piece);
+			result.addAll(transformedMoves);
+		}
+		
+		return result;
+    }
+
+	static recursivelyTransformHop(move: Move, piece: PieceModel): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		var eachMoveHopOptions = MoveFactory.getHop(piece.getBoardModel(), piece.getColor(), move.getDest(), 2, -2 * piece.getDirection())
+			.addAll(MoveFactory.getHop(piece.getBoardModel(), piece.getColor(), move.getDest(), -2, -2 * piece.getDirection()));
+		
+		if(eachMoveHopOptions.size() >= 1){
+			for(var eachMoveIdx in eachMoveHopOptions.getMoves()){
+				var eachMove = eachMoveHopOptions.getMoves()[eachMoveIdx];
+				var transformedMoves = MoveFactory.recursivelyTransformHop(eachMove, piece);
+				for(var eachMoveIdx2 in transformedMoves.getMoves()){
+					var eachMove2 = transformedMoves.getMoves()[eachMoveIdx2];
+					var moveCopy = move.clone();
+					moveCopy.setNextMove(eachMove2);
+					result.add(moveCopy);
+				}
+			}
+		}
+		else{
+			result.add(move);
+		}
+		return result;
+	}
+	
+	static unrollMoves(move: Move): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		var moveDepth = move.getMoveDepth();
+		var moveHandle: Move = move;
+		var individualMoveArray: Move[] = new Array();
+		
+
+		for(var i = 1; i <= moveDepth; i++){
+			individualMoveArray.push(moveHandle.cloneWithoutNextMove());
+			if(moveHandle.hasNextMove()){
+				moveHandle = moveHandle.getNextMove();
+			}
+		}
+		
+		var baseMove: Move;
+		for(var j = 0; j < individualMoveArray.length; j++){
+			var eachMove = individualMoveArray[j];
+			if(baseMove == null){
+				baseMove = eachMove;
+			}
+			else{
+				baseMove.appendMoveToEnd(eachMove);
+			}
+			result.add(baseMove.clone());
+		}
+		
+		return result;
+	}
 
     static getRelativeToPieceNonCapturing(piece: PieceModel, x: number, y: number){
         var result: MoveCollection = new MoveCollection();
@@ -1850,7 +2637,7 @@ enum MoveType{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getAllCardinal(this);
+        return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC);
     }
 }class PawnModel extends PieceModel{
     hasMoved: boolean;
@@ -1879,14 +2666,16 @@ enum MoveType{
         if(this.hasMoved){
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                     .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
-                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()));
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()))
+				.filterDestinationType(this.getBoardModel(), SquareType.WATER);
         }
         else{
             //alert(MoveFactory.getLineForward(this, 2, this.getDirection()).getMoves.length);
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                 .addAll(MoveFactory.getLineForwardNoncapturing(this, 2, this.getDirection())
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
-                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())));
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())))
+				.filterDestinationType(this.getBoardModel(), SquareType.WATER);
         }
 
     }
@@ -1919,7 +2708,8 @@ enum MoveType{
         .addAll(MoveFactory.getRelativeToPiece(this, 1, -2))
         .addAll(MoveFactory.getRelativeToPiece(this, -1, 2))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, 2))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, -2));
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -2))
+		.filterDestinationType(this.getBoardModel(), SquareType.WATER);
     }
 }class BishopModel extends PieceModel{
 
@@ -1931,7 +2721,7 @@ enum MoveType{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getAllDiagonal(this);
+        return MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC);
     }
 }class KingModel extends PieceModel{
 
@@ -1950,7 +2740,8 @@ enum MoveType{
         .addAll(MoveFactory.getRelativeToPiece(this, 0, -1))
         .addAll(MoveFactory.getRelativeToPiece(this, 0, 1))
         .addAll(MoveFactory.getRelativeToPiece(this, -1, 0))
-        .addAll(MoveFactory.getRelativeToPiece(this, 1, 0));
+        .addAll(MoveFactory.getRelativeToPiece(this, 1, 0))
+		.filterDestinationType(this.getBoardModel(), SquareType.WATER);;
     }
 }class QueenModel extends PieceModel{
 
@@ -1962,8 +2753,9 @@ enum MoveType{
     giveInternalAttributes(piece: PieceModel){}
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getAllCardinal(this)
-            .addAll(MoveFactory.getAllDiagonal(this));
+	
+			return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC)
+					.addAll(MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC));
     }
 }class GeneralModel extends PieceModel{
 
@@ -1978,7 +2770,8 @@ enum MoveType{
         return MoveFactory.getRelativeToPiece(this, 0, -1)
             .addAll(MoveFactory.getRelativeToPiece(this, 0, 1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 0))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, 0));
+            .addAll(MoveFactory.getRelativeToPiece(this, 1, 0))
+			.filterDestinationType(this.getBoardModel(), SquareType.WATER);
     }
 }class MinisterModel extends PieceModel{
 
@@ -1993,7 +2786,8 @@ enum MoveType{
         return MoveFactory.getRelativeToPiece(this, 1, 1)
             .addAll(MoveFactory.getRelativeToPiece(this, 1, -1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -1));
+            .addAll(MoveFactory.getRelativeToPiece(this, -1, -1))
+			.filterDestinationType(this.getBoardModel(), SquareType.WATER);
     }
 }class WarMachineModel extends PieceModel{
 
@@ -2034,7 +2828,7 @@ enum MoveType{
 		invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1), MoveType.CAPTURE));
 		invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2), MoveType.CAPTURE));
 		
-		return MoveFactory.getAllDiagonal(this).minusIgnoreType(invalidMoves);
+		return MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC).minusIgnoreType(invalidMoves);
     }
 }class ElephantRiderModel extends PieceModel{
 
@@ -2068,7 +2862,8 @@ enum MoveType{
         .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
         .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -3))
+		.filterDestinationType(this.getBoardModel(), SquareType.WATER);
     }
 }class CannonModel extends PieceModel{
     hasMoved: boolean;
@@ -2089,8 +2884,95 @@ enum MoveType{
     }
 
     getPossibleMoves(): MoveCollection{
-        return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this))
+        return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC)
         .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()))
+    }
+}class CheckerModel extends PieceModel {
+
+    constructor(board:BoardModel, pos:Pos, color:Color) {
+        super(board, pos, color, PieceType.CHECKER);
+    }
+
+    onMove(move:Move) {
+    }
+
+    giveInternalAttributes(piece:PieceModel) {
+
+    }
+
+    getDirection():number {
+        return this.getBoardModel().getDirection(this.getColor());
+    }
+
+    getPossibleMoves():MoveCollection {
+		/*if(this.getDirection() == 1){
+			return MoveFactory.getRelativeToPieceHop(this, 2, -2)
+            .addAll(MoveFactory.getRelativeToPieceHop(this, -2, -2));
+		}
+		else if(this.getDirection() == -1){
+			return MoveFactory.getRelativeToPieceHop(this, 2, 2)
+            .addAll(MoveFactory.getRelativeToPieceHop(this, -2, 2));
+		}*/
+		var result = MoveFactory.getRecursiveCheckerHop(this);
+		return result;
+    }
+
+}class BattleShipModel extends PieceModel{
+    hasMoved: boolean;
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.BATTLESHIP);
+    }
+
+    onMove(move: Move){
+    }
+
+    giveInternalAttributes(piece: PieceModel) {
+
+    }
+
+    getDirection(): number{
+        return this.getBoardModel().getDirection(this.getColor());
+    }
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC_ONLY_WATER)
+			.addAll(MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC_ONLY_WATER))
+            .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3))
+                .addAll(MoveFactory.getRelativeToPieceFling(this, 0, 3))
+                    .addAll(MoveFactory.getRelativeToPieceFling(this, 3, 0))
+                        .addAll(MoveFactory.getRelativeToPieceFling(this, -3, 0));
+    }
+}class NightRiderModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.NIGHTRIDER);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
+        return MoveFactory.getLeapingLineWithCondition(this, -2, -1, MoveFilters.BASIC)
+        .addAll(MoveFactory.getLeapingLineWithCondition(this, 2, -1, MoveFilters.BASIC))
+        .addAll(MoveFactory.getLeapingLineWithCondition(this, -2, 1, MoveFilters.BASIC))
+        .addAll(MoveFactory.getLeapingLineWithCondition(this, 2, 1, MoveFilters.BASIC))
+        .addAll(MoveFactory.getLeapingLineWithCondition(this, 1, -2, MoveFilters.BASIC))
+        .addAll(MoveFactory.getLeapingLineWithCondition(this, -1, 2, MoveFilters.BASIC))
+        .addAll(MoveFactory.getLeapingLineWithCondition(this, 1, 2, MoveFilters.BASIC))
+        .addAll(MoveFactory.getLeapingLineWithCondition(this, -1, -2, MoveFilters.BASIC));
+    }
+}class RoseKnightModel extends PieceModel{
+
+    constructor(board: BoardModel, pos: Pos, color: Color){
+        super(board, pos, color, PieceType.ROSE_KNIGHT);
+    }
+
+    onMove(){}
+    giveInternalAttributes(piece: PieceModel){}
+
+    getPossibleMoves(): MoveCollection{
+		return MoveFactory.getAllCircularLeapsWithCondition(this, MoveFilters.BASIC);
     }
 }class PieceFactory{
 
@@ -2111,6 +2993,11 @@ enum MoveType{
             case PieceType.ELEPHANT_RIDER: newPiece = new ElephantRiderModel(board, pos, color); break;
             case PieceType.PICKET: newPiece = new PicketModel(board, pos, color); break;
             case PieceType.CANNON: newPiece = new CannonModel(board, pos, color); break;
+			case PieceType.CHECKER: newPiece = new CheckerModel(board, pos, color); break;
+			case PieceType.KING_CHECKER: newPiece = new CheckerModel(board, pos, color); break;
+			case PieceType.BATTLESHIP: newPiece = new BattleShipModel(board, pos, color); break;
+			case PieceType.NIGHTRIDER: newPiece = new NightRiderModel(board, pos, color); break;
+			case PieceType.ROSE_KNIGHT: newPiece = new RoseKnightModel(board, pos, color); break;
         }
         return newPiece;
     }
@@ -2153,6 +3040,16 @@ enum MoveType{
                 this.pos2SquareType.set(key, type);
             }
         });
+	}
+	
+	getSquareTypeAtPos(pos: Pos){
+		var result: SquareType;
+        this.pos2SquareType.forEach((value, key, map) => {
+            if (pos.equals(key)) {
+                result = this.pos2SquareType.get(key);
+            }
+        });
+		return result;
 	}
 	
     getDirection(color: Color): number{
@@ -2269,6 +3166,16 @@ enum MoveType{
         else if(move.getType() == MoveType.FLING){
             this.removePiece(move.getDest());
         }
+		else if(move.getType() == MoveType.HOP){
+            var removePos: Pos = move.getDest().minus(move.getOrigin()).divide(2);
+			removePos = originalPiece.getPos().plus(removePos);
+			this.movePiece(originalPiece.getPos(), move.getDest());
+			this.removePiece(removePos);
+        }
+		
+		if(move.hasNextMove()){
+			this.executeMove(move.getNextMove());
+		}
     }
 
     movePiece(origin: Pos, dest: Pos) {
@@ -2411,7 +3318,7 @@ enum MoveType{
 }class BoardFactory{
     static STANDARD_BOARD: string = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     static TAMERLANE_BOARD: string = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
-    static TEST_BOARD: string = "[6_B],[1_B],[1_B],[1_B],[1_B],[]/[15_B],[15_B],[15_B],[15_B],[15_B],[15_B]/[],[],[],[],[],[]/[],[],[],[],[],[]/[15_W],[15_W],[15_W],[15_W],[15_W],[15_W]/[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
+    static TEST_BOARD: string = "[6_B],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[19_W],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]";
     static getStandardBoard(): BoardModel{
         var board: BoardModel = new BoardModel(8,8);
         board.populateFromSerial(BoardFactory.STANDARD_BOARD);
@@ -2424,7 +3331,7 @@ enum MoveType{
     }
 
     static testBoard(): BoardModel{
-        var board: BoardModel = new BoardModel(6,6);
+        var board: BoardModel = new BoardModel(15,15);
         board.populateFromSerial(BoardFactory.TEST_BOARD);
         return board;
     }
@@ -2557,6 +3464,7 @@ enum MoveType{
 				case PieceType.ELEPHANT_RIDER: thisValue += 3; break;
 				case PieceType.WAR_MACHINE: thisValue += 2; break;
 				case PieceType.PICKET: thisValue += 2; break;
+				case PieceType.CANNON: thisValue += 2; break;
 				case PieceType.KING: thisValue += 1000; break;
 			}
 			if(eachPiece.getColor() == color){
@@ -2891,7 +3799,13 @@ class GameController extends Player{
     SELECTED_PIECE: PieceModel;
     SELECTED_MOVE_TYPE: MoveType;
     CHOSEN_MOVE: Move;
-
+	
+	MUTLI_HOP_SELECTION_DEPTH: number = 1;
+	IN_MULTI_HOP_SELECTION: boolean = false;
+	MULTI_HOP_ORIGIN: Move;
+	CURRENT_MULTI_HOP_POSITION: Pos;
+	MULTI_HOP_MOVE_ARRAY: Move[] = new Array();
+	
     offsetTop: number;
     offsetLeft: number;
     squareWidth: number;
@@ -2975,37 +3889,24 @@ class GameController extends Player{
     turnOnThrobber(){
         this.htmlContainer.turnOnThrobber();
     }
-
+				
     getMyPieceClickListenerFunction(id: string, control: GameController){
         return function () {
-            if(!control.myPieceIsSelected()){
+			if(control.isInMultiHopSelection() && control.isCandidateForMultiHopSelection(id)){
+				var sqr: Square = control.getSquareAtId(id);
+				control.continueMultiHopSelection(sqr);
+			}
+			else if(control.isInMultiHopSelection()){
+				control.resetAllMultiHopVariables()
+				control.unselectPiece();
+                control.resetSquareColors(); 
+                control.update();
+			}
+            else if(!control.myPieceIsSelected()){
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
-                if(thisPiece.getPossibleMoves().containsType(MoveType.FLING)){
-                    var choiceModal = new ChoiceModal();
-                    choiceModal.addChoice("Move");
-                    choiceModal.addChoice("Fire");
-                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
-                    choiceModal.setOnChoice((result) => {
-                        control.htmlContainer.hideChoiceModal();
-                        if(result == "Move"){
-                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
-                        }
-                        else if(result == "Fire"){
-                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
-                        }
-
-                    });
-                    control.htmlContainer.setChoiceModal(choiceModal);
-                    control.htmlContainer.showChoiceModal();
-                }
-                else{
-                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
-                }
+				control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
 
             }
             else if(control.myPieceIsSelected() && control.selectedPieceIsAtSquareId(id)){
@@ -3017,30 +3918,7 @@ class GameController extends Player{
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece: PieceModel = control.getPieceAtSquareId(id);
-                if(thisPiece.getPossibleMoves().containsType(MoveType.FLING)){
-                    var choiceModal = new ChoiceModal();
-                    choiceModal.addChoice("Move");
-                    choiceModal.addChoice("Fire");
-                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
-                    choiceModal.setOnChoice((result) => {
-                        control.htmlContainer.hideChoiceModal();
-                        if(result == "Move"){
-                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
-                        }
-                        else if(result == "Fire"){
-                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
-                        }
-
-                    });
-                    control.htmlContainer.setChoiceModal(choiceModal);
-                    control.htmlContainer.showChoiceModal();
-                }
-                else {
-                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
-                }
+				control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
@@ -3049,7 +3927,7 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
+                control.makeMoveAtSqr(sqr);
                 control.signalOpponentsMove();
             }
         };
@@ -3068,6 +3946,7 @@ class GameController extends Player{
 
     getOppPieceClickListenerFunction(id: string, control: GameController){
         return function () {
+			control.resetAllMultiHopVariables();
             if (!control.oppPieceIsSelected() && !control.myPieceIsSelected()) {
                 control.unselectPiece();
                 control.resetSquareColors();
@@ -3093,11 +3972,107 @@ class GameController extends Player{
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
+				control.makeMoveAtSqr(sqr);
             }
         };
     }
 
+	makeMoveAtSqr(sqr: Square){
+	    this.turnOffClickListeners();
+		var chosenMove: Move;
+		var moves = this.SELECTED_PIECE.getPossibleMoves().getDestinationSubset(sqr.getPos());
+        var numTypes = moves.getNumberOfTypes();
+		if(numTypes == 1){
+			chosenMove = moves.getMoves()[0];
+		}
+		else if(numTypes > 1){
+			alert("moves found with duplicate destinations");
+		}
+		else{
+			//throw error
+			alert("ERROR IN GAMECONTROLLER: INVALID MOVE");
+		}
+        this.setChosenMove(chosenMove);
+		
+        this.resetSquareColors();
+		if(chosenMove.getType() == MoveType.HOP){	
+			this.MULTI_HOP_ORIGIN = chosenMove;
+			this.CURRENT_MULTI_HOP_POSITION = this.MULTI_HOP_ORIGIN.getOrigin();
+			var allChains: MoveCollection = this.SELECTED_PIECE.getPossibleMoves().getAllChains(chosenMove.cloneWithoutNextMove());
+			var maxDepth = allChains.getMaximumDepth();
+			if(this.MUTLI_HOP_SELECTION_DEPTH < maxDepth){
+				this.CURRENT_MULTI_HOP_POSITION = chosenMove.getDest();
+				this.MULTI_HOP_MOVE_ARRAY.push(new Move(this.MULTI_HOP_ORIGIN.getOrigin(), sqr.getPos(), MoveType.HOP));
+				this.resetSquareColors();
+				this.MUTLI_HOP_SELECTION_DEPTH += 1;
+				this.setSquareToColor(chosenMove.getDest(), "#00FF00");
+				this.setSquaresToColor(allChains.flattenToDepth(this.MUTLI_HOP_SELECTION_DEPTH), StaticColors.SQUARE_SELECTION_BLUE);
+				this.IN_MULTI_HOP_SELECTION = true;
+				this.update();
+			}
+			else{
+				this.makeMoveAtSqrForMultiHop(sqr);
+			}
+		}
+		else{
+			this.unselectPiece();
+			this.signalOpponentsMove();
+		}
+		
+	}
+	
+	continueMultiHopSelection(sqr: Square){
+			var cursorMove = this.compileMoveFromMultiHopArray();
+			cursorMove.appendMoveToEnd(new Move(this.CURRENT_MULTI_HOP_POSITION, sqr.getPos(), MoveType.HOP));
+			var allChains: MoveCollection = this.SELECTED_PIECE.getPossibleMoves().getAllChains(cursorMove);
+			var maxDepth = allChains.getMaximumDepth();
+			if(this.MUTLI_HOP_SELECTION_DEPTH < maxDepth){
+				this.MUTLI_HOP_SELECTION_DEPTH += 1;
+				this.MULTI_HOP_MOVE_ARRAY.push(new Move(this.CURRENT_MULTI_HOP_POSITION, sqr.getPos(), MoveType.HOP));
+				this.CURRENT_MULTI_HOP_POSITION = sqr.getPos();
+				this.resetSquareColors();
+				this.setSquareToColor(sqr.getPos(), "#00FF00");
+				this.setSquaresToColor(allChains.flattenToDepth(this.MUTLI_HOP_SELECTION_DEPTH), StaticColors.SQUARE_SELECTION_BLUE);
+				this.update();
+			}
+			else{
+				this.makeMoveAtSqrForMultiHop(sqr);
+			}
+	}
+	
+	compileMoveFromMultiHopArray(){
+		var chosenMove: Move;
+		for(var i = 0; i < this.MULTI_HOP_MOVE_ARRAY.length; i++){
+			if(chosenMove == null){
+				chosenMove = this.MULTI_HOP_MOVE_ARRAY[i].clone();
+			}
+			else{
+				chosenMove.getFinalSubMove().setNextMove(this.MULTI_HOP_MOVE_ARRAY[i].clone());
+			}
+		}
+		return chosenMove;
+	}
+	
+	makeMoveAtSqrForMultiHop(sqr: Square){
+		this.MULTI_HOP_MOVE_ARRAY.push(new Move(this.CURRENT_MULTI_HOP_POSITION, sqr.getPos(), MoveType.HOP));
+		var chosenMove: Move;
+		for(var i = 0; i < this.MULTI_HOP_MOVE_ARRAY.length; i++){
+			if(chosenMove == null){
+				chosenMove = this.MULTI_HOP_MOVE_ARRAY[i].clone();
+			}
+			else{
+				chosenMove.getFinalSubMove().setNextMove(this.MULTI_HOP_MOVE_ARRAY[i].clone());
+			}
+		}
+		this.setChosenMove(chosenMove);
+        this.resetSquareColors();
+		this.MUTLI_HOP_SELECTION_DEPTH = 1;
+		this.IN_MULTI_HOP_SELECTION = false;
+		this.MULTI_HOP_MOVE_ARRAY = new Array();
+		this.unselectPiece();
+		this.signalOpponentsMove();
+	}
+	
     addSquareClickListeners(){
         var squares: Square[] = this.boardView.getSquares();
         for (var square in squares) {
@@ -3110,22 +4085,37 @@ class GameController extends Player{
 
     getSquareClickListenerFunction(id: string, control: GameController){
         return function () {
-            if(control.oppPieceIsSelected()){
+			if(control.isInMultiHopSelection() && control.isCandidateForMultiHopSelection(id)){
+				var sqr: Square = control.getSquareAtId(id);
+				control.continueMultiHopSelection(sqr);
+			}
+			else if(control.isInMultiHopSelection()){
+				control.resetAllMultiHopVariables()
+				control.unselectPiece();
+                control.resetSquareColors(); 
+                control.update();
+			}
+            else if(control.oppPieceIsSelected()){
                 control.unselectPiece();
                 control.resetSquareColors();
             }
             else if(control.myPieceIsSelected() && control.representsMovableSpace(id)){
                 var sqr: Square = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
+                control.makeMoveAtSqr(sqr);
             }
             else if(control.myPieceIsSelected() && !(control.representsMovableSpace(id))){
                 control.unselectPiece();
-                control.resetSquareColors();
+                control.resetSquareColors(); 
                 control.update();
             }
         };
     }
 
+	isCandidateForMultiHopSelection(id: string){
+		var sqr: Square = this.getSquareAtId(id);
+		return this.SELECTED_PIECE.getPossibleMoves().getAllChains(this.compileMoveFromMultiHopArray()).flattenToDepth(this.MUTLI_HOP_SELECTION_DEPTH).containsDestination(sqr.getPos());
+	}
+	
     hasNoClickListener(id: string) {
         return document.getElementById(id).onclick == null || document.getElementById(id).onclick == undefined;
     }
@@ -3159,7 +4149,7 @@ class GameController extends Player{
         var moves: MoveCollection = this.SELECTED_PIECE.getPossibleMoves();
         var sqr: Square = this.boardView.getSquareById(id);
         var thisMove = new Move(this.SELECTED_PIECE.getPos(), new Pos(sqr.getX(), sqr.getY()), MoveType.NONEXECUTABLE);
-        return moves.containsIgnoreType(thisMove);
+        return moves.flattenToFirstSubmoves().containsIgnoreType(thisMove);
     }
 
     oppPieceIsSelected():boolean {
@@ -3301,6 +4291,14 @@ class GameController extends Player{
             }, 3000);
     }
 
+	resetAllMultiHopVariables(){
+		this.MUTLI_HOP_SELECTION_DEPTH = 1;
+		this.IN_MULTI_HOP_SELECTION = false;
+		this.MULTI_HOP_ORIGIN = null;
+		this.CURRENT_MULTI_HOP_POSITION = null;
+		this.MULTI_HOP_MOVE_ARRAY = new Array();
+	}
+	
     readyForMove(){
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
 		this.turnOffThrobber();
@@ -3310,6 +4308,10 @@ class GameController extends Player{
         }
     }
 
+	isInMultiHopSelection(){
+		return this.IN_MULTI_HOP_SELECTION;
+	}
+	
     turnOffThrobber():void {
         this.htmlContainer.turnOffThrobber();
     }
@@ -3719,11 +4721,11 @@ class BoardBuilderController{
 		{
 			var sqr: Square = controller.getContainer().getBoardSquareFromId(id);
 			if(controller.selectedPieceType == null){
-				if(sqr.getType() == SquareType.NORMAL){
-					sqr.setType(SquareType.NON_EXISTENT)
+				if(sqr.getType() == ((Object.keys(SquareType).length / 2) - 1)){
+					sqr.setType(0);
 				}
 				else{
-					sqr.setType(SquareType.NORMAL)
+					sqr.setType(sqr.getType() + 1);
 				}
 			}
 			else{
@@ -3774,3 +4776,4 @@ class BoardBuilderController{
         controller.start();
     }
 }GameBox.start();
+//BoardBuilder.start();

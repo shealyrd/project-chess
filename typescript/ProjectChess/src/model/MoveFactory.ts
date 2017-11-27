@@ -95,6 +95,207 @@ class MoveFactory{
 
         return new MoveCollection(result);
     }
+	
+	static getAllOrthagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+		var result: MoveCollection = new MoveCollection();
+		
+		result.addAll(MoveFactory.getAllRightWithCondition(piece, func));
+		result.addAll(MoveFactory.getAllLeftWithCondition(piece, func));
+		result.addAll(MoveFactory.getAllDownwardsWithCondition(piece, func));
+		result.addAll(MoveFactory.getAllUpwardsWithCondition(piece, func));
+		
+		return result;
+	}
+	
+	static getAllRightWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+		var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY();
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x += 1;
+        }
+
+        return new MoveCollection(result);
+	}
+	
+	static getAllLeftWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY();
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x -= 1;
+        }
+
+        return new MoveCollection(result);
+    }
+	
+	static getAllUpwardsWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX();
+        var y = piece.getPos().getY() - 1;
+
+         while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            y -= 1;
+        }
+
+        return new MoveCollection(result);
+    }
+	
+	static getAllDownwardsWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: Move[] = new Array();
+
+        var x = piece.getPos().getX();
+        var y = piece.getPos().getY() + 1;
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            y += 1;
+        }
+
+        return new MoveCollection(result);
+    }
+
+	static getLeapingLineWithCondition(piece: PieceModel, x: number, y: number, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+	    var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+
+        while(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
+			var filterResult: MoveFilterResult = func(new Pos(newX, newY), piece);
+            if(filterResult.passesFilter){
+				result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+			newX += x;
+			newY += y;
+        }
+
+        return result;
+	}
+	
+	
+static getAllCircularLeapsWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+		var coordinates = new Array();
+        coordinates.push(new Pos(-1, -2));
+        coordinates.push(new Pos(-2, -1));
+        coordinates.push(new Pos(-2, 1));
+        coordinates.push(new Pos(-1, 2));
+        coordinates.push(new Pos(1, 2));
+        coordinates.push(new Pos(2, 1));
+        coordinates.push(new Pos(2, -1));
+        coordinates.push(new Pos(1, -2));
+        var result = new MoveCollection();
+        for (var eachIdx in coordinates) {
+            var eachCoordinate = coordinates[eachIdx];
+            var newX = piece.getPos().getX() + eachCoordinate.getX();
+            var newY = piece.getPos().getY() + eachCoordinate.getY();
+            var counter = 1;
+			var idxIncr = +eachIdx;
+            while (piece.getBoardModel().isValidPosition(new Pos(newX, newY)) && (counter < 8)) {
+
+                var filterResult = func(new Pos(newX, newY), piece);
+                if (filterResult.passesFilter) {
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
+                }
+                if (filterResult.breakLoop) {
+                    break;
+                }
+                var nextCoordinate;
+                if (idxIncr < (coordinates.length -1)) {
+					idxIncr++;
+                }
+                else {
+					idxIncr = 0;
+                }
+				nextCoordinate = coordinates[+idxIncr];
+                newX = newX + nextCoordinate.getX();
+                newY = newY + nextCoordinate.getY();
+                counter++;
+				
+            }
+        }
+        return result;
+	}
+	
+	static getCircularLeapWithCondition(piece: PieceModel, x: number, y: number, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+	    var result: MoveCollection = new MoveCollection();
+
+        var newX: number = piece.getPos().getX() + x;
+        var newY: number = piece.getPos().getY() + y;
+		var swapTemp: number;
+		var circularState: number = 1;
+		
+        while(piece.getBoardModel().isValidPosition(new Pos(newX, newY)) && (circularState <= 8)){
+			var filterResult = func(new Pos(newX, newY), piece);
+            if (filterResult.passesFilter) {
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            if (circularState == 4) {
+                x = x * (-1);
+				circularState = 1;
+            }
+            else if (circularState == 3) {
+                swapTemp = x;
+                x = y;
+                y = swapTemp;
+            }
+            else if (circularState == 2) {
+                y = y * (-1);
+            }
+            else if (circularState == 1) {
+                swapTemp = x;
+                x = y;
+                y = swapTemp;
+            }
+			newX = newX + x;
+			newY = newY + y;
+            circularState += 1;
+        }
+
+        return result;
+	}
 
 	static getGiraffeMovement(piece: PieceModel){
 		var board: BoardModel = piece.getBoardModel();
@@ -246,7 +447,109 @@ class MoveFactory{
 
         return result;
     }
+	
+	static getAllDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var result: MoveCollection = new MoveCollection();
 
+        result.addAll(MoveFactory.getAllLeftDownDiagonalWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllRightDownDiagonalWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllRightUpDiagonalWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllLeftUpDiagonalWithCondition(piece, func));
+
+        return result;
+    }
+
+	static getAllLeftUpDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+		var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() - 1;
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+           	var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x -= 1;
+            y -= 1;
+        }
+
+
+        return result;
+    }
+	
+	static getAllRightUpDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() - 1;
+
+		while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+           	var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x += 1;
+            y -= 1;
+        }
+
+        return result;
+    }
+	
+	static getAllRightDownDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() + 1;
+
+
+        while(piece.getBoardModel().isValidPosition(new Pos(x, y))){
+			var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+            if(filterResult.passesFilter){
+				result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+			}
+			if(filterResult.breakLoop){
+				break;
+			}
+            x += 1;
+            y += 1;
+        }
+
+        return result;
+    }
+	
+	static getAllLeftDownDiagonalWithCondition(piece: PieceModel, func: (pos: Pos, piece: PieceModel) => MoveFilterResult){
+        var board: BoardModel = piece.getBoardModel();
+        var result: MoveCollection = new MoveCollection();
+
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() + 1;
+
+            while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+				var filterResult: MoveFilterResult = func(new Pos(x, y), piece);
+				if(filterResult.passesFilter){
+					result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+				}
+				if(filterResult.breakLoop){
+					break;
+				}
+                x -= 1;
+                y += 1;
+            }
+
+
+        return result;
+    }
+	
     static getAllLeftUpDiagonal(piece: PieceModel){
         var board: BoardModel = piece.getBoardModel();
         var result: MoveCollection = new MoveCollection();
@@ -402,13 +705,160 @@ class MoveFactory{
 
         if(piece.getBoardModel().isValidPosition(new Pos(newX, newY))){
             if (piece.getBoardModel().isFree(new Pos(newX, newY))) {
-                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.HOP));
+			    var removePos: Pos = new Pos(newX, newY).minus(piece.getPos()).divide(2);
+				removePos = piece.getPos().plus(removePos);
+				if (!piece.getBoardModel().isFree(removePos)) {
+					if (piece.getBoardModel().getPieceFromPosition(removePos).getColor() != piece.getColor()) {
+						result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.HOP));
+					}
+				}
             }
         }
 
         return result;
     }
 
+	static getHop(board: BoardModel, color: Color, origin: Pos, x: number, y: number){
+        var result: MoveCollection = new MoveCollection();
+        var newX: number = origin.getX() + x;
+        var newY: number = origin.getY() + y;
+
+        if(board.isValidPosition(new Pos(newX, newY))){
+            if (board.isFree(new Pos(newX, newY))) {
+			    var removePos: Pos = new Pos(newX, newY).minus(origin).divide(2);
+				removePos = origin.plus(removePos);
+				if (!board.isFree(removePos)) {
+					if (board.getPieceFromPosition(removePos).getColor() != color) {
+						result.add(new Move(origin, new Pos(newX, newY), MoveType.HOP));
+					}
+				}
+            }
+        }
+
+        return result;
+    }
+	
+	static applyMove(move: Move, board: BoardModel): BoardModel{
+		var newBoard = new BoardModel(board.getWidth(), board.getHeight());
+		newBoard.populateFromSerial(board.serialize());
+		newBoard.executeMove(move);
+		return newBoard;
+	}
+	
+	static getRecursiveCheckerKingHop(piece: PieceModel){
+		var direction = piece.getDirection();
+		var moves: MoveCollection;
+		var result: MoveCollection = new MoveCollection();
+		
+		moves = MoveFactory.getRelativeToPieceHop(piece, 2, -2)
+		.addAll(MoveFactory.getRelativeToPieceHop(piece, -2, -2))
+		.addAll(MoveFactory.getRelativeToPieceHop(piece, -2, 2))
+		.addAll(MoveFactory.getRelativeToPieceHop(piece, 2, 2));
+		
+		for(var eachMoveIdx in moves.getMoves()){
+			var eachMove = moves.getMoves()[eachMoveIdx];
+			var newBoard = MoveFactory.applyMove(eachMove, piece.getBoardModel());
+			var transformedMoves = MoveFactory.recursivelyTransformKingHop(eachMove, piece, newBoard);
+			result.addAll(transformedMoves);
+		}
+		
+		return result;
+    }
+
+	static recursivelyTransformKingHop(move: Move, piece: PieceModel, board: BoardModel): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		var eachMoveHopOptions = MoveFactory.getHop(board, piece.getColor(), move.getDest(), 2, -2)
+			.addAll(MoveFactory.getHop(board, piece.getColor(), move.getDest(), -2, -2))
+			.addAll(MoveFactory.getHop(board, piece.getColor(), move.getDest(), -2, 2))
+			.addAll(MoveFactory.getHop(board, piece.getColor(), move.getDest(), 2, 2));
+		
+		if(eachMoveHopOptions.size() >= 1){
+			for(var eachMoveIdx in eachMoveHopOptions.getMoves()){
+				var eachMove = eachMoveHopOptions.getMoves()[eachMoveIdx];
+				var newBoard = MoveFactory.applyMove(eachMove, board);
+				var transformedMoves = MoveFactory.recursivelyTransformKingHop(eachMove, piece, newBoard);
+				for(var eachMoveIdx2 in transformedMoves.getMoves()){
+					var eachMove2 = transformedMoves.getMoves()[eachMoveIdx2];
+					var moveCopy = move.clone();
+					moveCopy.setNextMove(eachMove2);
+					result.add(moveCopy);
+				}
+			}
+		}
+		else{
+			result.add(move);
+		}
+		return result;
+	}
+	
+	static getRecursiveCheckerHop(piece: PieceModel){
+		var direction = piece.getDirection();
+		var moves: MoveCollection;
+		var result: MoveCollection = new MoveCollection();
+		
+		moves = MoveFactory.getRelativeToPieceHop(piece, 2, -2 * direction)
+		.addAll(MoveFactory.getRelativeToPieceHop(piece, -2, -2 * direction));
+		
+		for(var eachMoveIdx in moves.getMoves()){
+			var eachMove = moves.getMoves()[eachMoveIdx];
+			var transformedMoves = MoveFactory.recursivelyTransformHop(eachMove, piece);
+			result.addAll(transformedMoves);
+		}
+		
+		return result;
+    }
+
+	static recursivelyTransformHop(move: Move, piece: PieceModel): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		var eachMoveHopOptions = MoveFactory.getHop(piece.getBoardModel(), piece.getColor(), move.getDest(), 2, -2 * piece.getDirection())
+			.addAll(MoveFactory.getHop(piece.getBoardModel(), piece.getColor(), move.getDest(), -2, -2 * piece.getDirection()));
+		
+		if(eachMoveHopOptions.size() >= 1){
+			for(var eachMoveIdx in eachMoveHopOptions.getMoves()){
+				var eachMove = eachMoveHopOptions.getMoves()[eachMoveIdx];
+				var transformedMoves = MoveFactory.recursivelyTransformHop(eachMove, piece);
+				for(var eachMoveIdx2 in transformedMoves.getMoves()){
+					var eachMove2 = transformedMoves.getMoves()[eachMoveIdx2];
+					var moveCopy = move.clone();
+					moveCopy.setNextMove(eachMove2);
+					result.add(moveCopy);
+				}
+			}
+		}
+		else{
+			result.add(move);
+		}
+		return result;
+	}
+	
+	static unrollMoves(move: Move): MoveCollection{
+		var result: MoveCollection = new MoveCollection();
+		var moveDepth = move.getMoveDepth();
+		var moveHandle: Move = move;
+		var individualMoveArray: Move[] = new Array();
+		
+
+		for(var i = 1; i <= moveDepth; i++){
+			individualMoveArray.push(moveHandle.cloneWithoutNextMove());
+			if(moveHandle.hasNextMove()){
+				moveHandle = moveHandle.getNextMove();
+			}
+		}
+		
+		var baseMove: Move;
+		for(var j = 0; j < individualMoveArray.length; j++){
+			var eachMove = individualMoveArray[j];
+			if(baseMove == null){
+				baseMove = eachMove;
+			}
+			else{
+				baseMove.appendMoveToEnd(eachMove);
+			}
+			result.add(baseMove.clone());
+		}
+		
+		return result;
+	}
 
     static getRelativeToPieceNonCapturing(piece: PieceModel, x: number, y: number){
         var result: MoveCollection = new MoveCollection();

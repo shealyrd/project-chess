@@ -21,6 +21,8 @@ type %~dp0\model\Pos.ts  >> out.ts
 type %~dp0\model\MoveType.ts  >> out.ts 
 type %~dp0\model\Move.ts  >> out.ts 
 type %~dp0\model\MoveCollection.ts  >> out.ts 
+type %~dp0\model\MoveFilters.ts  >> out.ts 
+type %~dp0\model\MoveFilterResult.ts  >> out.ts 
 type %~dp0\model\MoveFactory.ts  >> out.ts 
 type %~dp0\model\PieceModel.ts  >> out.ts 
 type %~dp0\model\pieces\RookModel.ts  >> out.ts 
@@ -37,6 +39,10 @@ type %~dp0\model\pieces\PicketModel.ts  >> out.ts
 type %~dp0\model\pieces\ElephantRiderModel.ts  >> out.ts 
 type %~dp0\model\pieces\CamelRiderModel.ts  >> out.ts 
 type %~dp0\model\pieces\CannonModel.ts  >> out.ts 
+type %~dp0\model\pieces\CheckerModel.ts  >> out.ts 
+type %~dp0\model\pieces\BattleShipModel.ts  >> out.ts 
+type %~dp0\model\pieces\NightRiderModel.ts  >> out.ts 
+type %~dp0\model\pieces\RoseKnightModel.ts  >> out.ts 
 type %~dp0\model\PieceFactory.ts  >> out.ts 
 type %~dp0\model\BoardModel.ts  >> out.ts 
 type %~dp0\model\BoardFactory.ts  >> out.ts 

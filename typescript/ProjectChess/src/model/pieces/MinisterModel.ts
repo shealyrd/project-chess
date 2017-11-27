@@ -11,6 +11,7 @@ class MinisterModel extends PieceModel{
         return MoveFactory.getRelativeToPiece(this, 1, 1)
             .addAll(MoveFactory.getRelativeToPiece(this, 1, -1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -1));
+            .addAll(MoveFactory.getRelativeToPiece(this, -1, -1))
+			.filterDestinationType(this.getBoardModel(), SquareType.WATER);
     }
 }

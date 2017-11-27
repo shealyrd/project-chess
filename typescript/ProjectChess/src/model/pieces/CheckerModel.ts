@@ -16,10 +16,16 @@ class CheckerModel extends PieceModel {
     }
 
     getPossibleMoves():MoveCollection {
-        return MoveFactory.getRelativeToPieceHop(this, 2, 2)
-            .addAll(MoveFactory.getRelativeToPieceHop(this, 2, -2))
-            .addAll(MoveFactory.getRelativeToPieceHop(this, -2, -2))
+		/*if(this.getDirection() == 1){
+			return MoveFactory.getRelativeToPieceHop(this, 2, -2)
+            .addAll(MoveFactory.getRelativeToPieceHop(this, -2, -2));
+		}
+		else if(this.getDirection() == -1){
+			return MoveFactory.getRelativeToPieceHop(this, 2, 2)
             .addAll(MoveFactory.getRelativeToPieceHop(this, -2, 2));
+		}*/
+		var result = MoveFactory.getRecursiveCheckerHop(this);
+		return result;
     }
 
 }

@@ -90,11 +90,11 @@ class BoardBuilderController{
 		{
 			var sqr: Square = controller.getContainer().getBoardSquareFromId(id);
 			if(controller.selectedPieceType == null){
-				if(sqr.getType() == SquareType.NORMAL){
-					sqr.setType(SquareType.NON_EXISTENT)
+				if(sqr.getType() == ((Object.keys(SquareType).length / 2) - 1)){
+					sqr.setType(0);
 				}
 				else{
-					sqr.setType(SquareType.NORMAL)
+					sqr.setType(sqr.getType() + 1);
 				}
 			}
 			else{

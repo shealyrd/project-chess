@@ -17,6 +17,11 @@ class PieceFactory{
             case PieceType.ELEPHANT_RIDER: newPiece = new ElephantRiderModel(board, pos, color); break;
             case PieceType.PICKET: newPiece = new PicketModel(board, pos, color); break;
             case PieceType.CANNON: newPiece = new CannonModel(board, pos, color); break;
+			case PieceType.CHECKER: newPiece = new CheckerModel(board, pos, color); break;
+			case PieceType.KING_CHECKER: newPiece = new CheckerModel(board, pos, color); break;
+			case PieceType.BATTLESHIP: newPiece = new BattleShipModel(board, pos, color); break;
+			case PieceType.NIGHTRIDER: newPiece = new NightRiderModel(board, pos, color); break;
+			case PieceType.ROSE_KNIGHT: newPiece = new RoseKnightModel(board, pos, color); break;
         }
         return newPiece;
     }

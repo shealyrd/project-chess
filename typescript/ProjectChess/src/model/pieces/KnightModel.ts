@@ -15,6 +15,7 @@ class KnightModel extends PieceModel{
         .addAll(MoveFactory.getRelativeToPiece(this, 1, -2))
         .addAll(MoveFactory.getRelativeToPiece(this, -1, 2))
         .addAll(MoveFactory.getRelativeToPiece(this, 1, 2))
-        .addAll(MoveFactory.getRelativeToPiece(this, -1, -2));
+        .addAll(MoveFactory.getRelativeToPiece(this, -1, -2))
+		.filterDestinationType(this.getBoardModel(), SquareType.WATER);
     }
 }

@@ -252,6 +252,7 @@ var SquareType;
 (function (SquareType) {
     SquareType[SquareType["NORMAL"] = 0] = "NORMAL";
     SquareType[SquareType["NON_EXISTENT"] = 1] = "NON_EXISTENT";
+    SquareType[SquareType["WATER"] = 2] = "WATER";
 })(SquareType || (SquareType = {}));
 var PieceType;
 (function (PieceType) {
@@ -270,6 +271,10 @@ var PieceType;
     PieceType[PieceType["CAMEL_RIDER"] = 13] = "CAMEL_RIDER";
     PieceType[PieceType["HERO"] = 14] = "HERO";
     PieceType[PieceType["CANNON"] = 15] = "CANNON";
+    PieceType[PieceType["CHECKER"] = 16] = "CHECKER";
+    PieceType[PieceType["KING_CHECKER"] = 17] = "KING_CHECKER";
+    PieceType[PieceType["BATTLESHIP"] = 18] = "BATTLESHIP";
+    PieceType[PieceType["NIGHTRIDER"] = 19] = "NIGHTRIDER";
 })(PieceType || (PieceType = {}));
 var PieceLocation = /** @class */ (function () {
     function PieceLocation(x, y, type, color) {
@@ -337,6 +342,10 @@ var PieceImageDatabase = /** @class */ (function () {
         whiteImages.set(PieceType.PICKET, 'imgs//pieces//Picket_W.png');
         whiteImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_W.png');
         whiteImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_W.png');
+        whiteImages.set(PieceType.CHECKER, 'imgs//pieces//WarMachine_W.png');
+        whiteImages.set(PieceType.KING_CHECKER, 'imgs//pieces//WarMachine_W.png');
+        whiteImages.set(PieceType.BATTLESHIP, 'imgs//pieces//WarMachine_W.png');
+        whiteImages.set(PieceType.NIGHTRIDER, 'imgs//pieces//Knight_W.png');
         return whiteImages;
     };
     PieceImageDatabase.blackMap = function () {
@@ -355,6 +364,10 @@ var PieceImageDatabase = /** @class */ (function () {
         blackImages.set(PieceType.PICKET, 'imgs//pieces//Picket_B.png');
         blackImages.set(PieceType.WAR_MACHINE, 'imgs//pieces//WarMachine_B.png');
         blackImages.set(PieceType.CANNON, 'imgs//pieces//WarMachine_B.png');
+        blackImages.set(PieceType.CHECKER, 'imgs//pieces//WarMachine_B.png');
+        blackImages.set(PieceType.KING_CHECKER, 'imgs//pieces//WarMachine_B.png');
+        blackImages.set(PieceType.BATTLESHIP, 'imgs//pieces//WarMachine_B.png');
+        blackImages.set(PieceType.NIGHTRIDER, 'imgs//pieces//Knight_B.png');
         return blackImages;
     };
     PieceImageDatabase.whiteImages = PieceImageDatabase.whiteMap();
@@ -468,13 +481,18 @@ var Square = /** @class */ (function (_super) {
     };
     Square.prototype.resetHexColor = function () {
         var hexColor;
-        switch (this.col) {
-            case Color.WHITE:
-                hexColor = "#f0d9b5";
-                break;
-            case Color.BLACK:
-                hexColor = "#b58863";
-                break;
+        if (this.getType() == SquareType.WATER) {
+            hexColor = "#74ccf4";
+        }
+        else {
+            switch (this.col) {
+                case Color.WHITE:
+                    hexColor = "#f0d9b5";
+                    break;
+                case Color.BLACK:
+                    hexColor = "#b58863";
+                    break;
+            }
         }
         this.setHexColor(hexColor);
     };
@@ -773,6 +791,7 @@ var Board = /** @class */ (function (_super) {
                 var eachSqr = result.getSquareAtPos(new Pos(x, y));
                 var sqrData = squares[x].substring(1, squares[x].length - 1);
                 eachSqr.setType(+sqrData);
+                eachSqr.resetHexColor();
             }
         }
         return result;
@@ -966,6 +985,16 @@ var Pos = /** @class */ (function () {
         var newY = this.getY() + addPos.getY();
         return new Pos(newX, newY);
     };
+    Pos.prototype.minus = function (subPos) {
+        var newX = this.getX() - subPos.getX();
+        var newY = this.getY() - subPos.getY();
+        return new Pos(newX, newY);
+    };
+    Pos.prototype.divide = function (scalar) {
+        var newX = Math.floor(this.getX() / scalar);
+        var newY = Math.floor(this.getY() / scalar);
+        return new Pos(newX, newY);
+    };
     return Pos;
 }());
 var MoveType;
@@ -973,6 +1002,8 @@ var MoveType;
     MoveType[MoveType["NONEXECUTABLE"] = 0] = "NONEXECUTABLE";
     MoveType[MoveType["CAPTURE"] = 1] = "CAPTURE";
     MoveType[MoveType["FLING"] = 2] = "FLING";
+    MoveType[MoveType["HOP"] = 3] = "HOP";
+    MoveType[MoveType["MULTIHOP"] = 4] = "MULTIHOP";
 })(MoveType || (MoveType = {}));
 var Move = /** @class */ (function () {
     function Move(origin, dest, type) {
@@ -989,11 +1020,90 @@ var Move = /** @class */ (function () {
     Move.prototype.getOrigin = function () {
         return this.origin;
     };
+    Move.prototype.getNextMove = function () {
+        return this.nextMove;
+    };
+    Move.prototype.setNextMove = function (move) {
+        this.nextMove = move;
+    };
+    Move.prototype.hasNextMove = function () {
+        return (this.nextMove != null);
+    };
+    Move.prototype.cloneWithoutNextMove = function () {
+        return new Move(this.getOrigin(), this.getDest(), this.getType());
+    };
+    Move.prototype.getSubMoveAtDepth = function (depth) {
+        var result = this;
+        for (var i = 2; i <= depth; i++) {
+            result = result.getNextMove();
+        }
+        return result;
+    };
+    Move.prototype.appendMoveToEnd = function (move) {
+        this.getFinalSubMove().setNextMove(move);
+    };
+    Move.prototype.beginsWithChain = function (move) {
+        var result = true;
+        if (this.getMoveDepth() < move.getMoveDepth()) {
+            result = false;
+        }
+        else {
+            for (var i = 1; i <= move.getMoveDepth(); i++) {
+                result = result && move.getSubMoveAtDepth(i).cloneWithoutNextMove().equals(this.getSubMoveAtDepth(i).cloneWithoutNextMove());
+            }
+        }
+        return result;
+    };
+    Move.prototype.getFinalSubMove = function () {
+        var moveHandle = this;
+        while (moveHandle.hasNextMove()) {
+            moveHandle = moveHandle.getNextMove();
+        }
+        return moveHandle;
+    };
+    Move.prototype.getMoveDepth = function () {
+        var moveHandle = this;
+        var result = 1;
+        while (moveHandle.hasNextMove()) {
+            result++;
+            moveHandle = moveHandle.getNextMove();
+        }
+        return result;
+    };
+    Move.prototype.clone = function () {
+        var result = new Move(this.getOrigin(), this.getDest(), this.getType());
+        if (this.hasNextMove()) {
+            result.setNextMove(this.getNextMove().clone());
+        }
+        return result;
+    };
     Move.prototype.equals = function (move) {
-        return this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin()) && (this.type == move.getType());
+        var result = this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin()) && (this.type == move.getType());
+        if (result) {
+            if (this.nextMove != null && move.nextMove != null) {
+                result = result && this.getNextMove().equals(move.getNextMove());
+            }
+            else if (this.getNextMove() == null && move.getNextMove() == null) {
+            }
+            else {
+                result = false;
+            }
+        }
+        return result;
     };
     Move.prototype.equalsIgnoreType = function (move) {
-        return this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin());
+        var result = this.getDest().equals(move.getDest()) && this.getOrigin().equals(move.getOrigin());
+        if (result) {
+            if (this.nextMove != null && move.nextMove != null) {
+                result = result && this.getNextMove().equals(move.getNextMove());
+            }
+            else if (this.getNextMove() == null && move.getNextMove() == null) {
+            }
+            else {
+                result = false;
+            }
+        }
+        return result;
     };
     return Move;
 }());
@@ -1026,6 +1136,84 @@ var MoveCollection = /** @class */ (function () {
                 result = true;
             }
         });
+        return result;
+    };
+    MoveCollection.prototype.getAllChains = function (move) {
+        var result = new MoveCollection();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            if (eachMove.beginsWithChain(move)) {
+                result.add(eachMove);
+            }
+        }
+        return result;
+    };
+    MoveCollection.prototype.filterDestinationType = function (board, type) {
+        var result = new MoveCollection();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            var destType = board.getSquareTypeAtPos(eachMove.getDest());
+            if (!(destType == type)) {
+                result.add(eachMove);
+            }
+        }
+        return result;
+    };
+    MoveCollection.prototype.onlyWithDestinationType = function (board, type) {
+        var result = new MoveCollection();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            var destType = board.getSquareTypeAtPos(eachMove.getDest());
+            if (destType == type) {
+                result.add(eachMove);
+            }
+        }
+        return result;
+    };
+    MoveCollection.prototype.flattenToLastSubmoves = function () {
+        var result = new MoveCollection();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            result.add(eachMove.getFinalSubMove().cloneWithoutNextMove());
+        }
+        return result;
+    };
+    MoveCollection.prototype.flattenToDepth = function (depth) {
+        var result = new MoveCollection();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            if (eachMove.getMoveDepth() >= depth) {
+                result.add(eachMove.getSubMoveAtDepth(depth));
+            }
+        }
+        return result;
+    };
+    MoveCollection.prototype.flattenToFirstSubmoves = function () {
+        var result = new MoveCollection();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            result.add(eachMove.cloneWithoutNextMove());
+        }
+        return result;
+    };
+    MoveCollection.prototype.getMaximumDepth = function () {
+        var result = 1;
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            if (eachMove.getMoveDepth() > result) {
+                result = eachMove.getMoveDepth();
+            }
+        }
+        return result;
+    };
+    MoveCollection.prototype.getAllWithDepth = function (depth) {
+        var result = new MoveCollection();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            if (eachMove.getMoveDepth() == depth) {
+                result.add(eachMove);
+            }
+        }
         return result;
     };
     MoveCollection.prototype.addAll = function (movesArg) {
@@ -1094,10 +1282,93 @@ var MoveCollection = /** @class */ (function () {
         }
         return result;
     };
+    MoveCollection.prototype.getDestinationSubset = function (pos) {
+        var result = new MoveCollection();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            if (eachMove.getDest().equals(pos)) {
+                result.add(eachMove);
+            }
+        }
+        return result;
+    };
+    MoveCollection.prototype.getNumberOfTypes = function () {
+        var typeSet = new Set();
+        for (var moveIdx in this.getMoves()) {
+            var eachMove = this.moves[moveIdx];
+            typeSet.add(eachMove.getType());
+        }
+        return typeSet.size;
+    };
+    MoveCollection.prototype.size = function () {
+        return this.moves.length;
+    };
     MoveCollection.prototype.shuffle = function () {
         Algorithms.shuffle(this.moves);
     };
     return MoveCollection;
+}());
+var MoveFilters = /** @class */ (function () {
+    function MoveFilters() {
+    }
+    MoveFilters.BASIC = function (pos, piece) {
+        var result;
+        if (piece.getBoardModel().isFree(pos) == false) {
+            if (piece.getBoardModel().getPieceFromPosition(pos).getColor() != piece.getColor()) {
+                if (piece.getBoardModel().getSquareTypeAtPos(pos) == SquareType.NORMAL) {
+                    result = new MoveFilterResult(true, true);
+                }
+                else {
+                    result = new MoveFilterResult(false, true);
+                }
+            }
+            else {
+                result = new MoveFilterResult(false, true);
+            }
+        }
+        else {
+            if (piece.getBoardModel().getSquareTypeAtPos(pos) == SquareType.NORMAL) {
+                result = new MoveFilterResult(true, false);
+            }
+            else {
+                result = new MoveFilterResult(false, true);
+            }
+        }
+        return result;
+    };
+    MoveFilters.BASIC_ONLY_WATER = function (pos, piece) {
+        var result;
+        if (piece.getBoardModel().isFree(pos) == false) {
+            if (piece.getBoardModel().getPieceFromPosition(pos).getColor() != piece.getColor()) {
+                if (piece.getBoardModel().getSquareTypeAtPos(pos) == SquareType.WATER) {
+                    result = new MoveFilterResult(true, true);
+                }
+                else {
+                    result = new MoveFilterResult(false, true);
+                }
+            }
+            else {
+                result = new MoveFilterResult(false, true);
+            }
+        }
+        else {
+            if (piece.getBoardModel().getSquareTypeAtPos(pos) == SquareType.WATER) {
+                result = new MoveFilterResult(true, false);
+            }
+            else {
+                result = new MoveFilterResult(false, true);
+            }
+        }
+        return result;
+    };
+    return MoveFilters;
+}());
+var MoveFilterResult = /** @class */ (function () {
+    function MoveFilterResult(passesFilter, breakLoop) {
+        this.passesFilter = passesFilter;
+        this.breakLoop = breakLoop;
+    }
+    return MoveFilterResult;
 }());
 var MoveFactory = /** @class */ (function () {
     function MoveFactory() {
@@ -1181,6 +1452,178 @@ var MoveFactory = /** @class */ (function () {
             x += 1;
         }
         return new MoveCollection(result);
+    };
+    MoveFactory.getAllOrthagonalWithCondition = function (piece, func) {
+        var result = new MoveCollection();
+        result.addAll(MoveFactory.getAllRightWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllLeftWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllDownwardsWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllUpwardsWithCondition(piece, func));
+        return result;
+    };
+    MoveFactory.getAllRightWithCondition = function (piece, func) {
+        var board = piece.getBoardModel();
+        var result = new Array();
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY();
+        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            var filterResult = func(new Pos(x, y), piece);
+            if (filterResult.passesFilter) {
+                result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            x += 1;
+        }
+        return new MoveCollection(result);
+    };
+    MoveFactory.getAllLeftWithCondition = function (piece, func) {
+        var board = piece.getBoardModel();
+        var result = new Array();
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY();
+        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            var filterResult = func(new Pos(x, y), piece);
+            if (filterResult.passesFilter) {
+                result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            x -= 1;
+        }
+        return new MoveCollection(result);
+    };
+    MoveFactory.getAllUpwardsWithCondition = function (piece, func) {
+        var board = piece.getBoardModel();
+        var result = new Array();
+        var x = piece.getPos().getX();
+        var y = piece.getPos().getY() - 1;
+        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            var filterResult = func(new Pos(x, y), piece);
+            if (filterResult.passesFilter) {
+                result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            y -= 1;
+        }
+        return new MoveCollection(result);
+    };
+    MoveFactory.getAllDownwardsWithCondition = function (piece, func) {
+        var board = piece.getBoardModel();
+        var result = new Array();
+        var x = piece.getPos().getX();
+        var y = piece.getPos().getY() + 1;
+        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            var filterResult = func(new Pos(x, y), piece);
+            if (filterResult.passesFilter) {
+                result.push(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            y += 1;
+        }
+        return new MoveCollection(result);
+    };
+    MoveFactory.getLeapingLineWithCondition = function (piece, x, y, func) {
+        var result = new MoveCollection();
+        var newX = piece.getPos().getX() + x;
+        var newY = piece.getPos().getY() + y;
+        while (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+            var filterResult = func(new Pos(newX, newY), piece);
+            if (filterResult.passesFilter) {
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            newX += x;
+            newY += y;
+        }
+        return result;
+    };
+    MoveFactory.getAllCircularLeapsWithCondition = function (piece, func) {
+        var coordinates = new Array();
+        coordinates.push(new Pos(-1, -2));
+        coordinates.push(new Pos(-2, -1));
+        coordinates.push(new Pos(-2, 1));
+        coordinates.push(new Pos(-1, 2));
+        coordinates.push(new Pos(1, 2));
+        coordinates.push(new Pos(2, 1));
+        coordinates.push(new Pos(2, -1));
+        coordinates.push(new Pos(1, -2));
+        var result = new MoveCollection();
+        for (var eachIdx in coordinates) {
+            var eachCoordinate = coordinates[eachIdx];
+            var newX = piece.getPos().getX() + eachCoordinate.getX();
+            var newY = piece.getPos().getY() + eachCoordinate.getY();
+            var counter = 1;
+			var idxIncr = eachIdx;
+            while (piece.getBoardModel().isValidPosition(new Pos(newX, newY)) && (counter < 8)) {
+
+                var filterResult = func(new Pos(newX, newY), piece);
+                if (filterResult.passesFilter) {
+                    result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
+                }
+                if (filterResult.breakLoop) {
+                    break;
+                }
+                var nextCoordinate;
+                if (idxIncr < (coordinates.length -1)) {
+					idxIncr++;
+                }
+                else {
+					idxIncr = 0;
+                }
+				nextCoordinate = coordinates[+idxIncr];
+                newX = newX + nextCoordinate.getX();
+                newY = newY + nextCoordinate.getY();
+                counter++;
+				
+            }
+        }
+        return result;
+    };
+    MoveFactory.getCircularLeapWithCondition = function (piece, x, y, func) {
+        var result = new MoveCollection();
+        var newX = piece.getPos().getX() + x;
+        var newY = piece.getPos().getY() + y;
+        var swapTemp;
+        var circularState = 1;
+        while (piece.getBoardModel().isValidPosition(new Pos(newX, newY)) && (circularState <= 8)) {
+            var filterResult = func(new Pos(newX, newY), piece);
+            if (filterResult.passesFilter) {
+                result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            if (circularState == 4) {
+                x = x * (-1);
+                circularState = 1;
+            }
+            else if (circularState == 3) {
+                swapTemp = x;
+                x = y;
+                y = swapTemp;
+            }
+            else if (circularState == 2) {
+                y = y * (-1);
+            }
+            else if (circularState == 1) {
+                swapTemp = x;
+                x = y;
+                y = swapTemp;
+            }
+            newX = newX + x;
+            newY = newY + y;
+            circularState += 1;
+        }
+        return result;
     };
     MoveFactory.getGiraffeMovement = function (piece) {
         var board = piece.getBoardModel();
@@ -1309,6 +1752,86 @@ var MoveFactory = /** @class */ (function () {
         result.addAll(MoveFactory.getAllDownwards(piece));
         return result;
     };
+    MoveFactory.getAllDiagonalWithCondition = function (piece, func) {
+        var result = new MoveCollection();
+        result.addAll(MoveFactory.getAllLeftDownDiagonalWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllRightDownDiagonalWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllRightUpDiagonalWithCondition(piece, func));
+        result.addAll(MoveFactory.getAllLeftUpDiagonalWithCondition(piece, func));
+        return result;
+    };
+    MoveFactory.getAllLeftUpDiagonalWithCondition = function (piece, func) {
+        var board = piece.getBoardModel();
+        var result = new MoveCollection();
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() - 1;
+        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            var filterResult = func(new Pos(x, y), piece);
+            if (filterResult.passesFilter) {
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            x -= 1;
+            y -= 1;
+        }
+        return result;
+    };
+    MoveFactory.getAllRightUpDiagonalWithCondition = function (piece, func) {
+        var board = piece.getBoardModel();
+        var result = new MoveCollection();
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() - 1;
+        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            var filterResult = func(new Pos(x, y), piece);
+            if (filterResult.passesFilter) {
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            x += 1;
+            y -= 1;
+        }
+        return result;
+    };
+    MoveFactory.getAllRightDownDiagonalWithCondition = function (piece, func) {
+        var board = piece.getBoardModel();
+        var result = new MoveCollection();
+        var x = piece.getPos().getX() + 1;
+        var y = piece.getPos().getY() + 1;
+        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            var filterResult = func(new Pos(x, y), piece);
+            if (filterResult.passesFilter) {
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            x += 1;
+            y += 1;
+        }
+        return result;
+    };
+    MoveFactory.getAllLeftDownDiagonalWithCondition = function (piece, func) {
+        var board = piece.getBoardModel();
+        var result = new MoveCollection();
+        var x = piece.getPos().getX() - 1;
+        var y = piece.getPos().getY() + 1;
+        while (piece.getBoardModel().isValidPosition(new Pos(x, y))) {
+            var filterResult = func(new Pos(x, y), piece);
+            if (filterResult.passesFilter) {
+                result.add(new Move(piece.getPos(), new Pos(x, y), MoveType.CAPTURE));
+            }
+            if (filterResult.breakLoop) {
+                break;
+            }
+            x -= 1;
+            y += 1;
+        }
+        return result;
+    };
     MoveFactory.getAllLeftUpDiagonal = function (piece) {
         var board = piece.getBoardModel();
         var result = new MoveCollection();
@@ -1425,6 +1948,144 @@ var MoveFactory = /** @class */ (function () {
             if (!piece.getBoardModel().isFree(new Pos(newX, newY))) {
                 result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.FLING));
             }
+        }
+        return result;
+    };
+    MoveFactory.getRelativeToPieceHop = function (piece, x, y) {
+        var result = new MoveCollection();
+        var newX = piece.getPos().getX() + x;
+        var newY = piece.getPos().getY() + y;
+        if (piece.getBoardModel().isValidPosition(new Pos(newX, newY))) {
+            if (piece.getBoardModel().isFree(new Pos(newX, newY))) {
+                var removePos = new Pos(newX, newY).minus(piece.getPos()).divide(2);
+                removePos = piece.getPos().plus(removePos);
+                if (!piece.getBoardModel().isFree(removePos)) {
+                    if (piece.getBoardModel().getPieceFromPosition(removePos).getColor() != piece.getColor()) {
+                        result.add(new Move(piece.getPos(), new Pos(newX, newY), MoveType.HOP));
+                    }
+                }
+            }
+        }
+        return result;
+    };
+    MoveFactory.getHop = function (board, color, origin, x, y) {
+        var result = new MoveCollection();
+        var newX = origin.getX() + x;
+        var newY = origin.getY() + y;
+        if (board.isValidPosition(new Pos(newX, newY))) {
+            if (board.isFree(new Pos(newX, newY))) {
+                var removePos = new Pos(newX, newY).minus(origin).divide(2);
+                removePos = origin.plus(removePos);
+                if (!board.isFree(removePos)) {
+                    if (board.getPieceFromPosition(removePos).getColor() != color) {
+                        result.add(new Move(origin, new Pos(newX, newY), MoveType.HOP));
+                    }
+                }
+            }
+        }
+        return result;
+    };
+    MoveFactory.applyMove = function (move, board) {
+        var newBoard = new BoardModel(board.getWidth(), board.getHeight());
+        newBoard.populateFromSerial(board.serialize());
+        newBoard.executeMove(move);
+        return newBoard;
+    };
+    MoveFactory.getRecursiveCheckerKingHop = function (piece) {
+        var direction = piece.getDirection();
+        var moves;
+        var result = new MoveCollection();
+        moves = MoveFactory.getRelativeToPieceHop(piece, 2, -2)
+            .addAll(MoveFactory.getRelativeToPieceHop(piece, -2, -2))
+            .addAll(MoveFactory.getRelativeToPieceHop(piece, -2, 2))
+            .addAll(MoveFactory.getRelativeToPieceHop(piece, 2, 2));
+        for (var eachMoveIdx in moves.getMoves()) {
+            var eachMove = moves.getMoves()[eachMoveIdx];
+            var newBoard = MoveFactory.applyMove(eachMove, piece.getBoardModel());
+            var transformedMoves = MoveFactory.recursivelyTransformKingHop(eachMove, piece, newBoard);
+            result.addAll(transformedMoves);
+        }
+        return result;
+    };
+    MoveFactory.recursivelyTransformKingHop = function (move, piece, board) {
+        var result = new MoveCollection();
+        var eachMoveHopOptions = MoveFactory.getHop(board, piece.getColor(), move.getDest(), 2, -2)
+            .addAll(MoveFactory.getHop(board, piece.getColor(), move.getDest(), -2, -2))
+            .addAll(MoveFactory.getHop(board, piece.getColor(), move.getDest(), -2, 2))
+            .addAll(MoveFactory.getHop(board, piece.getColor(), move.getDest(), 2, 2));
+        if (eachMoveHopOptions.size() >= 1) {
+            for (var eachMoveIdx in eachMoveHopOptions.getMoves()) {
+                var eachMove = eachMoveHopOptions.getMoves()[eachMoveIdx];
+                var newBoard = MoveFactory.applyMove(eachMove, board);
+                var transformedMoves = MoveFactory.recursivelyTransformKingHop(eachMove, piece, newBoard);
+                for (var eachMoveIdx2 in transformedMoves.getMoves()) {
+                    var eachMove2 = transformedMoves.getMoves()[eachMoveIdx2];
+                    var moveCopy = move.clone();
+                    moveCopy.setNextMove(eachMove2);
+                    result.add(moveCopy);
+                }
+            }
+        }
+        else {
+            result.add(move);
+        }
+        return result;
+    };
+    MoveFactory.getRecursiveCheckerHop = function (piece) {
+        var direction = piece.getDirection();
+        var moves;
+        var result = new MoveCollection();
+        moves = MoveFactory.getRelativeToPieceHop(piece, 2, -2 * direction)
+            .addAll(MoveFactory.getRelativeToPieceHop(piece, -2, -2 * direction));
+        for (var eachMoveIdx in moves.getMoves()) {
+            var eachMove = moves.getMoves()[eachMoveIdx];
+            var transformedMoves = MoveFactory.recursivelyTransformHop(eachMove, piece);
+            result.addAll(transformedMoves);
+        }
+        return result;
+    };
+    MoveFactory.recursivelyTransformHop = function (move, piece) {
+        var result = new MoveCollection();
+        var eachMoveHopOptions = MoveFactory.getHop(piece.getBoardModel(), piece.getColor(), move.getDest(), 2, -2 * piece.getDirection())
+            .addAll(MoveFactory.getHop(piece.getBoardModel(), piece.getColor(), move.getDest(), -2, -2 * piece.getDirection()));
+        if (eachMoveHopOptions.size() >= 1) {
+            for (var eachMoveIdx in eachMoveHopOptions.getMoves()) {
+                var eachMove = eachMoveHopOptions.getMoves()[eachMoveIdx];
+                var transformedMoves = MoveFactory.recursivelyTransformHop(eachMove, piece);
+                for (var eachMoveIdx2 in transformedMoves.getMoves()) {
+                    var eachMove2 = transformedMoves.getMoves()[eachMoveIdx2];
+                    var moveCopy = move.clone();
+                    moveCopy.setNextMove(eachMove2);
+                    result.add(moveCopy);
+                }
+            }
+        }
+        else {
+            result.add(move);
+        }
+        return result;
+    };
+    MoveFactory.unrollMoves = function (move) {
+        var result = new MoveCollection();
+        var moveDepth = move.getMoveDepth();
+        var moveHandle = move;
+        var individualMoveArray = new Array();
+        for (var i = 1; i <= moveDepth; i++) {
+            individualMoveArray.push(moveHandle.cloneWithoutNextMove());
+            if (moveHandle.hasNextMove()) {
+                moveHandle = moveHandle.getNextMove();
+            }
+        }
+        var baseMove;
+        for (var j = 0; j < individualMoveArray.length; j++) {
+            var eachMove = individualMoveArray[j];
+            if (baseMove == null) {
+                baseMove = eachMove;
+            }
+            else {
+                baseMove.appendMoveToEnd(eachMove);
+            }
+            result.add(baseMove.clone());
         }
         return result;
     };
@@ -1585,7 +2246,7 @@ var RookModel = /** @class */ (function (_super) {
     RookModel.prototype.onMove = function () { };
     RookModel.prototype.giveInternalAttributes = function (piece) { };
     RookModel.prototype.getPossibleMoves = function () {
-        return MoveFactory.getAllCardinal(this);
+        return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC);
     };
     return RookModel;
 }(PieceModel));
@@ -1610,14 +2271,16 @@ var PawnModel = /** @class */ (function (_super) {
         if (this.hasMoved) {
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
-                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()));
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection()))
+                .filterDestinationType(this.getBoardModel(), SquareType.WATER);
         }
         else {
             //alert(MoveFactory.getLineForward(this, 2, this.getDirection()).getMoves.length);
             return MoveFactory.getRelativeToPieceNonCapturing(this, 0, -1 * this.getDirection())
                 .addAll(MoveFactory.getLineForwardNoncapturing(this, 2, this.getDirection())
                 .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, -1, -1 * this.getDirection()))
-                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())));
+                .addAll(MoveFactory.getRelativeToPieceOnlyIfCapturable(this, 1, -1 * this.getDirection())))
+                .filterDestinationType(this.getBoardModel(), SquareType.WATER);
         }
     };
     return PawnModel;
@@ -1649,7 +2312,8 @@ var KnightModel = /** @class */ (function (_super) {
             .addAll(MoveFactory.getRelativeToPiece(this, 1, -2))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 2))
             .addAll(MoveFactory.getRelativeToPiece(this, 1, 2))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -2));
+            .addAll(MoveFactory.getRelativeToPiece(this, -1, -2))
+            .filterDestinationType(this.getBoardModel(), SquareType.WATER);
     };
     return KnightModel;
 }(PieceModel));
@@ -1661,7 +2325,7 @@ var BishopModel = /** @class */ (function (_super) {
     BishopModel.prototype.onMove = function () { };
     BishopModel.prototype.giveInternalAttributes = function (piece) { };
     BishopModel.prototype.getPossibleMoves = function () {
-        return MoveFactory.getAllDiagonal(this);
+        return MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC);
     };
     return BishopModel;
 }(PieceModel));
@@ -1680,7 +2344,9 @@ var KingModel = /** @class */ (function (_super) {
             .addAll(MoveFactory.getRelativeToPiece(this, 0, -1))
             .addAll(MoveFactory.getRelativeToPiece(this, 0, 1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 0))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, 0));
+            .addAll(MoveFactory.getRelativeToPiece(this, 1, 0))
+            .filterDestinationType(this.getBoardModel(), SquareType.WATER);
+        ;
     };
     return KingModel;
 }(PieceModel));
@@ -1692,8 +2358,8 @@ var QueenModel = /** @class */ (function (_super) {
     QueenModel.prototype.onMove = function () { };
     QueenModel.prototype.giveInternalAttributes = function (piece) { };
     QueenModel.prototype.getPossibleMoves = function () {
-        return MoveFactory.getAllCardinal(this)
-            .addAll(MoveFactory.getAllDiagonal(this));
+        return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC)
+            .addAll(MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC));
     };
     return QueenModel;
 }(PieceModel));
@@ -1708,7 +2374,8 @@ var GeneralModel = /** @class */ (function (_super) {
         return MoveFactory.getRelativeToPiece(this, 0, -1)
             .addAll(MoveFactory.getRelativeToPiece(this, 0, 1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 0))
-            .addAll(MoveFactory.getRelativeToPiece(this, 1, 0));
+            .addAll(MoveFactory.getRelativeToPiece(this, 1, 0))
+            .filterDestinationType(this.getBoardModel(), SquareType.WATER);
     };
     return GeneralModel;
 }(PieceModel));
@@ -1723,7 +2390,8 @@ var MinisterModel = /** @class */ (function (_super) {
         return MoveFactory.getRelativeToPiece(this, 1, 1)
             .addAll(MoveFactory.getRelativeToPiece(this, 1, -1))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 1))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -1));
+            .addAll(MoveFactory.getRelativeToPiece(this, -1, -1))
+            .filterDestinationType(this.getBoardModel(), SquareType.WATER);
     };
     return MinisterModel;
 }(PieceModel));
@@ -1761,7 +2429,7 @@ var PicketModel = /** @class */ (function (_super) {
         invalidMoves.add(new Move(this.getPos(), new Pos(x - 2, y - 2), MoveType.CAPTURE));
         invalidMoves.add(new Move(this.getPos(), new Pos(x + 1, y - 1), MoveType.CAPTURE));
         invalidMoves.add(new Move(this.getPos(), new Pos(x + 2, y - 2), MoveType.CAPTURE));
-        return MoveFactory.getAllDiagonal(this).minusIgnoreType(invalidMoves);
+        return MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC).minusIgnoreType(invalidMoves);
     };
     return PicketModel;
 }(PieceModel));
@@ -1795,7 +2463,8 @@ var CamelRiderModel = /** @class */ (function (_super) {
             .addAll(MoveFactory.getRelativeToPiece(this, 1, -3))
             .addAll(MoveFactory.getRelativeToPiece(this, -1, 3))
             .addAll(MoveFactory.getRelativeToPiece(this, 1, 3))
-            .addAll(MoveFactory.getRelativeToPiece(this, -1, -3));
+            .addAll(MoveFactory.getRelativeToPiece(this, -1, -3))
+            .filterDestinationType(this.getBoardModel(), SquareType.WATER);
     };
     return CamelRiderModel;
 }(PieceModel));
@@ -1812,10 +2481,78 @@ var CannonModel = /** @class */ (function (_super) {
         return this.getBoardModel().getDirection(this.getColor());
     };
     CannonModel.prototype.getPossibleMoves = function () {
-        return MoveFactory.getAllLeft(this).addAll(MoveFactory.getAllRight(this))
+        return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC)
             .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3 * this.getDirection()));
     };
     return CannonModel;
+}(PieceModel));
+var CheckerModel = /** @class */ (function (_super) {
+    __extends(CheckerModel, _super);
+    function CheckerModel(board, pos, color) {
+        return _super.call(this, board, pos, color, PieceType.CHECKER) || this;
+    }
+    CheckerModel.prototype.onMove = function (move) {
+    };
+    CheckerModel.prototype.giveInternalAttributes = function (piece) {
+    };
+    CheckerModel.prototype.getDirection = function () {
+        return this.getBoardModel().getDirection(this.getColor());
+    };
+    CheckerModel.prototype.getPossibleMoves = function () {
+        /*if(this.getDirection() == 1){
+            return MoveFactory.getRelativeToPieceHop(this, 2, -2)
+            .addAll(MoveFactory.getRelativeToPieceHop(this, -2, -2));
+        }
+        else if(this.getDirection() == -1){
+            return MoveFactory.getRelativeToPieceHop(this, 2, 2)
+            .addAll(MoveFactory.getRelativeToPieceHop(this, -2, 2));
+        }*/
+        var result = MoveFactory.getRecursiveCheckerHop(this);
+        return result;
+    };
+    return CheckerModel;
+}(PieceModel));
+var BattleShipModel = /** @class */ (function (_super) {
+    __extends(BattleShipModel, _super);
+    function BattleShipModel(board, pos, color) {
+        return _super.call(this, board, pos, color, PieceType.BATTLESHIP) || this;
+    }
+    BattleShipModel.prototype.onMove = function (move) {
+    };
+    BattleShipModel.prototype.giveInternalAttributes = function (piece) {
+    };
+    BattleShipModel.prototype.getDirection = function () {
+        return this.getBoardModel().getDirection(this.getColor());
+    };
+    BattleShipModel.prototype.getPossibleMoves = function () {
+        return MoveFactory.getAllOrthagonalWithCondition(this, MoveFilters.BASIC_ONLY_WATER)
+            .addAll(MoveFactory.getAllDiagonalWithCondition(this, MoveFilters.BASIC_ONLY_WATER))
+            .addAll(MoveFactory.getRelativeToPieceFling(this, 0, -3))
+            .addAll(MoveFactory.getRelativeToPieceFling(this, 0, 3))
+            .addAll(MoveFactory.getRelativeToPieceFling(this, 3, 0))
+            .addAll(MoveFactory.getRelativeToPieceFling(this, -3, 0));
+    };
+    return BattleShipModel;
+}(PieceModel));
+var NightRiderModel = /** @class */ (function (_super) {
+    __extends(NightRiderModel, _super);
+    function NightRiderModel(board, pos, color) {
+        return _super.call(this, board, pos, color, PieceType.NIGHTRIDER) || this;
+    }
+    NightRiderModel.prototype.onMove = function () { };
+    NightRiderModel.prototype.giveInternalAttributes = function (piece) { };
+    NightRiderModel.prototype.getPossibleMoves = function () {
+        /* return MoveFactory.getLeapingLineWithCondition(this, -2, -1, MoveFilters.BASIC)
+         .addAll(MoveFactory.getLeapingLineWithCondition(this, 2, -1, MoveFilters.BASIC))
+         .addAll(MoveFactory.getLeapingLineWithCondition(this, -2, 1, MoveFilters.BASIC))
+         .addAll(MoveFactory.getLeapingLineWithCondition(this, 2, 1, MoveFilters.BASIC))
+         .addAll(MoveFactory.getLeapingLineWithCondition(this, 1, -2, MoveFilters.BASIC))
+         .addAll(MoveFactory.getLeapingLineWithCondition(this, -1, 2, MoveFilters.BASIC))
+         .addAll(MoveFactory.getLeapingLineWithCondition(this, 1, 2, MoveFilters.BASIC))
+         .addAll(MoveFactory.getLeapingLineWithCondition(this, -1, -2, MoveFilters.BASIC));*/
+        return MoveFactory.getAllCircularLeapsWithCondition(this, MoveFilters.BASIC);
+    };
+    return NightRiderModel;
 }(PieceModel));
 var PieceFactory = /** @class */ (function () {
     function PieceFactory() {
@@ -1865,6 +2602,18 @@ var PieceFactory = /** @class */ (function () {
             case PieceType.CANNON:
                 newPiece = new CannonModel(board, pos, color);
                 break;
+            case PieceType.CHECKER:
+                newPiece = new CheckerModel(board, pos, color);
+                break;
+            case PieceType.KING_CHECKER:
+                newPiece = new CheckerModel(board, pos, color);
+                break;
+            case PieceType.BATTLESHIP:
+                newPiece = new BattleShipModel(board, pos, color);
+                break;
+            case PieceType.NIGHTRIDER:
+                newPiece = new NightRiderModel(board, pos, color);
+                break;
         }
         return newPiece;
     };
@@ -1901,6 +2650,16 @@ var BoardModel = /** @class */ (function () {
                 _this.pos2SquareType.set(key, type);
             }
         });
+    };
+    BoardModel.prototype.getSquareTypeAtPos = function (pos) {
+        var _this = this;
+        var result;
+        this.pos2SquareType.forEach(function (value, key, map) {
+            if (pos.equals(key)) {
+                result = _this.pos2SquareType.get(key);
+            }
+        });
+        return result;
     };
     BoardModel.prototype.getDirection = function (color) {
         if (Color.WHITE == color) {
@@ -1985,7 +2744,7 @@ var BoardModel = /** @class */ (function () {
         var _this = this;
         this.pos2PieceMap.forEach(function (value, key, map) {
             if (key.equals(pos)) {
-                _this.pos2PieceMap["delete"](key);
+                _this.pos2PieceMap.delete(key);
             }
         });
         this.pos2PieceMap.set(pos, null);
@@ -1998,6 +2757,15 @@ var BoardModel = /** @class */ (function () {
         }
         else if (move.getType() == MoveType.FLING) {
             this.removePiece(move.getDest());
+        }
+        else if (move.getType() == MoveType.HOP) {
+            var removePos = move.getDest().minus(move.getOrigin()).divide(2);
+            removePos = originalPiece.getPos().plus(removePos);
+            this.movePiece(originalPiece.getPos(), move.getDest());
+            this.removePiece(removePos);
+        }
+        if (move.hasNextMove()) {
+            this.executeMove(move.getNextMove());
         }
     };
     BoardModel.prototype.movePiece = function (origin, dest) {
@@ -2139,13 +2907,13 @@ var BoardFactory = /** @class */ (function () {
         return board;
     };
     BoardFactory.testBoard = function () {
-        var board = new BoardModel(6, 6);
+        var board = new BoardModel(15, 15);
         board.populateFromSerial(BoardFactory.TEST_BOARD);
         return board;
     };
     BoardFactory.STANDARD_BOARD = "[4_B],[2_B],[3_B],[5_B],[6_B],[3_B],[2_B],[4_B]/[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[]/[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W]/[4_W],[2_W],[3_W],[5_W],[6_W],[3_W],[2_W],[4_W]-[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0]";
     BoardFactory.TAMERLANE_BOARD = "[],[12_B],[],[13_B],[],[7_B],[],[7_B],[],[13_B],[],[12_B],[]/[],[4_B],[2_B],[11_B],[10_B],[9_B],[6_B],[8_B],[10_B],[11_B],[2_B],[4_B],[]/[],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[1_B],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[1_W],[]/[],[4_W],[2_W],[11_W],[10_W],[9_W],[6_W],[8_W],[10_W],[11_W],[2_W],[4_W],[]/[],[12_W],[],[13_W],[],[7_W],[],[7_W],[],[13_W],[],[12_W],[]-[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[1],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1]";
-    BoardFactory.TEST_BOARD = "[6_B],[1_B],[1_B],[1_B],[1_B],[]/[15_B],[15_B],[15_B],[15_B],[15_B],[15_B]/[],[],[],[],[],[]/[],[],[],[],[],[]/[15_W],[15_W],[15_W],[15_W],[15_W],[15_W]/[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0]";
+    BoardFactory.TEST_BOARD = "[6_B],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[19_W],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]/[],[],[],[],[],[],[],[],[],[],[],[],[],[],[6_W]-[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]/[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]";
     return BoardFactory;
 }());
 var Player = /** @class */ (function () {
@@ -2287,6 +3055,9 @@ var MiniMaxPlayer = /** @class */ (function (_super) {
                     thisValue += 2;
                     break;
                 case PieceType.PICKET:
+                    thisValue += 2;
+                    break;
+                case PieceType.CANNON:
                     thisValue += 2;
                     break;
                 case PieceType.KING:
@@ -2571,6 +3342,9 @@ var GameController = /** @class */ (function (_super) {
     function GameController(htmlContainer, offsetTop, offsetLeft, squareWidth, squareHeight) {
         var _this = _super.call(this, Color.WHITE) || this;
         _this.myColor = Color.WHITE;
+        _this.MUTLI_HOP_SELECTION_DEPTH = 1;
+        _this.IN_MULTI_HOP_SELECTION = false;
+        _this.MULTI_HOP_MOVE_ARRAY = new Array();
         _this.htmlContainer = htmlContainer;
         _this.offsetTop = offsetTop;
         _this.offsetLeft = offsetLeft;
@@ -2636,33 +3410,21 @@ var GameController = /** @class */ (function (_super) {
     };
     GameController.prototype.getMyPieceClickListenerFunction = function (id, control) {
         return function () {
-            if (!control.myPieceIsSelected()) {
+            if (control.isInMultiHopSelection() && control.isCandidateForMultiHopSelection(id)) {
+                var sqr = control.getSquareAtId(id);
+                control.continueMultiHopSelection(sqr);
+            }
+            else if (control.isInMultiHopSelection()) {
+                control.resetAllMultiHopVariables();
+                control.unselectPiece();
+                control.resetSquareColors();
+                control.update();
+            }
+            else if (!control.myPieceIsSelected()) {
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece = control.getPieceAtSquareId(id);
-                if (thisPiece.getPossibleMoves().containsType(MoveType.FLING)) {
-                    var choiceModal = new ChoiceModal();
-                    choiceModal.addChoice("Move");
-                    choiceModal.addChoice("Fire");
-                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
-                    choiceModal.setOnChoice(function (result) {
-                        control.htmlContainer.hideChoiceModal();
-                        if (result == "Move") {
-                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
-                        }
-                        else if (result == "Fire") {
-                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
-                        }
-                    });
-                    control.htmlContainer.setChoiceModal(choiceModal);
-                    control.htmlContainer.showChoiceModal();
-                }
-                else {
-                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
-                }
+                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
             }
             else if (control.myPieceIsSelected() && control.selectedPieceIsAtSquareId(id)) {
                 control.unselectPiece();
@@ -2673,29 +3435,7 @@ var GameController = /** @class */ (function (_super) {
                 control.unselectPiece();
                 control.resetSquareColors();
                 var thisPiece = control.getPieceAtSquareId(id);
-                if (thisPiece.getPossibleMoves().containsType(MoveType.FLING)) {
-                    var choiceModal = new ChoiceModal();
-                    choiceModal.addChoice("Move");
-                    choiceModal.addChoice("Fire");
-                    choiceModal.setInMiddleOfElement(control.htmlContainer.boardParentElement);
-                    choiceModal.setOnChoice(function (result) {
-                        control.htmlContainer.hideChoiceModal();
-                        if (result == "Move") {
-                            control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.CAPTURE);
-                        }
-                        else if (result == "Fire") {
-                            control.SELECTED_MOVE_TYPE = MoveType.FLING;
-                            control.tracePieceMovesOfType(thisPiece, StaticColors.SQUARE_SELECTION_BLUE, MoveType.FLING);
-                        }
-                    });
-                    control.htmlContainer.setChoiceModal(choiceModal);
-                    control.htmlContainer.showChoiceModal();
-                }
-                else {
-                    control.SELECTED_MOVE_TYPE = MoveType.CAPTURE;
-                    control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
-                }
+                control.tracePieceMoves(thisPiece, StaticColors.SQUARE_SELECTION_BLUE);
             }
             else if (control.myPieceIsSelected() && !(control.representsMovableSpace(id))) {
                 control.unselectPiece();
@@ -2704,7 +3444,7 @@ var GameController = /** @class */ (function (_super) {
             }
             else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
                 var sqr = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
+                control.makeMoveAtSqr(sqr);
                 control.signalOpponentsMove();
             }
         };
@@ -2721,6 +3461,7 @@ var GameController = /** @class */ (function (_super) {
     };
     GameController.prototype.getOppPieceClickListenerFunction = function (id, control) {
         return function () {
+            control.resetAllMultiHopVariables();
             if (!control.oppPieceIsSelected() && !control.myPieceIsSelected()) {
                 control.unselectPiece();
                 control.resetSquareColors();
@@ -2746,9 +3487,99 @@ var GameController = /** @class */ (function (_super) {
             }
             else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
                 var sqr = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
+                control.makeMoveAtSqr(sqr);
             }
         };
+    };
+    GameController.prototype.makeMoveAtSqr = function (sqr) {
+        this.turnOffClickListeners();
+        var chosenMove;
+        var moves = this.SELECTED_PIECE.getPossibleMoves().getDestinationSubset(sqr.getPos());
+        var numTypes = moves.getNumberOfTypes();
+        if (numTypes == 1) {
+            chosenMove = moves.getMoves()[0];
+        }
+        else if (numTypes > 1) {
+            alert("moves found with duplicate destinations");
+        }
+        else {
+            //throw error
+            alert("ERROR IN GAMECONTROLLER: INVALID MOVE");
+        }
+        this.setChosenMove(chosenMove);
+        this.resetSquareColors();
+        if (chosenMove.getType() == MoveType.HOP) {
+            this.MULTI_HOP_ORIGIN = chosenMove;
+            this.CURRENT_MULTI_HOP_POSITION = this.MULTI_HOP_ORIGIN.getOrigin();
+            var allChains = this.SELECTED_PIECE.getPossibleMoves().getAllChains(chosenMove.cloneWithoutNextMove());
+            var maxDepth = allChains.getMaximumDepth();
+            if (this.MUTLI_HOP_SELECTION_DEPTH < maxDepth) {
+                this.CURRENT_MULTI_HOP_POSITION = chosenMove.getDest();
+                this.MULTI_HOP_MOVE_ARRAY.push(new Move(this.MULTI_HOP_ORIGIN.getOrigin(), sqr.getPos(), MoveType.HOP));
+                this.resetSquareColors();
+                this.MUTLI_HOP_SELECTION_DEPTH += 1;
+                this.setSquareToColor(chosenMove.getDest(), "#00FF00");
+                this.setSquaresToColor(allChains.flattenToDepth(this.MUTLI_HOP_SELECTION_DEPTH), StaticColors.SQUARE_SELECTION_BLUE);
+                this.IN_MULTI_HOP_SELECTION = true;
+                this.update();
+            }
+            else {
+                this.makeMoveAtSqrForMultiHop(sqr);
+            }
+        }
+        else {
+            this.unselectPiece();
+            this.signalOpponentsMove();
+        }
+    };
+    GameController.prototype.continueMultiHopSelection = function (sqr) {
+        var cursorMove = this.compileMoveFromMultiHopArray();
+        cursorMove.appendMoveToEnd(new Move(this.CURRENT_MULTI_HOP_POSITION, sqr.getPos(), MoveType.HOP));
+        var allChains = this.SELECTED_PIECE.getPossibleMoves().getAllChains(cursorMove);
+        var maxDepth = allChains.getMaximumDepth();
+        if (this.MUTLI_HOP_SELECTION_DEPTH < maxDepth) {
+            this.MUTLI_HOP_SELECTION_DEPTH += 1;
+            this.MULTI_HOP_MOVE_ARRAY.push(new Move(this.CURRENT_MULTI_HOP_POSITION, sqr.getPos(), MoveType.HOP));
+            this.CURRENT_MULTI_HOP_POSITION = sqr.getPos();
+            this.resetSquareColors();
+            this.setSquareToColor(sqr.getPos(), "#00FF00");
+            this.setSquaresToColor(allChains.flattenToDepth(this.MUTLI_HOP_SELECTION_DEPTH), StaticColors.SQUARE_SELECTION_BLUE);
+            this.update();
+        }
+        else {
+            this.makeMoveAtSqrForMultiHop(sqr);
+        }
+    };
+    GameController.prototype.compileMoveFromMultiHopArray = function () {
+        var chosenMove;
+        for (var i = 0; i < this.MULTI_HOP_MOVE_ARRAY.length; i++) {
+            if (chosenMove == null) {
+                chosenMove = this.MULTI_HOP_MOVE_ARRAY[i].clone();
+            }
+            else {
+                chosenMove.getFinalSubMove().setNextMove(this.MULTI_HOP_MOVE_ARRAY[i].clone());
+            }
+        }
+        return chosenMove;
+    };
+    GameController.prototype.makeMoveAtSqrForMultiHop = function (sqr) {
+        this.MULTI_HOP_MOVE_ARRAY.push(new Move(this.CURRENT_MULTI_HOP_POSITION, sqr.getPos(), MoveType.HOP));
+        var chosenMove;
+        for (var i = 0; i < this.MULTI_HOP_MOVE_ARRAY.length; i++) {
+            if (chosenMove == null) {
+                chosenMove = this.MULTI_HOP_MOVE_ARRAY[i].clone();
+            }
+            else {
+                chosenMove.getFinalSubMove().setNextMove(this.MULTI_HOP_MOVE_ARRAY[i].clone());
+            }
+        }
+        this.setChosenMove(chosenMove);
+        this.resetSquareColors();
+        this.MUTLI_HOP_SELECTION_DEPTH = 1;
+        this.IN_MULTI_HOP_SELECTION = false;
+        this.MULTI_HOP_MOVE_ARRAY = new Array();
+        this.unselectPiece();
+        this.signalOpponentsMove();
     };
     GameController.prototype.addSquareClickListeners = function () {
         var squares = this.boardView.getSquares();
@@ -2761,13 +3592,23 @@ var GameController = /** @class */ (function (_super) {
     };
     GameController.prototype.getSquareClickListenerFunction = function (id, control) {
         return function () {
-            if (control.oppPieceIsSelected()) {
+            if (control.isInMultiHopSelection() && control.isCandidateForMultiHopSelection(id)) {
+                var sqr = control.getSquareAtId(id);
+                control.continueMultiHopSelection(sqr);
+            }
+            else if (control.isInMultiHopSelection()) {
+                control.resetAllMultiHopVariables();
+                control.unselectPiece();
+                control.resetSquareColors();
+                control.update();
+            }
+            else if (control.oppPieceIsSelected()) {
                 control.unselectPiece();
                 control.resetSquareColors();
             }
             else if (control.myPieceIsSelected() && control.representsMovableSpace(id)) {
                 var sqr = control.getSquareAtId(id);
-                control.moveSelectedPieceToSquare(sqr, control.SELECTED_MOVE_TYPE);
+                control.makeMoveAtSqr(sqr);
             }
             else if (control.myPieceIsSelected() && !(control.representsMovableSpace(id))) {
                 control.unselectPiece();
@@ -2775,6 +3616,10 @@ var GameController = /** @class */ (function (_super) {
                 control.update();
             }
         };
+    };
+    GameController.prototype.isCandidateForMultiHopSelection = function (id) {
+        var sqr = this.getSquareAtId(id);
+        return this.SELECTED_PIECE.getPossibleMoves().getAllChains(this.compileMoveFromMultiHopArray()).flattenToDepth(this.MUTLI_HOP_SELECTION_DEPTH).containsDestination(sqr.getPos());
     };
     GameController.prototype.hasNoClickListener = function (id) {
         return document.getElementById(id).onclick == null || document.getElementById(id).onclick == undefined;
@@ -2803,7 +3648,7 @@ var GameController = /** @class */ (function (_super) {
         var moves = this.SELECTED_PIECE.getPossibleMoves();
         var sqr = this.boardView.getSquareById(id);
         var thisMove = new Move(this.SELECTED_PIECE.getPos(), new Pos(sqr.getX(), sqr.getY()), MoveType.NONEXECUTABLE);
-        return moves.containsIgnoreType(thisMove);
+        return moves.flattenToFirstSubmoves().containsIgnoreType(thisMove);
     };
     GameController.prototype.oppPieceIsSelected = function () {
         return ((this.SELECTED_PIECE != null && this.SELECTED_PIECE != undefined) && this.SELECTED_PIECE.getColor() == this.swapColor(this.getColor()));
@@ -2923,6 +3768,13 @@ var GameController = /** @class */ (function (_super) {
             _this.addClickListeners();
         }, 3000);
     };
+    GameController.prototype.resetAllMultiHopVariables = function () {
+        this.MUTLI_HOP_SELECTION_DEPTH = 1;
+        this.IN_MULTI_HOP_SELECTION = false;
+        this.MULTI_HOP_ORIGIN = null;
+        this.CURRENT_MULTI_HOP_POSITION = null;
+        this.MULTI_HOP_MOVE_ARRAY = new Array();
+    };
     GameController.prototype.readyForMove = function () {
         this.boardView = Board.fromSerial(this.getBoardModel().serialize(), this.offsetTop, this.offsetLeft, this.squareWidth, this.squareHeight);
         this.turnOffThrobber();
@@ -2930,6 +3782,9 @@ var GameController = /** @class */ (function (_super) {
         if (!this.doCheckLogging()) {
             this.addClickListeners();
         }
+    };
+    GameController.prototype.isInMultiHopSelection = function () {
+        return this.IN_MULTI_HOP_SELECTION;
     };
     GameController.prototype.turnOffThrobber = function () {
         this.htmlContainer.turnOffThrobber();
@@ -3270,11 +4125,11 @@ var BoardBuilderController = /** @class */ (function () {
         return function () {
             var sqr = controller.getContainer().getBoardSquareFromId(id);
             if (controller.selectedPieceType == null) {
-                if (sqr.getType() == SquareType.NORMAL) {
-                    sqr.setType(SquareType.NON_EXISTENT);
+                if (sqr.getType() == ((Object.keys(SquareType).length / 2) - 1)) {
+                    sqr.setType(0);
                 }
                 else {
-                    sqr.setType(SquareType.NORMAL);
+                    sqr.setType(sqr.getType() + 1);
                 }
             }
             else {
@@ -3328,3 +4183,4 @@ var BoardBuilder = /** @class */ (function () {
     return BoardBuilder;
 }());
 GameBox.start();
+//BoardBuilder.start(); 
